@@ -62,7 +62,6 @@ export default function Home() {
       <section className="bg-ink text-paper">
         <Container className="py-20">
           <div className="max-w-2xl">
-            <p className="eyebrow !text-paper-2/70">{L.proof.sourcePrefix} {PROOF_STATS.length}</p>
             <h2 className="font-display mt-2 text-3xl sm:text-4xl">{L.proof.title}</h2>
             <p className="mt-3 text-paper-2/80">{L.proof.subtitle}</p>
           </div>

@@ -30,7 +30,9 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
   const [turns, setTurns] = useState<string[]>([]);
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [briefingId, setBriefingId] = useState<string | undefined>();
-  const [prompt, setPrompt] = useState(x.voice.opener);
+  // null until the model asks something: the opener must follow the language switch, so it is derived at render.
+  const [followUp, setFollowUp] = useState<string | null>(null);
+  const prompt = followUp ?? x.voice.opener;
   const [error, setError] = useState("");
   const rec = useRef<Rec | null>(null);
   const buffer = useRef("");
@@ -87,7 +89,7 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || x.errors.generic);
       setBriefing(j.briefing); setBriefingId(j.briefingId);
-      if (j.briefing.missing.length && j.briefing.followUp) { setPrompt(j.briefing.followUp); speak(j.briefing.followUp); }
+      if (j.briefing.missing.length && j.briefing.followUp) { setFollowUp(j.briefing.followUp); speak(j.briefing.followUp); }
       else speak(x.voice.ready);
       setPhase("review");
     } catch (e) { setError(e instanceof Error ? e.message : x.errors.generic); setPhase("idle"); }

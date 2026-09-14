@@ -54,14 +54,14 @@ export default function PricingPage() {
           {PACKS.map((p, i) => (
             <div key={p.key} className={"card relative p-6 " + (i === 1 ? "border-2 !border-ink" : "")} data-testid={`pack-${p.key}`}>
               {i === 1 && <div className="absolute -top-3 left-5"><Stamp>{c.best}</Stamp></div>}
-              <p className="eyebrow">{p.credits} {x.admin.credits.toLowerCase()}</p>
+              <p className="eyebrow">{x.credits.badge(p.credits)}</p>
               <p className="font-display mt-2 text-4xl text-ink">{money(p)}</p>
               <p className="mt-1 text-sm text-muted">{br ? "R$" : "$"}{unit(p).toFixed(0)} {c.perCv}{i > 0 && <span className="ml-2 text-moss">· {c.save} {Math.round((1 - unit(p) / unit(PACKS[0])) * 100)}%</span>}</p>
               <button onClick={() => buy(p.key)} disabled={busy === p.key || !configured} className="btn btn-primary mt-6 w-full" data-testid={`buy-${p.key}`}>{busy === p.key ? x.auth.working : c.cta}</button>
             </div>
           ))}
         </div>
-        <p className="mt-6 text-sm text-muted">{c.note}{!configured && " · (checkout not configured on this server yet)"}</p>
+        <p className="mt-6 text-sm text-muted">{c.note}{!configured && ` · ${x.pricing.notConfigured}`}</p>
         {error && <p className="mt-3 text-sm text-oxblood" role="alert">{error}</p>}
       </Container>
       <SiteFooter />

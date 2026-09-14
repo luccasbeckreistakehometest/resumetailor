@@ -60,6 +60,8 @@ const en = {
     email: "Email", when: "When", mode: "Mode", match: "Match", status: "Status", provider: "Provider", amount: "Amount", events: "events", forbidden: "Admins only.",
   },
   errors: { generic: "Something went wrong. Please try again.", aiOff: "The AI service isn't configured on this server yet." },
+  pricing: { notConfigured: "Checkout is not configured on this server yet." },
+  footer: "Secure payments by Stripe · No subscription",
 };
 
 const pt: typeof en = {
@@ -119,6 +121,8 @@ const pt: typeof en = {
     email: "E-mail", when: "Quando", mode: "Modo", match: "Nota", status: "Status", provider: "Meio", amount: "Valor", events: "eventos", forbidden: "Só admin.",
   },
   errors: { generic: "Deu algo errado. Tenta de novo.", aiOff: "A IA ainda não está configurada neste servidor." },
+  pricing: { notConfigured: "O pagamento ainda não está configurado neste servidor." },
+  footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
 const es: typeof en = {
@@ -178,6 +182,8 @@ const es: typeof en = {
     email: "Email", when: "Cuándo", mode: "Modo", match: "Puntaje", status: "Estado", provider: "Medio", amount: "Monto", events: "eventos", forbidden: "Solo admins.",
   },
   errors: { generic: "Algo salió mal. Inténtalo de nuevo.", aiOff: "La IA aún no está configurada en este servidor." },
+  pricing: { notConfigured: "El pago aún no está configurado en este servidor." },
+  footer: "Pagos seguros con Stripe · Sin suscripción",
 };
 
 export type Extra = typeof en;

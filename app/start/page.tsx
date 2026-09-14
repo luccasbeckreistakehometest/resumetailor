@@ -131,17 +131,18 @@ function StartInner() {
             <Eyebrow>{d.quiz.stepOf(1, 2)}</Eyebrow>
             <h1 className="font-display mt-2 text-4xl text-ink">{x.choose.title}</h1>
             <p className="mt-2 text-ink-2">{x.choose.subtitle}</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <button onClick={() => setVia("voice")} className="card group p-6 text-left transition hover:-translate-y-0.5" data-testid="via-voice">
-                <span className="text-3xl">🎙</span>
-                <p className="font-display mt-3 text-2xl text-ink">{x.choose.talk.t}</p>
-                <p className="mt-1.5 text-sm text-ink-2">{x.choose.talk.d}</p>
-                <p className="mt-3 text-xs text-muted">{x.choose.mic}</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:items-stretch">
+              <button onClick={() => setVia("voice")} className="card flex h-full flex-col p-6 text-left transition hover:-translate-y-0.5" data-testid="via-voice">
+                <MicIcon />
+                <p className="font-display mt-4 text-2xl text-ink">{x.choose.talk.t}</p>
+                <p className="mt-1.5 flex-1 text-sm text-ink-2">{x.choose.talk.d}</p>
+                <p className="mt-4 text-xs text-muted">{x.choose.mic}</p>
               </button>
-              <button onClick={() => setVia("text")} className="card group p-6 text-left transition hover:-translate-y-0.5" data-testid="via-text">
-                <span className="text-3xl">⌨️</span>
-                <p className="font-display mt-3 text-2xl text-ink">{x.choose.type.t}</p>
-                <p className="mt-1.5 text-sm text-ink-2">{x.choose.type.d}</p>
+              <button onClick={() => setVia("text")} className="card flex h-full flex-col p-6 text-left transition hover:-translate-y-0.5" data-testid="via-text">
+                <KeysIcon />
+                <p className="font-display mt-4 text-2xl text-ink">{x.choose.type.t}</p>
+                <p className="mt-1.5 flex-1 text-sm text-ink-2">{x.choose.type.d}</p>
+                <p className="mt-4 text-xs text-muted">{d.quiz.resume.subtitle}</p>
               </button>
             </div>
           </div>
@@ -287,6 +288,17 @@ function StartInner() {
     </div>
   );
 }
+
+const MicIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-oxblood" aria-hidden>
+    <rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" strokeLinecap="round" />
+  </svg>
+);
+const KeysIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-ink" aria-hidden>
+    <rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10" strokeLinecap="round" />
+  </svg>
+);
 
 const Section = ({ title, body }: { title: string; body: string }) => (
   <div className="mt-6"><p className="eyebrow">{title}</p><p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-ink">{body}</p></div>
