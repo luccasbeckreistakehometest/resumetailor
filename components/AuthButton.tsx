@@ -1,86 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { useI18n } from "@/app/i18n/I18nProvider";
 
-export function AuthButton({ dark = false }: { dark?: boolean }) {
-  const { enabled, user, signOut } = useAuth();
+/** Opens the sign-in modal from anywhere: `window.dispatchEvent(new Event("rt:auth"))`. */
+export function AuthButton() {
+  const { user, signOut } = useAuth();
+  const { x } = useI18n();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [err, setErr] = useState("");
-
-  if (!enabled) return null;
-
-  const linkCls = dark ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-slate-800";
-
+  useEffect(() => {
+    const h = () => setOpen(true);
+    window.addEventListener("rt:auth", h);
+    return () => window.removeEventListener("rt:auth", h);
+  }, []);
   if (user) {
     return (
-      <button onClick={signOut} className={"hidden text-sm font-medium sm:block " + linkCls}>
-        {user.email?.split("@")[0]} · Sign out
+      <button onClick={signOut} className="hidden text-sm font-medium text-ink-2 hover:text-ink sm:block" data-testid="signout">
+        {user.name || user.email.split("@")[0]} · {x.nav.signOut}
       </button>
     );
   }
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="text-sm font-medium text-ink-2 hover:text-ink" data-testid="open-auth">{x.nav.signIn}</button>
+      {open && <AuthModal onClose={() => setOpen(false)} />}
+    </>
+  );
+}
 
-  async function magicLink() {
-    setErr("");
-    if (!supabase || !email.includes("@")) {
-      setErr("Enter a valid email.");
-      return;
-    }
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    if (error) setErr(error.message);
-    else setSent(true);
-  }
+export function AuthModal({ onClose, onDone }: { onClose: () => void; onDone?: () => void }) {
+  const { login, register } = useAuth();
+  const { x, lang } = useI18n();
+  const [mode, setMode] = useState<"in" | "up">("up");
+  const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState("");
+  const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
 
-  async function google() {
-    if (!supabase) return;
-    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+  async function submit(e: React.FormEvent) {
+    e.preventDefault(); setErr(""); setBusy(true);
+    const error = mode === "in" ? await login(email, password) : await register(email, password, name, lang);
+    setBusy(false);
+    if (error) return setErr(error);
+    onDone?.(); onClose();
   }
 
   return (
-    <>
-      <button onClick={() => setOpen(true)} className={"text-sm font-medium " + linkCls}>
-        Sign in
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">Sign in to ResumeTailor</h3>
-            <p className="mt-1 text-sm text-slate-500">Save your CVs, credits and versions across devices.</p>
-            {sent ? (
-              <p className="mt-5 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">✅ Check your email for the magic link.</p>
-            ) : (
-              <div className="mt-5 space-y-3">
-                <button onClick={google} className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Continue with Google
-                </button>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <span className="h-px flex-1 bg-slate-200" /> or <span className="h-px flex-1 bg-slate-200" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@email.com"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                />
-                {err && <p className="text-sm text-red-600">{err}</p>}
-                <button onClick={magicLink} className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
-                  Email me a magic link
-                </button>
-              </div>
-            )}
-            <button onClick={() => setOpen(false)} className="mt-4 w-full text-center text-xs text-slate-400 hover:text-slate-600">
-              Close
-            </button>
-          </div>
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/60 p-4" onClick={onClose} role="dialog" aria-modal="true">
+      <form onSubmit={submit} className="card w-full max-w-md p-7" onClick={(e) => e.stopPropagation()} data-testid="auth-modal">
+        <p className="eyebrow">ResumeTailor</p>
+        <h3 className="font-display mt-1 text-2xl text-ink">{x.auth.title}</h3>
+        <p className="mt-2 text-sm text-muted">{x.auth.subtitle}</p>
+        <div className="mt-5 space-y-3">
+          {mode === "up" && <input className="field" placeholder={x.auth.name} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />}
+          <input className="field" type="email" required placeholder={x.auth.email} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" data-testid="auth-email" />
+          <input className="field" type="password" required minLength={8} placeholder={x.auth.password} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "in" ? "current-password" : "new-password"} data-testid="auth-password" />
+          {err && <p className="text-sm text-oxblood" role="alert">{err}</p>}
+          <button className="btn btn-primary w-full" disabled={busy} data-testid="auth-submit">{busy ? x.auth.working : mode === "in" ? x.auth.signIn : x.auth.signUp}</button>
         </div>
-      )}
-    </>
+        <button type="button" onClick={() => { setMode(mode === "in" ? "up" : "in"); setErr(""); }} className="mt-4 w-full text-center text-sm text-ink-2 underline-offset-4 hover:underline">
+          {mode === "in" ? x.auth.toSignUp : x.auth.toSignIn}
+        </button>
+      </form>
+    </div>
   );
 }

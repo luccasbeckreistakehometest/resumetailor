@@ -32,21 +32,21 @@ export function LiveMatchDemo() {
   }, []);
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white p-6 shadow-2xl shadow-indigo-950/40">
+    <div className="w-full max-w-sm rounded-2xl border border-edge bg-surface p-6 shadow-2xl shadow-indigo-950/40">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Senior Product Manager</span>
+        <span className="rounded-full bg-paper-2 px-2.5 py-1 text-xs font-medium text-muted">Senior Product Manager</span>
         <span
           className={
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition " +
-            (done ? "bg-emerald-50 text-emerald-700" : "bg-indigo-50 text-indigo-600")
+            (done ? "bg-moss-2 text-moss" : "bg-gold-2 text-oxblood")
           }
         >
           {done ? (
             "Tailored ✓"
           ) : (
             <>
-              <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+              <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-edge border-t-indigo-600" />
               Analyzing…
             </>
           )}
@@ -60,16 +60,16 @@ export function LiveMatchDemo() {
             className="h-full w-full rounded-full transition-all duration-100"
             style={{ background: `conic-gradient(#10b981 ${pct * 3.6}deg, #e2e8f0 0deg)` }}
           />
-          <div className="absolute inset-[12px] flex flex-col items-center justify-center rounded-full bg-white">
-            <span className="text-3xl font-extrabold tabular-nums text-slate-900">{pct}%</span>
-            <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">match</span>
+          <div className="absolute inset-[12px] flex flex-col items-center justify-center rounded-full bg-surface">
+            <span className="text-3xl font-extrabold tabular-nums text-ink">{pct}%</span>
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted">match</span>
           </div>
         </div>
         <div className="min-w-0">
-          <div className="text-xs font-medium text-slate-400">
-            Started at <span className="font-semibold text-slate-500">38%</span>
+          <div className="text-xs font-medium text-muted">
+            Started at <span className="font-semibold text-muted">38%</span>
           </div>
-          <div className="mt-1 text-sm font-semibold text-slate-800">Keywords the job screens for:</div>
+          <div className="mt-1 text-sm font-semibold text-ink">Keywords the job screens for:</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {KW.map((k, i) => (
               <span
@@ -77,8 +77,8 @@ export function LiveMatchDemo() {
                 className={
                   "rounded-full px-2 py-0.5 text-[11px] font-medium transition-all duration-300 " +
                   (revealed > i
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                    : "bg-slate-50 text-slate-300 ring-1 ring-slate-200")
+                    ? "bg-moss-2 text-moss ring-1 ring-moss/30"
+                    : "bg-paper text-paper-2 ring-1 ring-edge")
                 }
               >
                 {revealed > i ? "+ " : ""}
@@ -89,8 +89,8 @@ export function LiveMatchDemo() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-lg bg-slate-50 p-3 text-center text-xs text-slate-500">
-        Resume + cover letter + LinkedIn — <span className="font-semibold text-slate-700">ready in 30s</span>
+      <div className="mt-5 rounded-lg bg-paper p-3 text-center text-xs text-muted">
+        Resume + cover letter + LinkedIn — <span className="font-semibold text-ink-2">ready in 30s</span>
       </div>
     </div>
   );

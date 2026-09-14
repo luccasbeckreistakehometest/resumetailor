@@ -1,382 +1,301 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { MatchScore, Keyword } from "@/components/MatchScore";
+import { MatchScore } from "@/components/MatchScore";
 import { CompanyInsights } from "@/components/CompanyInsights";
+import { SiteHeader } from "@/components/SiteHeader";
+import { AuthModal } from "@/components/AuthButton";
+import { useAuth } from "@/components/AuthProvider";
+import { VoiceBriefing } from "@/components/VoiceBriefing";
+import { Container, Eyebrow } from "@/components/ui";
+import type { Briefing } from "@/lib/ai/voice";
+import type { GenerationView } from "@/lib/server/generations";
 
 type Mode = "tailor" | "improve" | "build";
-type Result = {
-  resume: string;
-  coverLetter: string;
-  linkedinAbout: string;
-  matchBefore: number;
-  matchAfter: number;
-  keywords: Keyword[];
-  matchNotes: string;
-};
+type Via = "choose" | "voice" | "text";
+const FLOWS: Record<Mode, string[]> = { tailor: ["role", "job", "resume"], improve: ["role", "resume"], build: ["role", "build"] };
 
-const FLOWS: Record<Mode, string[]> = {
-  tailor: ["role", "job", "resume", "result"],
-  improve: ["role", "resume", "result"],
-  build: ["role", "build", "result"],
-};
+function StartInner() {
+  const { d, x, lang } = useI18n();
+  const { user, refresh, aiReady } = useAuth();
+  const params = useSearchParams();
+  const router = useRouter();
 
-export default function StartPage() {
-  const { d } = useI18n();
+  const [via, setVia] = useState<Via>(params.get("via") === "voice" ? "voice" : "choose");
   const [mode, setMode] = useState<Mode | null>(null);
   const [step, setStep] = useState(0);
+  const [source, setSource] = useState<"text" | "voice">("text");
+  const [briefingId, setBriefingId] = useState<string | undefined>();
+  const [pasteNeeded, setPasteNeeded] = useState<null | { resume: boolean; job: boolean }>(null);
 
-  // fields
-  const [targetRole, setTargetRole] = useState("");
-  const [level, setLevel] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [resume, setResume] = useState("");
-  const [education, setEducation] = useState("");
-  const [experience, setExperience] = useState("");
-  const [skills, setSkills] = useState("");
-  const [achievements, setAchievements] = useState("");
+  const [targetRole, setTargetRole] = useState(""); const [level, setLevel] = useState("");
+  const [jobDescription, setJobDescription] = useState(""); const [resume, setResume] = useState("");
+  const [education, setEducation] = useState(""); const [experience, setExperience] = useState("");
+  const [skills, setSkills] = useState(""); const [achievements, setAchievements] = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [paying, setPaying] = useState(false);
-  const [error, setError] = useState("");
-  const [result, setResult] = useState<Result | null>(null);
+  const [loading, setLoading] = useState(false); const [error, setError] = useState("");
+  const [gen, setGen] = useState<GenerationView | null>(null);
+  const [authOpen, setAuthOpen] = useState(false); const [unlocking, setUnlocking] = useState(false);
+  const [needCredits, setNeedCredits] = useState(false);
+
+  // Reopening a saved kit from the library.
+  useEffect(() => {
+    const id = params.get("gen");
+    if (!id) return;
+    fetch(`/api/generations/${id}`).then((r) => r.ok ? r.json() : null).then((j) => { if (j) { setGen(j); setVia("text"); setMode(j.mode); } });
+  }, [params]);
 
   const flow = mode ? FLOWS[mode] : [];
-  const current = mode ? flow[step] : "intent";
-  const totalSteps = mode ? flow.length + 1 : 1;
-  const currentNum = mode ? step + 2 : 1;
+  const current = gen ? "result" : !mode ? "intent" : flow[step] ?? "result";
 
-  async function generate() {
-    setError("");
-    setLoading(true);
+  const profile = () => [level && `Level: ${level}`, education && `Education:\n${education}`, experience && `Experience:\n${experience}`, skills && `Skills:\n${skills}`, achievements && `Achievements:\n${achievements}`].filter(Boolean).join("\n\n");
+
+  // `override` exists because React state set in the same tick is not visible to this closure yet —
+  // the voice path fills the form and generates in one go.
+  const generate = useCallback(async (m: Mode, override?: Partial<{ targetRole: string; profile: string; source: "text" | "voice"; briefingId: string }>) => {
+    setError(""); setLoading(true);
     try {
-      let payload: Record<string, string> = { mode: mode as string, targetRole };
-      if (mode === "tailor") payload = { ...payload, jobDescription, resume };
-      else if (mode === "improve") payload = { ...payload, resume };
-      else if (mode === "build") {
-        const profile = [
-          level && `Level: ${level}`,
-          education && `Education:\n${education}`,
-          experience && `Experience:\n${experience}`,
-          skills && `Skills:\n${skills}`,
-          achievements && `Achievements:\n${achievements}`,
-        ]
-          .filter(Boolean)
-          .join("\n\n");
-        payload = { ...payload, profile };
-      }
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || d.quiz.validation.generic);
-      setResult(data);
-      localStorage.setItem("rt_result", JSON.stringify(data));
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : d.quiz.validation.generic);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // trigger generation when we reach the result step
-  useEffect(() => {
-    if (current === "result" && !result && !loading && !error) generate();
+      const bid = override?.briefingId ?? briefingId;
+      const payload: Record<string, string> = { mode: m, targetRole: override?.targetRole ?? targetRole, lang, source: override?.source ?? source, ...(bid ? { briefingId: bid } : {}) };
+      if (m === "tailor") Object.assign(payload, { jobDescription, resume });
+      else if (m === "improve") Object.assign(payload, { resume });
+      else Object.assign(payload, { profile: override?.profile ?? profile() });
+      const r = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || d.quiz.validation.generic);
+      setGen(j); localStorage.setItem("rt_last_gen", j.id);
+    } catch (e) { setError(e instanceof Error ? e.message : d.quiz.validation.generic); }
+    finally { setLoading(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current]);
+  }, [targetRole, lang, source, briefingId, jobDescription, resume, level, education, experience, skills, achievements]);
 
-  async function checkout() {
-    setPaying(true);
-    setError("");
-    try {
-      const res = await fetch("/api/checkout", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || d.quiz.validation.generic);
-      window.location.href = data.url;
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : d.quiz.validation.generic);
-      setPaying(false);
+  // Voice briefing confirmed: fill the form, then either paste what voice cannot carry or generate.
+  function onBriefing(b: Briefing, id: string) {
+    setSource("voice"); setBriefingId(id);
+    setTargetRole(b.targetRole); setLevel(b.level === "unknown" ? "" : b.level);
+    setEducation(b.education); setExperience(b.experience); setSkills(b.skills); setAchievements(b.achievements);
+    const m: Mode = b.mode === "unknown" ? "build" : b.mode;
+    setMode(m); setVia("text");
+    if (m === "build") {
+      setStep(FLOWS.build.length);
+      const prof = [b.level !== "unknown" && `Level: ${b.level}`, b.education && `Education:\n${b.education}`, b.experience && `Experience:\n${b.experience}`, b.skills && `Skills:\n${b.skills}`, b.achievements && `Achievements:\n${b.achievements}`].filter(Boolean).join("\n\n");
+      void generate("build", { targetRole: b.targetRole, profile: prof, source: "voice", briefingId: id });
     }
+    else { setPasteNeeded({ resume: true, job: m === "tailor" }); setStep(m === "tailor" ? 1 : 1); }
   }
 
-  function validateCurrent(): string {
+  // The server owns the session: a 401 means "sign in first". Not reading `user` here keeps the
+  // retry after signup from seeing a stale closure in which nobody was logged in yet.
+  async function unlock() {
+    if (!gen) return;
+    setUnlocking(true); setError("");
+    const r = await fetch(`/api/generations/${gen.id}/unlock`, { method: "POST" });
+    const j = await r.json().catch(() => ({}));
+    setUnlocking(false);
+    if (r.status === 401) { setAuthOpen(true); return; }
+    if (r.status === 402) { setNeedCredits(true); return; }
+    if (!r.ok) { setError(j.error || d.quiz.validation.generic); return; }
+    setGen(j); await refresh();
+  }
+
+  function validate(): string {
     if (current === "role" && targetRole.trim().length < 2) return d.quiz.validation.role;
     if (current === "job" && jobDescription.trim().length < 30) return d.quiz.validation.job;
     if (current === "resume" && resume.trim().length < 30) return d.quiz.validation.resume;
-    if (current === "build" && (education.trim().length + skills.trim().length) < 20) return d.quiz.validation.build;
+    if (current === "build" && education.trim().length + skills.trim().length < 20) return d.quiz.validation.build;
     return "";
   }
-
   function next() {
-    const err = validateCurrent();
-    if (err) {
-      setError(err);
-      return;
-    }
+    const err = validate(); if (err) return setError(err);
     setError("");
-    setStep((s) => s + 1);
+    if (step + 1 >= flow.length) void generate(mode!); else setStep(step + 1);
   }
+  function back() { setError(""); if (step === 0) { setMode(null); setPasteNeeded(null); } else setStep(step - 1); }
+  function reset() { setGen(null); setMode(null); setStep(0); setVia("choose"); setPasteNeeded(null); setSource("text"); setBriefingId(undefined); setNeedCredits(false); router.replace("/start"); }
 
-  function back() {
-    setError("");
-    if (step === 0) {
-      setMode(null);
-      return;
-    }
-    setStep((s) => s - 1);
-  }
-
-  function pickMode(m: Mode) {
-    setMode(m);
-    setStep(0);
-    setError("");
-    setResult(null);
-  }
-
-  const teaser = result ? result.coverLetter.split("\n").slice(0, 2).join("\n") : "";
+  const total = mode ? flow.length + 1 : 1;
+  const num = mode ? Math.min(step + 2, total) : 1;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3.5">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">RT</div>
-            <span className="text-base font-semibold tracking-tight text-slate-900">ResumeTailor</span>
-          </Link>
-          <LanguageSwitcher />
-        </div>
-      </header>
+    <div className="min-h-screen">
+      <SiteHeader />
+      <Container className="max-w-3xl py-10">
+        {!aiReady && <p className="mb-6 rounded-xl border border-gold bg-gold-2 px-4 py-3 text-sm text-ink">{x.errors.aiOff}</p>}
 
-      {/* Progress */}
-      <div className="mx-auto max-w-2xl px-5 pt-6">
-        <div className="flex items-center justify-between text-xs font-medium text-slate-400">
-          <span>{d.quiz.stepOf(currentNum, totalSteps)}</span>
-        </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-          <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${(currentNum / totalSteps) * 100}%` }} />
-        </div>
-      </div>
-
-      <main className="mx-auto max-w-2xl px-5 py-8">
-        {/* Intent */}
-        {current === "intent" && (
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{d.quiz.intent.title}</h1>
-            <p className="mt-2 text-slate-600">{d.quiz.intent.subtitle}</p>
-            <div className="mt-6 space-y-3">
-              {(["tailor", "improve", "build"] as Mode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => pickMode(m)}
-                  className="flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-indigo-400 hover:shadow-sm"
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900">{d.quiz.intent[m].t}</div>
-                    <div className="mt-0.5 text-sm text-slate-500">{d.quiz.intent[m].d}</div>
-                  </div>
-                  <span className="ml-auto text-slate-300">→</span>
-                </button>
-              ))}
+        {/* 1. Talk or type */}
+        {via === "choose" && !gen && (
+          <div data-tour="choose">
+            <Eyebrow>{d.quiz.stepOf(1, 2)}</Eyebrow>
+            <h1 className="font-display mt-2 text-4xl text-ink">{x.choose.title}</h1>
+            <p className="mt-2 text-ink-2">{x.choose.subtitle}</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <button onClick={() => setVia("voice")} className="card group p-6 text-left transition hover:-translate-y-0.5" data-testid="via-voice">
+                <span className="text-3xl">🎙</span>
+                <p className="font-display mt-3 text-2xl text-ink">{x.choose.talk.t}</p>
+                <p className="mt-1.5 text-sm text-ink-2">{x.choose.talk.d}</p>
+                <p className="mt-3 text-xs text-muted">{x.choose.mic}</p>
+              </button>
+              <button onClick={() => setVia("text")} className="card group p-6 text-left transition hover:-translate-y-0.5" data-testid="via-text">
+                <span className="text-3xl">⌨️</span>
+                <p className="font-display mt-3 text-2xl text-ink">{x.choose.type.t}</p>
+                <p className="mt-1.5 text-sm text-ink-2">{x.choose.type.d}</p>
+              </button>
             </div>
           </div>
         )}
 
-        {/* Role */}
-        {current === "role" && (
-          <StepCard title={d.quiz.role.title} subtitle={d.quiz.role.subtitle}>
-            <input
-              value={targetRole}
-              onChange={(e) => setTargetRole(e.target.value)}
-              placeholder={d.quiz.role.placeholder}
-              className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-            <label className="mt-4 block text-sm font-semibold text-slate-700">{d.quiz.role.levelLabel}</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(["student", "entry", "mid", "senior"] as const).map((lv) => (
-                <button
-                  key={lv}
-                  onClick={() => setLevel(d.quiz.role.levels[lv])}
-                  className={
-                    "rounded-full border px-3 py-1.5 text-sm transition " +
-                    (level === d.quiz.role.levels[lv]
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-slate-300 bg-white text-slate-600 hover:border-indigo-300")
-                  }
-                >
-                  {d.quiz.role.levels[lv]}
-                </button>
-              ))}
+        {via === "voice" && !gen && <VoiceBriefing onConfirm={onBriefing} onTypeInstead={() => setVia("text")} />}
+
+        {via === "text" && !gen && (
+          <div className="card p-6 sm:p-8">
+            <div className="flex items-center justify-between">
+              <Eyebrow>{d.quiz.stepOf(num, total)}</Eyebrow>
+              {mode && <button onClick={back} className="text-sm text-muted hover:text-ink">← {d.quiz.back}</button>}
             </div>
-          </StepCard>
-        )}
 
-        {/* Job */}
-        {current === "job" && (
-          <StepCard title={d.quiz.job.title} subtitle={d.quiz.job.subtitle}>
-            <textarea
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              rows={9}
-              placeholder={d.quiz.job.placeholder}
-              className="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-          </StepCard>
-        )}
+            {current === "intent" && (
+              <>
+                <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.intent.title}</h1>
+                <p className="mt-1 text-sm text-muted">{d.quiz.intent.subtitle}</p>
+                <div className="mt-6 grid gap-3">
+                  {(["tailor", "improve", "build"] as Mode[]).map((m) => (
+                    <button key={m} onClick={() => { setMode(m); setStep(0); setError(""); }} className="rounded-xl border border-edge-2 bg-paper p-4 text-left transition hover:border-ink" data-testid={`mode-${m}`}>
+                      <p className="font-semibold text-ink">{d.quiz.intent[m].t}</p>
+                      <p className="mt-0.5 text-sm text-ink-2">{d.quiz.intent[m].d}</p>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setVia("voice")} className="mt-6 text-sm text-oxblood underline-offset-4 hover:underline">🎙 {x.choose.talk.t}</button>
+              </>
+            )}
 
-        {/* Resume */}
-        {current === "resume" && (
-          <StepCard title={d.quiz.resume.title} subtitle={d.quiz.resume.subtitle}>
-            <textarea
-              value={resume}
-              onChange={(e) => setResume(e.target.value)}
-              rows={10}
-              placeholder={d.quiz.resume.placeholder}
-              className="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-          </StepCard>
-        )}
+            {current === "role" && (
+              <>
+                <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.role.title}</h1>
+                <p className="mt-1 text-sm text-muted">{d.quiz.role.subtitle}</p>
+                <input className="field mt-6" value={targetRole} onChange={(e) => setTargetRole(e.target.value)} placeholder={d.quiz.role.placeholder} data-testid="role" autoFocus />
+                <p className="mt-5 text-sm font-medium text-ink-2">{d.quiz.role.levelLabel}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(Object.keys(d.quiz.role.levels) as (keyof typeof d.quiz.role.levels)[]).map((k) => (
+                    <button key={k} onClick={() => setLevel(k)} className={"rounded-full border px-3 py-1.5 text-sm " + (level === k ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2 hover:border-ink")}>{d.quiz.role.levels[k]}</button>
+                  ))}
+                </div>
+              </>
+            )}
 
-        {/* Build (first resume) */}
-        {current === "build" && (
-          <StepCard title={d.quiz.build.title} subtitle={d.quiz.build.subtitle}>
-            <div className="space-y-4">
-              <Field label={d.quiz.build.eduLabel} value={education} onChange={setEducation} placeholder={d.quiz.build.eduPh} rows={3} />
-              <Field label={d.quiz.build.expLabel} value={experience} onChange={setExperience} placeholder={d.quiz.build.expPh} rows={3} />
-              <Field label={d.quiz.build.skillsLabel} value={skills} onChange={setSkills} placeholder={d.quiz.build.skillsPh} rows={2} />
-              <Field label={d.quiz.build.achLabel} value={achievements} onChange={setAchievements} placeholder={d.quiz.build.achPh} rows={2} />
-            </div>
-          </StepCard>
-        )}
+            {current === "job" && (
+              <>
+                <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.job.title}</h1>
+                <p className="mt-1 text-sm text-muted">{pasteNeeded?.job ? x.voice.jobNeeded : d.quiz.job.subtitle}</p>
+                <textarea className="field mt-6" rows={9} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder={d.quiz.job.placeholder} data-testid="job" />
+              </>
+            )}
 
-        {/* Result */}
-        {current === "result" && (
-          <div>
+            {current === "resume" && (
+              <>
+                <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.resume.title}</h1>
+                <p className="mt-1 text-sm text-muted">{pasteNeeded?.resume ? x.voice.resumeNeeded : d.quiz.resume.subtitle}</p>
+                <textarea className="field mt-6" rows={11} value={resume} onChange={(e) => setResume(e.target.value)} placeholder={d.quiz.resume.placeholder} data-testid="resume" />
+              </>
+            )}
+
+            {current === "build" && (
+              <>
+                <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.build.title}</h1>
+                <p className="mt-1 text-sm text-muted">{d.quiz.build.subtitle}</p>
+                <div className="mt-6 space-y-4">
+                  {([["edu", education, setEducation], ["exp", experience, setExperience], ["skills", skills, setSkills], ["ach", achievements, setAchievements]] as const).map(([k, v, set]) => (
+                    <div key={k}>
+                      <label className="mb-1.5 block text-sm font-medium text-ink-2">{d.quiz.build[`${k}Label` as "eduLabel"]}</label>
+                      <textarea className="field" rows={3} value={v} onChange={(e) => set(e.target.value)} placeholder={d.quiz.build[`${k}Ph` as "eduPh"]} data-testid={`build-${k}`} />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
             {loading && (
-              <div className="py-16 text-center">
-                <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />
-                <h2 className="mt-5 text-lg font-semibold text-slate-900">{d.quiz.generating.title}</h2>
-                <p className="mt-1 text-sm text-slate-500">{d.quiz.generating.subtitle}</p>
+              <div className="mt-8 rounded-xl bg-paper p-6 text-center" data-testid="generating">
+                <p className="font-display text-2xl text-ink">{d.quiz.generating.title}</p>
+                <p className="mt-1 text-sm text-muted">{d.quiz.generating.subtitle}</p>
               </div>
             )}
-
-            {!loading && error && (
-              <div className="py-10 text-center">
-                <p className="text-sm text-red-600">{error}</p>
-                <button onClick={generate} className="mt-4 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
-                  {d.quiz.next}
-                </button>
-              </div>
-            )}
-
-            {!loading && result && (
-              <div className="space-y-5">
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                  <span>✅</span> {d.quiz.result.ready}
-                </div>
-
-                <MatchScore before={result.matchBefore} after={result.matchAfter} keywords={result.keywords} addedLabel={d.quiz.result.added} />
-
-                {mode === "tailor" && jobDescription.trim().length >= 30 && <CompanyInsights jobDescription={jobDescription} />}
-
-                <section className="rounded-xl border border-slate-200 bg-white p-5">
-                  <h3 className="mb-2 text-sm font-semibold text-slate-700">{d.quiz.result.coverPreview}</h3>
-                  <p className="whitespace-pre-wrap text-sm text-slate-800">{teaser}</p>
-                  <p className="mt-2 select-none whitespace-pre-wrap text-sm text-slate-800 blur-[3px]" aria-hidden>
-                    {result.coverLetter.split("\n").slice(2).join("\n") || "…"}
-                  </p>
-                </section>
-
-                <section className="relative rounded-xl border border-slate-200 bg-white p-5">
-                  <h3 className="mb-2 text-sm font-semibold text-slate-700">{d.quiz.result.lockedTitle}</h3>
-                  <div className="h-28 select-none overflow-hidden blur-[3px]" aria-hidden>
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{result.resume}</pre>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/30">
-                    <span className="rounded-full bg-slate-900/85 px-4 py-1.5 text-sm font-medium text-white">🔒 {d.quiz.result.locked}</span>
-                  </div>
-                </section>
-
-                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                  🔒 {d.prep.lockedTeaser}
-                </div>
-
-                <button
-                  onClick={checkout}
-                  disabled={paying}
-                  className="w-full rounded-xl bg-indigo-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  {d.quiz.result.unlock}
-                </button>
-                <p className="text-center text-xs text-slate-400">{d.quiz.result.kitNote}</p>
+            {error && <p className="mt-4 text-sm text-oxblood" role="alert">{error}</p>}
+            {current !== "intent" && !loading && (
+              <div className="mt-8 flex justify-end">
+                <button onClick={next} className="btn btn-primary" data-testid="next">{step + 1 >= flow.length ? d.landing.form.cta : d.quiz.next}</button>
               </div>
             )}
           </div>
         )}
 
-        {/* Nav buttons */}
-        {current !== "intent" && current !== "result" && (
-          <div className="mt-6 flex items-center justify-between">
-            <button onClick={back} className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800">
-              ← {d.quiz.back}
-            </button>
-            {error && current !== "result" && <span className="text-sm text-red-600">{error}</span>}
-            <button onClick={next} className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
-              {d.quiz.next} →
-            </button>
+        {/* Result: free preview, one credit to open */}
+        {gen && (
+          <div className="space-y-5" data-testid="result">
+            <div className="flex items-center justify-between">
+              <Eyebrow>{gen.source === "voice" ? `🎙 ${x.library.voice}` : d.quiz.result.ready.split(".")[0]}</Eyebrow>
+              <button onClick={reset} className="text-sm text-muted hover:text-ink">{d.quiz.result.startOver}</button>
+            </div>
+            <MatchScore before={gen.matchBefore} after={gen.matchAfter} keywords={gen.keywords} addedLabel={d.quiz.result.added} />
+            {gen.mode === "tailor" && jobDescription && <CompanyInsights jobDescription={jobDescription} />}
+
+            {gen.kit ? (
+              <div className="card p-6" data-testid="kit">
+                <p className="text-sm font-medium text-moss">✓ {x.credits.unlocked}</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
+                  <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
+                </div>
+                <Section title={d.quiz.result.coverPreview.replace(" preview", "")} body={gen.kit.coverLetter} />
+                <Section title="LinkedIn" body={gen.kit.linkedinAbout} />
+                <div className="mt-6">
+                  <p className="eyebrow">{d.prep.title}</p>
+                  <Prep label={d.prep.emphasis} items={gen.kit.emphasis} />
+                  <Prep label={d.prep.talkingPoints} items={gen.kit.interviewPrep.talkingPoints} />
+                  <Prep label={d.prep.technical} items={gen.kit.interviewPrep.technical} />
+                  <Prep label={d.prep.behavioral} items={gen.kit.interviewPrep.behavioral} />
+                  <Prep label={d.prep.questionsToAsk} items={gen.kit.interviewPrep.questionsToAsk} />
+                </div>
+              </div>
+            ) : (
+              <div className="card p-6" data-testid="locked">
+                <p className="eyebrow">{d.quiz.result.coverPreview}</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-ink-2">{gen.coverLetterPreview}…</p>
+                <div className="mt-5 rounded-xl border border-dashed border-edge-2 bg-paper p-5">
+                  <p className="font-display text-xl text-ink">🔒 {d.quiz.result.lockedTitle}</p>
+                  <p className="mt-1 text-sm text-muted">{d.quiz.result.kitNote} · {d.prep.lockedTeaser}</p>
+                  <p className="mt-3 text-sm text-ink-2">{user ? x.credits.badge(user.credits) : x.credits.firstFree}</p>
+                  {needCredits ? (
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <p className="text-sm text-oxblood">{x.credits.none}</p>
+                      <Link href="/pricing" className="btn btn-primary">{x.credits.buy}</Link>
+                    </div>
+                  ) : (
+                    <button onClick={unlock} disabled={unlocking} className="btn btn-primary mt-4" data-testid="unlock">{unlocking ? x.auth.working : x.credits.unlockWith}</button>
+                  )}
+                </div>
+                {error && <p className="mt-3 text-sm text-oxblood" role="alert">{error}</p>}
+              </div>
+            )}
           </div>
         )}
-
-        {current === "intent" && (
-          <p className="mt-6 text-center text-xs text-slate-400">
-            <Link href="/" className="hover:text-slate-600">
-              ← {d.nav.tailor}
-            </Link>
-          </p>
-        )}
-      </main>
+      </Container>
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => { void unlock(); }} />}
     </div>
   );
 }
 
-function StepCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
-      <p className="mt-2 text-slate-600">{subtitle}</p>
-      <div className="mt-5">{children}</div>
-    </div>
-  );
-}
+const Section = ({ title, body }: { title: string; body: string }) => (
+  <div className="mt-6"><p className="eyebrow">{title}</p><p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-ink">{body}</p></div>
+);
+const Prep = ({ label, items }: { label: string; items: string[] }) => items.length ? (
+  <div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-oxblood">{label}</p>
+    <ul className="mt-1.5 space-y-1.5">{items.map((s) => <li key={s} className="flex gap-2 text-sm text-ink-2"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />{s}</li>)}</ul></div>
+) : null;
 
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  rows,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  rows: number;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-sm font-semibold text-slate-700">{label}</label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={rows}
-        placeholder={placeholder}
-        className="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-      />
-    </div>
-  );
+export default function StartPage() {
+  return <Suspense fallback={null}><StartInner /></Suspense>;
 }

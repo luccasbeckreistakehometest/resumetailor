@@ -1,40 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "./i18n/I18nProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SupportChat } from "@/components/SupportChat";
+import { Tour } from "@/components/Tour";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["opsz", "SOFT"] });
 
 export const metadata: Metadata = {
-  title: "ResumeTailor — Tailor your resume to any job in 30 seconds",
+  title: "ResumeTailor — Your resume, tailored to the job in 30 seconds",
   description:
-    "Paste a job posting and your resume. Get an AI-rewritten resume tailored to that exact role, plus a matching cover letter. No signup. $9.",
+    "Paste a job posting and your resume, or just talk. Get a resume rewritten for that exact role, a cover letter, a LinkedIn About and interview prep — with a match score that proves it.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${inter.variable} ${fraunces.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
         <I18nProvider>
           <AuthProvider>
             {children}
+            <Tour />
             <SupportChat />
           </AuthProvider>
         </I18nProvider>

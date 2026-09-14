@@ -20,7 +20,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    const t = setTimeout(() => setLoading(true), 0);
     fetch("/api/insights", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -34,9 +34,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; clearTimeout(t); };
   }, [jobDescription]);
 
   // Nothing to show: feature off, or no usable info found.
@@ -46,9 +44,9 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />
+      <div className="rounded-xl border border-edge bg-surface p-4">
+        <div className="flex items-center gap-2 text-sm text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-edge border-t-indigo-600" />
           {d.insights.loading}
         </div>
       </div>
@@ -58,10 +56,10 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
   if (!hasContent) return null;
 
   return (
-    <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-5">
+    <div className="rounded-xl border border-edge bg-gold-2/40 p-5">
       <div className="flex items-center gap-2">
         <span className="text-base">🔎</span>
-        <h3 className="text-sm font-semibold text-slate-800">
+        <h3 className="text-sm font-semibold text-ink">
           {d.insights.title}
           {data?.company ? ` · ${data.company}` : ""}
         </h3>
@@ -69,17 +67,17 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
       {data?.about && (
         <div className="mt-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{d.insights.aboutLabel}</div>
-          <p className="mt-1 text-sm text-slate-700">{data.about}</p>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.aboutLabel}</div>
+          <p className="mt-1 text-sm text-ink-2">{data.about}</p>
         </div>
       )}
 
       {data?.tech && data.tech.length > 0 && (
         <div className="mt-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{d.insights.techLabel}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.techLabel}</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {data.tech.map((t) => (
-              <span key={t} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
+              <span key={t} className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-oxblood ring-1 ring-indigo-200">
                 {t}
               </span>
             ))}
@@ -89,10 +87,10 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
       {data?.interview && data.interview.length > 0 && (
         <div className="mt-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{d.insights.processLabel}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.processLabel}</div>
           <ul className="mt-1 space-y-1">
             {data.interview.map((s) => (
-              <li key={s} className="flex items-start gap-2 text-sm text-slate-700">
+              <li key={s} className="flex items-start gap-2 text-sm text-ink-2">
                 <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-indigo-400" />
                 {s}
               </li>
@@ -103,10 +101,10 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
       {data?.sources && data.sources.length > 0 && (
         <div className="mt-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{d.insights.sourcesLabel}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.sourcesLabel}</div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
             {data.sources.map((s) => (
-              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-indigo-600 underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
+              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-oxblood underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
                 {s.title} ↗
               </a>
             ))}
@@ -114,7 +112,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
         </div>
       )}
 
-      <p className="mt-4 text-[11px] text-slate-400">{d.insights.disclaimer}</p>
+      <p className="mt-4 text-[11px] text-muted">{d.insights.disclaimer}</p>
     </div>
   );
 }

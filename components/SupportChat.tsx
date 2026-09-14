@@ -14,8 +14,8 @@ export function SupportChat() {
     <>
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:right-6">
-          <div className="flex items-center justify-between bg-indigo-600 px-4 py-3 text-white">
+        <div className="fixed bottom-20 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl sm:right-6">
+          <div className="flex items-center justify-between bg-oxblood px-4 py-3 text-white">
             <span className="font-semibold">{d.chat.title}</span>
             <button onClick={() => setOpen(false)} aria-label={d.chat.close} className="text-white/80 hover:text-white">
               ✕
@@ -23,14 +23,14 @@ export function SupportChat() {
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto p-4">
-            <p className="text-sm text-slate-700">{d.chat.greeting}</p>
+            <p className="text-sm text-ink-2">{d.chat.greeting}</p>
 
-            <h4 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">{d.chat.faqTitle}</h4>
+            <h4 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">{d.chat.faqTitle}</h4>
             <div className="mt-2 space-y-2">
               {d.chat.faqs.map((f) => (
-                <details key={f.q} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <summary className="cursor-pointer list-none text-sm font-medium text-slate-800">{f.q}</summary>
-                  <p className="mt-2 text-sm text-slate-600">{f.a}</p>
+                <details key={f.q} className="rounded-lg border border-edge bg-paper p-3">
+                  <summary className="cursor-pointer list-none text-sm font-medium text-ink">{f.q}</summary>
+                  <p className="mt-2 text-sm text-ink-2">{f.a}</p>
                 </details>
               ))}
             </div>
@@ -38,7 +38,7 @@ export function SupportChat() {
             <div className="mt-5 grid grid-cols-1 gap-2">
               <a
                 href={`mailto:${EMAIL}`}
-                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
+                className="rounded-lg bg-oxblood px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-oxblood-2"
               >
                 {d.chat.emailBtn}
               </a>
@@ -47,7 +47,7 @@ export function SupportChat() {
                   href={`https://wa.me/${WHATSAPP}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-emerald-500 px-4 py-2.5 text-center text-sm font-semibold text-emerald-600 hover:bg-emerald-50"
+                  className="rounded-lg border border-emerald-500 px-4 py-2.5 text-center text-sm font-semibold text-moss hover:bg-moss-2"
                 >
                   {d.chat.whatsappBtn}
                 </a>
@@ -61,7 +61,7 @@ export function SupportChat() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={d.chat.openAria}
-        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 sm:right-6"
+        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-oxblood text-white shadow-lg transition hover:bg-oxblood-2 sm:right-6"
       >
         {open ? (
           <span className="text-xl">✕</span>

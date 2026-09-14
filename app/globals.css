@@ -1,27 +1,97 @@
 @import "tailwindcss";
 
+/*
+  ResumeTailor — "Paper & Ink".
+  A résumé is a document, so the product looks like one: warm paper, black ink, an oxblood
+  stamp for the one thing you should press, and a serif with real optical sizing for headings.
+  Deliberately not a dark SaaS gradient. Single committed look; no dark mode.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --paper: #f4efe6;
+  --paper-2: #ece5d8;
+  --surface: #fffdf9;
+  --ink: #1b1713;
+  --ink-2: #3d3630;
+  --muted: #6f655b;
+  --edge: #ddd3c2;
+  --edge-2: #c9bda8;
+  --oxblood: #8a2432;
+  --oxblood-2: #6f1c28;
+  --moss: #2e5d4e;
+  --moss-2: #e4efe9;
+  --gold: #b8862b;
+  --gold-2: #f6ecd6;
+  --shadow: 0 1px 0 rgba(27,23,19,.06), 0 12px 32px -16px rgba(27,23,19,.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-edge: var(--edge);
+  --color-edge-2: var(--edge-2);
+  --color-oxblood: var(--oxblood);
+  --color-oxblood-2: var(--oxblood-2);
+  --color-moss: var(--moss);
+  --color-moss-2: var(--moss-2);
+  --color-gold: var(--gold);
+  --color-gold-2: var(--gold-2);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-fraunces);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* paper grain: two faint noise layers, cheap and print-safe */
+  background-image:
+    radial-gradient(rgba(27,23,19,.035) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
+  background-size: 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 2px;
 }
+
+.font-display { font-family: var(--font-fraunces), Georgia, "Times New Roman", serif; font-variation-settings: "opsz" 144, "SOFT" 30; }
+.eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.rule { height: 1px; background: var(--edge); }
+.stamp {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .7rem; border-radius: 999px;
+  border: 1.5px dashed var(--oxblood); color: var(--oxblood); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; font-weight: 700; transform: rotate(-1.5deg);
+}
+.card { background: var(--surface); border: 1px solid var(--edge); border-radius: 14px; box-shadow: var(--shadow); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 10px; padding: .8rem 1.25rem; font-weight: 600; font-size: 15px; transition: transform .08s ease, background .15s ease, color .15s ease; cursor: pointer; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--oxblood); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--oxblood-2); }
+.btn-ink { background: var(--ink); color: var(--paper); }
+.btn-ink:hover:not(:disabled) { background: #000; }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--edge-2); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface); }
+.field { width: 100%; border: 1px solid var(--edge-2); background: var(--surface); border-radius: 10px; padding: .75rem .9rem; font-size: 15px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s; }
+.field:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(27,23,19,.08); }
+.field::placeholder { color: #a39889; }
+textarea.field { line-height: 1.5; resize: vertical; }
+.ink-underline { background-image: linear-gradient(transparent 62%, var(--gold-2) 62%); }
+.dropcap::first-letter { font-family: var(--font-fraunces), serif; font-size: 3.2em; float: left; line-height: .85; padding-right: .12em; color: var(--oxblood); }
+
+/* Tour spotlight */
+.tour-mask { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+.tour-hole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(27,23,19,.62); transition: all .25s ease; }
+.tour-card { position: fixed; z-index: 91; max-width: 340px; }
+
+/* listening pulse */
+@keyframes pulse-ring { 0% { transform: scale(.9); opacity: .8 } 100% { transform: scale(1.9); opacity: 0 } }
+.pulse::before { content: ""; position: absolute; inset: 0; border-radius: 999px; border: 2px solid var(--oxblood); animation: pulse-ring 1.4s ease-out infinite; }
 
 /* ===== Resume print documents (PDF export) ===== */
 /* ATS / plain — maximally parseable */
@@ -46,7 +116,7 @@ body {
 /* Modern — clean professional, indigo accents */
 .doc-modern {
   color: #1e293b;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.5;
 }
@@ -67,7 +137,7 @@ body {
 /* Elegant — serif headings, refined */
 .doc-elegant {
   color: #1f2937;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.55;
 }
@@ -86,7 +156,7 @@ body {
 /* Compact — tight spacing to fit one page */
 .doc-compact {
   color: #111827;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
   font-size: 9.5pt;
   line-height: 1.32;
 }
@@ -105,7 +175,7 @@ body {
 /* Bold — strong colored header band */
 .doc-bold {
   color: #1e293b;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.5;
 }
@@ -128,7 +198,7 @@ body {
 /* Designed — for printing / handing over in person */
 .doc-designed {
   color: #1e293b;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.5;
 }

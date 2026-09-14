@@ -2,36 +2,31 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { dictionaries, Dict, Lang } from "./dictionaries";
+import { extra, type Extra } from "./extra";
 
-type Ctx = { lang: Lang; d: Dict; setLang: (l: Lang) => void };
-
+type Ctx = { lang: Lang; d: Dict; x: Extra; setLang: (l: Lang) => void };
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
+  // Detected after mount, inside a callback: the server render is always "en" and the swap happens
+  // once the browser can tell us its preference, which keeps hydration clean.
   useEffect(() => {
-    const saved = localStorage.getItem("rt_lang") as Lang | null;
-    if (saved && dictionaries[saved]) {
-      setLangState(saved);
-      return;
-    }
-    // Region default from the browser locale (a good proxy until IP-geo is added).
-    const nav = (navigator.language || "").toLowerCase();
-    const detected: Lang = nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en";
-    setLangState(detected);
+    const id = requestAnimationFrame(() => {
+      const saved = localStorage.getItem("rt_lang") as Lang | null;
+      if (saved && dictionaries[saved]) return setLangState(saved);
+      const nav = (navigator.language || "").toLowerCase();
+      setLangState(nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en");
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
-  const setLang = (l: Lang) => {
-    setLangState(l);
-    try {
-      localStorage.setItem("rt_lang", l);
-    } catch {}
-  };
+  useEffect(() => { document.documentElement.lang = lang === "pt" ? "pt-BR" : lang; }, [lang]);
 
-  return (
-    <I18nContext.Provider value={{ lang, d: dictionaries[lang], setLang }}>{children}</I18nContext.Provider>
-  );
+  const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem("rt_lang", l); } catch {} };
+
+  return <I18nContext.Provider value={{ lang, d: dictionaries[lang], x: extra[lang], setLang }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

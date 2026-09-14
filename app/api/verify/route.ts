@@ -1,23 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { currentUser } from "@/lib/server/session";
+import { settlePayment } from "@/lib/server/payments";
+import { findById, toPublic } from "@/lib/server/users";
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-
-export async function GET(req: NextRequest) {
+/** Success-page fallback for Stripe: if the webhook has not landed yet, settle from the session directly. */
+export async function GET(request: Request) {
+  const user = await currentUser();
+  if (!user) return NextResponse.json({ paid: false }, { status: 401 });
+  const sessionId = new URL(request.url).searchParams.get("session_id");
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!sessionId || !key) return NextResponse.json({ paid: false, user });
   try {
-    const sessionId = req.nextUrl.searchParams.get("session_id");
-    if (!sessionId) {
-      return NextResponse.json({ paid: false, error: "Missing session_id." }, { status: 400 });
+    const s = await new Stripe(key).checkout.sessions.retrieve(sessionId);
+    const paid = s.payment_status === "paid";
+    if (paid && s.metadata?.userId === user.id) {
+      settlePayment({
+        provider: "stripe", externalId: s.id, userId: user.id, pack: s.metadata?.pack ?? "1", credits: Number(s.metadata?.credits ?? 1),
+        amount: (s.amount_total ?? 0) / 100, currency: (s.currency ?? "usd").toUpperCase(), status: "approved",
+      });
     }
-
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const paid = session.payment_status === "paid";
-
-    return NextResponse.json({ paid });
-  } catch (err) {
-    console.error("verify error", err);
-    return NextResponse.json({ paid: false, error: "Verification failed." }, { status: 500 });
+    return NextResponse.json({ paid, user: toPublic(findById(user.id)!) });
+  } catch {
+    return NextResponse.json({ paid: false, user });
   }
 }

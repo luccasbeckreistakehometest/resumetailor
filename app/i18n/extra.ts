@@ -1,0 +1,184 @@
+/**
+ * Copy added with the platform work (voice, tour, accounts, credits, admin). Kept apart from the
+ * original dictionaries so the marketing copy that was written per market stays untouched.
+ * pt is written for Brazil in its own voice, not translated from en.
+ */
+const en = {
+  nav: { pricing: "Pricing", signIn: "Sign in", signOut: "Sign out", account: "Account" },
+  credits: {
+    badge: (n: number) => `${n} credit${n === 1 ? "" : "s"}`,
+    none: "You're out of credits.",
+    buy: "Get credits",
+    unlockWith: "Unlock with 1 credit",
+    firstFree: "Your first kit is free — create an account to unlock it.",
+    unlocked: "Unlocked. Download it, print it, send it.",
+  },
+  auth: {
+    title: "Your kits, saved on the server.",
+    subtitle: "Create an account to keep every version, use credits on any device, and unlock your first kit for free.",
+    signIn: "Sign in", signUp: "Create account", name: "Your name", email: "Email", password: "Password (8+ characters)",
+    toSignUp: "New here? Create an account", toSignIn: "Already have an account? Sign in", working: "One moment…",
+  },
+  choose: {
+    title: "How do you want to tell us about yourself?",
+    subtitle: "Both get you the same kit. Pick whichever feels natural.",
+    talk: { t: "Talk it through", d: "Say who you are and what you're after. We'll listen, ask what's missing, and fill everything in." },
+    type: { t: "Type or paste", d: "Paste your resume and the job posting, or answer a few short questions." },
+    mic: "Uses your microphone. Nothing is recorded — only the text we transcribe.",
+  },
+  voice: {
+    title: "Tell me about you", subtitle: "Talk like you would to a friend who's helping with your résumé.",
+    opener: "Hi. Tell me what role you're going for, and a bit about your background — studies, work, what you're good at. Take your time.",
+    start: "Start talking", stop: "I'm done", listening: "Listening…", thinking: "Understanding…", again: "Add more",
+    unsupported: "Your browser can't do speech recognition. Chrome, Edge or Safari can — or type instead.",
+    denied: "Microphone access was blocked. Allow it in the address bar, or type instead.",
+    heard: "What I heard", understood: "What I understood", missing: "Still need", ready: "I have what I need.",
+    useIt: "Looks right — build my kit", edit: "Let me fix something", typeInstead: "Type instead",
+    resumeNeeded: "You mentioned you have a resume — paste it below so I can work from the real thing.",
+    jobNeeded: "Paste the job posting you're applying to.",
+    modeLabel: { tailor: "Tailor to a job", improve: "Improve my resume", build: "Build my first resume", unknown: "Not sure yet" },
+    levelLabel: { student: "Student / first job", entry: "Entry level", mid: "Mid level", senior: "Senior", unknown: "—" },
+    fields: { mode: "Mode", level: "Level", targetRole: "Target role", education: "Education", experience: "Experience", skills: "Skills", achievements: "Achievements" },
+  },
+  tour: {
+    skip: "Skip", next: "Next", back: "Back", done: "Got it", welcome: "Welcome — a 40-second tour?", start: "Show me", later: "Later",
+    steps: [
+      { t: "Start here", b: "One button, one kit: resume, cover letter, LinkedIn About and interview prep, tailored to a job." },
+      { t: "Talk or type", b: "You can describe yourself out loud and we fill in the form — or paste your resume and the job posting." },
+      { t: "Your credits", b: "Previews are free. One credit unlocks one full kit. Your first credit is on us when you create an account." },
+      { t: "Everything you make lives here", b: "Every kit is saved to your account: rename, reopen, print in five templates, re-tailor for the next job." },
+    ],
+  },
+  library: { open: "Open", print: "Print / PDF", locked: "Preview", unlocked: "Unlocked", voice: "by voice", empty: "Nothing here yet — your kits will appear the moment you make one." },
+  success: {
+    checking: "Confirming your payment…", paid: "Payment confirmed.", pending: "Payment pending — Pix and boleto can take a few minutes. Your credits arrive automatically.",
+    credits: (n: number) => `You now have ${n} credit${n === 1 ? "" : "s"}.`, failed: "We couldn't confirm the payment.", toLibrary: "Go to my kits", again: "Make another",
+  },
+  admin: {
+    title: "Admin", users: "Users", generations: "Kits", unlocked: "Unlocked", voice: "By voice", revenue: "Revenue", aiCost: "AI cost",
+    tours: "Tours completed", recent: "Recent kits", payments: "Payments", onboarding: "First sessions", grant: "Grant", credits: "Credits",
+    email: "Email", when: "When", mode: "Mode", match: "Match", status: "Status", provider: "Provider", amount: "Amount", events: "events", forbidden: "Admins only.",
+  },
+  errors: { generic: "Something went wrong. Please try again.", aiOff: "The AI service isn't configured on this server yet." },
+};
+
+const pt: typeof en = {
+  nav: { pricing: "Planos", signIn: "Entrar", signOut: "Sair", account: "Conta" },
+  credits: {
+    badge: (n: number) => `${n} crédito${n === 1 ? "" : "s"}`,
+    none: "Seus créditos acabaram.",
+    buy: "Comprar créditos",
+    unlockWith: "Liberar com 1 crédito",
+    firstFree: "O primeiro kit é por nossa conta — crie sua conta pra liberar.",
+    unlocked: "Liberado. Baixa, imprime, manda.",
+  },
+  auth: {
+    title: "Seus kits guardados no servidor.",
+    subtitle: "Com conta, cada versão fica salva, os créditos valem em qualquer aparelho e o primeiro kit sai de graça.",
+    signIn: "Entrar", signUp: "Criar conta", name: "Seu nome", email: "E-mail", password: "Senha (mínimo 8 caracteres)",
+    toSignUp: "Primeira vez aqui? Crie sua conta", toSignIn: "Já tem conta? Entrar", working: "Só um instante…",
+  },
+  choose: {
+    title: "Como você prefere contar sua história?",
+    subtitle: "Os dois caminhos dão o mesmo kit. Vai no que for mais natural pra você.",
+    talk: { t: "Falando", d: "Conta quem você é e o que busca. A gente escuta, pergunta o que faltar e preenche tudo." },
+    type: { t: "Digitando ou colando", d: "Cola seu currículo e a vaga, ou responde umas perguntas rápidas." },
+    mic: "Usa o microfone. Nada é gravado — só o texto que a gente transcreve.",
+  },
+  voice: {
+    title: "Me conta sobre você", subtitle: "Fala como falaria com um amigo que tá te ajudando com o currículo.",
+    opener: "Oi. Me diz qual vaga você quer, e um pouco da sua história — o que estudou, onde trabalhou, no que você é bom. Sem pressa.",
+    start: "Começar a falar", stop: "Terminei", listening: "Ouvindo…", thinking: "Entendendo…", again: "Falar mais",
+    unsupported: "Seu navegador não faz reconhecimento de voz. Chrome, Edge ou Safari fazem — ou digita, se preferir.",
+    denied: "O microfone foi bloqueado. Libera na barra de endereço, ou digita no lugar.",
+    heard: "O que eu ouvi", understood: "O que eu entendi", missing: "Ainda falta", ready: "Tenho o que preciso.",
+    useIt: "Tá certo — monta meu kit", edit: "Quero corrigir algo", typeInstead: "Prefiro digitar",
+    resumeNeeded: "Você disse que tem currículo — cola ele aqui embaixo pra eu trabalhar em cima do real.",
+    jobNeeded: "Cola a vaga que você vai se candidatar.",
+    modeLabel: { tailor: "Ajustar pra uma vaga", improve: "Melhorar meu currículo", build: "Fazer meu primeiro currículo", unknown: "Ainda não sei" },
+    levelLabel: { student: "Estudante / primeiro emprego", entry: "Início de carreira", mid: "Pleno", senior: "Sênior", unknown: "—" },
+    fields: { mode: "Objetivo", level: "Nível", targetRole: "Vaga desejada", education: "Formação", experience: "Experiência", skills: "Habilidades", achievements: "Conquistas" },
+  },
+  tour: {
+    skip: "Pular", next: "Próximo", back: "Voltar", done: "Entendi", welcome: "Bem-vindo — um tour de 40 segundos?", start: "Bora", later: "Depois",
+    steps: [
+      { t: "Começa aqui", b: "Um botão, um kit: currículo, carta, Sobre do LinkedIn e preparação pra entrevista, tudo ajustado pra vaga." },
+      { t: "Falando ou digitando", b: "Dá pra contar sua história em voz alta e a gente preenche — ou colar currículo e vaga." },
+      { t: "Seus créditos", b: "Ver a nota é de graça. Um crédito libera um kit completo. O primeiro é por nossa conta quando você cria a conta." },
+      { t: "Tudo que você fizer fica aqui", b: "Cada kit fica salvo na sua conta: renomeia, reabre, imprime em cinco modelos, reajusta pra próxima vaga." },
+    ],
+  },
+  library: { open: "Abrir", print: "Imprimir / PDF", locked: "Prévia", unlocked: "Liberado", voice: "por voz", empty: "Nada aqui ainda — seus kits aparecem assim que você fizer o primeiro." },
+  success: {
+    checking: "Confirmando o pagamento…", paid: "Pagamento confirmado.", pending: "Pagamento pendente — Pix e boleto podem levar alguns minutos. Os créditos entram sozinhos.",
+    credits: (n: number) => `Você tem ${n} crédito${n === 1 ? "" : "s"} agora.`, failed: "Não conseguimos confirmar o pagamento.", toLibrary: "Ver meus kits", again: "Fazer outro",
+  },
+  admin: {
+    title: "Admin", users: "Usuários", generations: "Kits", unlocked: "Liberados", voice: "Por voz", revenue: "Receita", aiCost: "Custo de IA",
+    tours: "Tours concluídos", recent: "Kits recentes", payments: "Pagamentos", onboarding: "Primeiras sessões", grant: "Conceder", credits: "Créditos",
+    email: "E-mail", when: "Quando", mode: "Modo", match: "Nota", status: "Status", provider: "Meio", amount: "Valor", events: "eventos", forbidden: "Só admin.",
+  },
+  errors: { generic: "Deu algo errado. Tenta de novo.", aiOff: "A IA ainda não está configurada neste servidor." },
+};
+
+const es: typeof en = {
+  nav: { pricing: "Precios", signIn: "Entrar", signOut: "Salir", account: "Cuenta" },
+  credits: {
+    badge: (n: number) => `${n} crédito${n === 1 ? "" : "s"}`,
+    none: "Te quedaste sin créditos.",
+    buy: "Comprar créditos",
+    unlockWith: "Desbloquear con 1 crédito",
+    firstFree: "Tu primer kit es gratis — crea una cuenta para desbloquearlo.",
+    unlocked: "Desbloqueado. Descárgalo, imprímelo, envíalo.",
+  },
+  auth: {
+    title: "Tus kits, guardados en el servidor.",
+    subtitle: "Con cuenta conservas cada versión, usas créditos en cualquier dispositivo y tu primer kit es gratis.",
+    signIn: "Entrar", signUp: "Crear cuenta", name: "Tu nombre", email: "Email", password: "Contraseña (8+ caracteres)",
+    toSignUp: "¿Nuevo aquí? Crea una cuenta", toSignIn: "¿Ya tienes cuenta? Entra", working: "Un momento…",
+  },
+  choose: {
+    title: "¿Cómo prefieres contarnos sobre ti?",
+    subtitle: "Ambos caminos dan el mismo kit. Elige el que te resulte natural.",
+    talk: { t: "Hablando", d: "Cuéntanos quién eres y qué buscas. Escuchamos, preguntamos lo que falte y lo completamos todo." },
+    type: { t: "Escribiendo o pegando", d: "Pega tu CV y la oferta, o responde unas preguntas cortas." },
+    mic: "Usa tu micrófono. No se graba nada — solo el texto que transcribimos.",
+  },
+  voice: {
+    title: "Cuéntame sobre ti", subtitle: "Habla como con un amigo que te ayuda con el CV.",
+    opener: "Hola. Dime qué puesto buscas y un poco de tu historia — qué estudiaste, dónde trabajaste, en qué eres bueno. Con calma.",
+    start: "Empezar a hablar", stop: "Terminé", listening: "Escuchando…", thinking: "Entendiendo…", again: "Agregar más",
+    unsupported: "Tu navegador no reconoce voz. Chrome, Edge o Safari sí — o escribe en su lugar.",
+    denied: "El micrófono fue bloqueado. Permítelo en la barra de direcciones, o escribe.",
+    heard: "Lo que escuché", understood: "Lo que entendí", missing: "Aún falta", ready: "Tengo lo que necesito.",
+    useIt: "Está bien — arma mi kit", edit: "Quiero corregir algo", typeInstead: "Prefiero escribir",
+    resumeNeeded: "Dijiste que tienes CV — pégalo abajo para trabajar sobre el real.",
+    jobNeeded: "Pega la oferta a la que postulas.",
+    modeLabel: { tailor: "Ajustar a una oferta", improve: "Mejorar mi CV", build: "Crear mi primer CV", unknown: "Aún no sé" },
+    levelLabel: { student: "Estudiante / primer empleo", entry: "Junior", mid: "Semi senior", senior: "Senior", unknown: "—" },
+    fields: { mode: "Objetivo", level: "Nivel", targetRole: "Puesto objetivo", education: "Formación", experience: "Experiencia", skills: "Habilidades", achievements: "Logros" },
+  },
+  tour: {
+    skip: "Saltar", next: "Siguiente", back: "Atrás", done: "Listo", welcome: "Bienvenido — ¿un tour de 40 segundos?", start: "Vamos", later: "Luego",
+    steps: [
+      { t: "Empieza aquí", b: "Un botón, un kit: CV, carta, About de LinkedIn y preparación de entrevista, ajustados a la oferta." },
+      { t: "Hablando o escribiendo", b: "Puedes contar tu historia en voz alta y lo completamos — o pegar tu CV y la oferta." },
+      { t: "Tus créditos", b: "Ver el puntaje es gratis. Un crédito desbloquea un kit completo. El primero va por nuestra cuenta al crear la cuenta." },
+      { t: "Todo lo que hagas vive aquí", b: "Cada kit queda guardado en tu cuenta: renombra, reabre, imprime en cinco plantillas, reajusta para la próxima." },
+    ],
+  },
+  library: { open: "Abrir", print: "Imprimir / PDF", locked: "Vista previa", unlocked: "Desbloqueado", voice: "por voz", empty: "Nada aún — tus kits aparecen en cuanto hagas el primero." },
+  success: {
+    checking: "Confirmando el pago…", paid: "Pago confirmado.", pending: "Pago pendiente — puede tardar unos minutos. Los créditos llegan solos.",
+    credits: (n: number) => `Ahora tienes ${n} crédito${n === 1 ? "" : "s"}.`, failed: "No pudimos confirmar el pago.", toLibrary: "Ver mis kits", again: "Hacer otro",
+  },
+  admin: {
+    title: "Admin", users: "Usuarios", generations: "Kits", unlocked: "Desbloqueados", voice: "Por voz", revenue: "Ingresos", aiCost: "Costo de IA",
+    tours: "Tours completados", recent: "Kits recientes", payments: "Pagos", onboarding: "Primeras sesiones", grant: "Otorgar", credits: "Créditos",
+    email: "Email", when: "Cuándo", mode: "Modo", match: "Puntaje", status: "Estado", provider: "Medio", amount: "Monto", events: "eventos", forbidden: "Solo admins.",
+  },
+  errors: { generic: "Algo salió mal. Inténtalo de nuevo.", aiOff: "La IA aún no está configurada en este servidor." },
+};
+
+export type Extra = typeof en;
+export const extra: Record<"en" | "pt" | "es", Extra> = { en, pt, es };
