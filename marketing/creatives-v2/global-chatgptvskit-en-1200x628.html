@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ResumeTailor — Text vs Kit (EN)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; justify-content:center; align-items:center; background:#222; min-height:100vh; }
+  .creative {
+    position:relative; width:1200px; height:628px; overflow:hidden;
+    background:
+      radial-gradient(700px 500px at 85% 110%, rgba(99,102,241,.28), transparent 60%),
+      #0b0b14;
+    font-family:'Plus Jakarta Sans', sans-serif; color:#f8fafc;
+  }
+  .pad { position:absolute; inset:0; padding:48px 56px 46px; display:flex; flex-direction:column; }
+  .top { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#4f46e5);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:24px; box-shadow:0 10px 26px rgba(79,70,229,.5); }
+  .brand b { font-size:22px; font-weight:800; letter-spacing:-.3px; }
+  .pill { font-family:'Space Grotesk'; font-weight:500; font-size:15px; letter-spacing:1px; text-transform:uppercase;
+    color:#c7d2fe; padding:8px 15px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); }
+
+  h1 { margin-top:18px; font-size:50px; line-height:1; font-weight:800; letter-spacing:-1.4px; }
+  h1 .hl { color:#10b981; }
+  h1 .dim { color:#64748b; }
+
+  .compare { margin-top:24px; flex:1; display:flex; align-items:stretch; gap:26px; }
+  /* LEFT: generic chat text */
+  .col { flex:1; border-radius:18px; padding:24px 24px 22px; position:relative; display:flex; flex-direction:column; }
+  .col.gen { background:#13131c; border:1px solid rgba(255,255,255,.08); }
+  .col .ctag { font-family:'Space Grotesk'; font-weight:700; font-size:16px; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .gen .ctag { color:#94a3b8; }
+  .bubble { background:#1d1d29; border:1px solid rgba(255,255,255,.07); border-radius:14px; border-top-left-radius:4px;
+    padding:16px 16px; }
+  .bubble .ln { height:8px; border-radius:4px; background:#33333f; margin-bottom:10px; }
+  .bubble .ln.l{width:100%;} .bubble .ln.m{width:82%;} .bubble .ln.s{width:60%;}
+  .gen-note { margin-top:auto; font-size:16px; color:#64748b; display:flex; align-items:center; gap:8px; }
+
+  .vs { align-self:center; flex:none; font-family:'Space Grotesk'; font-weight:700; font-size:26px; color:#475569;
+    width:54px; height:54px; border-radius:50%; background:#13131c; border:1px solid rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:center; }
+
+  /* RIGHT: hired-ready kit */
+  .col.kit { background:linear-gradient(180deg,#16161f,#101019); border:1px solid rgba(16,185,129,.4);
+    box-shadow:0 0 50px rgba(16,185,129,.18); }
+  .kit .ctag { color:#34d399; }
+  .kititems { display:flex; gap:12px; margin-bottom:16px; }
+  .ki { flex:1; background:#fff; border-radius:11px; padding:13px 11px; position:relative; box-shadow:0 12px 26px rgba(0,0,0,.4); }
+  .ki .h { height:8px; width:70%; border-radius:4px; background:#4f46e5; margin-bottom:9px; }
+  .ki .l { height:6px; border-radius:3px; background:#e2e8f0; margin-bottom:6px; }
+  .ki .l.hl { background:#bbf7d0; }
+  .ki .kn { position:absolute; bottom:8px; left:11px; font-size:11px; font-weight:800; color:#64748b; letter-spacing:.5px; text-transform:uppercase; }
+  .ki { padding-bottom:30px; }
+  .kit .badge { margin-top:auto; display:inline-flex; align-self:flex-start; align-items:center; gap:9px;
+    background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.45); color:#6ee7b7; border-radius:999px;
+    padding:9px 16px; font-family:'Space Grotesk'; font-weight:700; font-size:16px; }
+  .badge .pulse { width:9px; height:9px; border-radius:50%; background:#10b981; box-shadow:0 0 12px #10b981; }
+
+  .footer { margin-top:20px; display:flex; align-items:center; gap:20px; }
+  .cta { display:inline-flex; align-items:center; gap:11px; padding:17px 30px; border-radius:15px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); font-size:22px; font-weight:800; letter-spacing:-.3px;
+    box-shadow:0 14px 36px rgba(79,70,229,.55); }
+  .price { font-size:16px; color:#94a3b8; }
+  .price b { color:#fff; font-family:'Space Grotesk'; font-weight:700; font-size:22px; }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="pad">
+      <div class="top">
+        <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+        <div class="pill">Tailored · ATS-ready · ~30s</div>
+      </div>
+
+      <h1><span class="dim">A chatbot gives you text.</span><br>We give you a <span class="hl">hired-ready kit.</span></h1>
+
+      <div class="compare">
+        <div class="col gen">
+          <div class="ctag">◷ Generic AI</div>
+          <div class="bubble">
+            <div class="ln l"></div><div class="ln m"></div><div class="ln l"></div><div class="ln s"></div><div class="ln m"></div>
+          </div>
+          <div class="gen-note">↳ A wall of text. Still your job to format & match.</div>
+        </div>
+
+        <div class="vs">vs</div>
+
+        <div class="col kit">
+          <div class="ctag">✦ ResumeTailor</div>
+          <div class="kititems">
+            <div class="ki"><div class="h"></div><div class="l hl"></div><div class="l"></div><div class="l"></div><div class="kn">Resume</div></div>
+            <div class="ki"><div class="h"></div><div class="l"></div><div class="l hl"></div><div class="l"></div><div class="kn">Cover letter</div></div>
+            <div class="ki"><div class="h"></div><div class="l"></div><div class="l"></div><div class="l hl"></div><div class="kn">LinkedIn</div></div>
+          </div>
+          <div class="badge"><span class="pulse"></span> Match 38% → 91% · keywords in place</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="cta">Get my kit →</div>
+        <div class="price">One-time <b>$9</b> · no subscription · 3 docs</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

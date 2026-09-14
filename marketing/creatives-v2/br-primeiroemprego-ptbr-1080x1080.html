@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>ResumeTailor — Primeiro Emprego (BR)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; justify-content:center; align-items:center; background:#222; min-height:100vh; }
+  .creative {
+    position:relative; width:1080px; height:1080px; overflow:hidden;
+    background:
+      radial-gradient(900px 600px at 50% -10%, #eef2ff, transparent 55%),
+      linear-gradient(180deg,#f8fafc, #eaecf5);
+    font-family:'Plus Jakarta Sans', sans-serif; color:#0b0b14;
+  }
+  .pad { position:absolute; inset:0; padding:74px 72px 64px; display:flex; flex-direction:column; }
+  .top { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:13px; }
+  .logo { width:46px; height:46px; border-radius:13px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:26px; box-shadow:0 10px 24px rgba(79,70,229,.4); }
+  .brand b { font-size:24px; font-weight:800; letter-spacing:-.3px; }
+  .pill { font-family:'Space Grotesk'; font-weight:500; font-size:17px; letter-spacing:1px; text-transform:uppercase;
+    color:#4f46e5; padding:9px 16px; border-radius:999px; background:#fff; border:1px solid #e2e8f0; box-shadow:0 4px 14px rgba(2,6,23,.05); }
+
+  h1 { margin-top:40px; font-size:76px; line-height:.97; font-weight:800; letter-spacing:-2px; max-width:760px; }
+  h1 .hl { color:#4f46e5; }
+  .sub { margin-top:22px; font-size:28px; line-height:1.4; color:#475569; font-weight:500; max-width:720px; }
+  .sub b { color:#0b0b14; font-weight:800; }
+
+  .stage { margin-top:auto; margin-bottom:30px; display:flex; align-items:center; justify-content:center; gap:46px; }
+  .sheet { width:320px; height:404px; border-radius:18px; background:#fff; box-shadow:0 30px 60px rgba(2,6,23,.14);
+    padding:30px 28px; position:relative; }
+  /* empty sheet */
+  .sheet.empty { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:18px;
+    border:2px dashed #cbd5e1; box-shadow:0 20px 40px rgba(2,6,23,.08); transform:rotate(-4deg); }
+  .sheet.empty .q { font-family:'Space Grotesk'; font-weight:700; font-size:120px; color:#e2e8f0; line-height:1; }
+  .sheet.empty .et { font-size:21px; color:#94a3b8; font-weight:600; }
+  .empty-tag { position:absolute; top:-16px; left:50%; transform:translateX(-50%); background:#fee2e2; color:#b91c1c;
+    font-size:17px; font-weight:700; padding:7px 16px; border-radius:999px; white-space:nowrap; }
+
+  .arrow { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .arrow .a { font-family:'Space Grotesk'; font-weight:700; font-size:58px; color:#4f46e5; }
+  .arrow .t { font-size:18px; font-weight:700; color:#4f46e5; letter-spacing:1px; text-transform:uppercase; }
+
+  /* built sheet */
+  .sheet.built { transform:rotate(3deg); border-top:6px solid #4f46e5; }
+  .built .name { font-family:'Space Grotesk'; font-weight:700; font-size:26px; }
+  .built .role { font-size:16px; color:#4f46e5; font-weight:700; margin-bottom:16px; }
+  .built .sect { font-size:13px; font-weight:800; color:#64748b; letter-spacing:1.5px; text-transform:uppercase; margin:16px 0 8px; }
+  .built .ln { height:8px; border-radius:4px; background:#e2e8f0; margin-bottom:9px; }
+  .built .ln.l{width:100%;} .built .ln.m{width:80%;} .built .ln.s{width:55%;}
+  .built .ln.hl{ background:#c7d2fe; }
+  .built .skills { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .built .sk { font-size:12px; font-weight:700; color:#3730a3; background:#eef2ff; padding:5px 9px; border-radius:7px; }
+  .built-tag { position:absolute; top:-16px; left:50%; transform:translateX(-50%); background:#10b981; color:#fff;
+    font-size:17px; font-weight:700; padding:7px 16px; border-radius:999px; white-space:nowrap; box-shadow:0 8px 20px rgba(16,185,129,.4); }
+
+  .footer { display:flex; align-items:center; justify-content:space-between; }
+  .cta { display:inline-flex; align-items:center; gap:13px; padding:26px 40px; border-radius:18px; color:#fff;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); font-size:29px; font-weight:800; letter-spacing:-.3px;
+    box-shadow:0 18px 44px rgba(79,70,229,.4); }
+  .price { text-align:right; }
+  .price .big { font-family:'Space Grotesk'; font-weight:700; font-size:50px; }
+  .price .lbl { font-size:18px; color:#64748b; }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="pad">
+      <div class="top">
+        <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+        <div class="pill">Primeiro emprego</div>
+      </div>
+
+      <h1>Sem experiência?<br>A gente monta seu <span class="hl">primeiro currículo.</span></h1>
+      <p class="sub">Responda umas perguntas e a IA transforma curso, projetos e estágio num currículo <b>pronto pra vaga</b>.</p>
+
+      <div class="stage">
+        <div class="sheet empty">
+          <div class="empty-tag">página em branco</div>
+          <div class="q">?</div>
+          <div class="et">não sei o que escrever</div>
+        </div>
+
+        <div class="arrow">
+          <div class="a">→</div>
+          <div class="t">~30s</div>
+        </div>
+
+        <div class="sheet built">
+          <div class="built-tag">pronto pra enviar</div>
+          <div class="name">Ana Souza</div>
+          <div class="role">Auxiliar Administrativo</div>
+          <div class="sect">Objetivo</div>
+          <div class="ln l"></div><div class="ln m"></div>
+          <div class="sect">Experiência & Projetos</div>
+          <div class="ln l hl"></div><div class="ln m"></div><div class="ln s"></div>
+          <div class="sect">Competências</div>
+          <div class="skills"><span class="sk">Excel</span><span class="sk">Organização</span><span class="sk">Atendimento</span><span class="sk">Pacote Office</span></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="cta">Montar meu currículo <span>→</span></div>
+        <div class="price"><div class="big">R$39</div><div class="lbl">pagamento único</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

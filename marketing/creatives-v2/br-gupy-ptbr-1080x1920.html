@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>ResumeTailor — Barrado pela Gupy Story (BR)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; justify-content:center; align-items:center; background:#222; min-height:100vh; }
+  .creative {
+    position:relative; width:1080px; height:1920px; overflow:hidden;
+    background:
+      radial-gradient(900px 600px at 50% 14%, rgba(99,102,241,.30), transparent 60%),
+      radial-gradient(800px 700px at 50% 100%, rgba(16,185,129,.18), transparent 55%),
+      #0b0b14;
+    font-family:'Plus Jakarta Sans', sans-serif; color:#f8fafc;
+  }
+  .pad { position:absolute; inset:0; padding:110px 84px 100px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .brand { display:flex; align-items:center; gap:14px; }
+  .logo { width:54px; height:54px; border-radius:15px; background:linear-gradient(135deg,#6366f1,#4f46e5);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:30px; box-shadow:0 12px 30px rgba(79,70,229,.55); }
+  .brand b { font-size:30px; font-weight:800; letter-spacing:-.3px; }
+  .pill { margin-top:50px; display:inline-flex; align-items:center; gap:11px; padding:13px 24px; border-radius:999px;
+    background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4);
+    font-family:'Space Grotesk'; font-weight:500; font-size:22px; letter-spacing:1.5px; text-transform:uppercase; color:#fca5a5; }
+  .dot { width:11px; height:11px; border-radius:50%; background:#ef4444; box-shadow:0 0 14px #ef4444; }
+
+  h1 { margin-top:36px; font-size:90px; line-height:.96; font-weight:800; letter-spacing:-2.5px; }
+  h1 .gupy { color:#10b981; }
+
+  /* funnel: resume -> robot filter -> approved */
+  .funnel { margin-top:64px; position:relative; width:620px; height:760px; }
+  /* incoming resume */
+  .doc { position:absolute; left:50%; transform:translateX(-50%); width:230px; border-radius:16px; background:#fff;
+    padding:26px 24px; box-shadow:0 24px 60px rgba(0,0,0,.5); }
+  .doc .ln { height:11px; border-radius:6px; background:#e2e8f0; margin-bottom:15px; }
+  .doc .ln.s{width:50%;} .doc .ln.m{width:78%;} .doc .ln.l{width:100%;}
+  .doc.top-doc { top:0; }
+  .doc.top-doc .stamp { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-12deg);
+    color:#ef4444; border:5px solid #ef4444; border-radius:12px; padding:8px 18px; font-family:'Space Grotesk';
+    font-weight:700; font-size:30px; letter-spacing:2px; background:rgba(255,255,255,.85); }
+
+  /* the Gupy robot/filter */
+  .robot { position:absolute; left:50%; top:286px; transform:translateX(-50%); width:340px; height:200px;
+    border-radius:28px; background:linear-gradient(165deg,#1d1d2b,#111119); border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 24px 50px rgba(0,0,0,.55); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+  .robot:before { content:""; position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:5px; height:24px; background:#475569; }
+  .robot:after { content:""; position:absolute; top:-42px; left:50%; transform:translateX(-50%); width:18px; height:18px; border-radius:50%; background:#6366f1; box-shadow:0 0 20px #6366f1; }
+  .eyes { display:flex; gap:34px; }
+  .eye { width:42px; height:42px; border-radius:50%; background:#6366f1; box-shadow:0 0 22px #6366f1; }
+  .rlabel { font-family:'Space Grotesk'; font-weight:700; font-size:24px; letter-spacing:3px; color:#94a3b8; text-transform:uppercase; }
+  /* scan beams */
+  .beam { position:absolute; left:50%; top:236px; width:300px; height:54px; transform:translateX(-50%);
+    background:linear-gradient(180deg, rgba(99,102,241,.4), transparent); border-radius:8px; }
+
+  /* approved resume */
+  .doc.bot-doc { bottom:0; border:2px solid #10b981; box-shadow:0 0 60px rgba(16,185,129,.35); }
+  .doc.bot-doc .ln { background:#bbf7d0; }
+  .doc.bot-doc .ln.hl { background:#10b981; }
+  .doc.bot-doc .stamp { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(8deg);
+    color:#0a2a20; border:5px solid #10b981; border-radius:12px; padding:8px 18px; font-family:'Space Grotesk';
+    font-weight:700; font-size:30px; letter-spacing:2px; background:rgba(16,185,129,.92); }
+  .conn { position:absolute; left:50%; transform:translateX(-50%); width:5px; background:linear-gradient(180deg,#6366f1,#10b981); }
+  .conn.up { top:248px; height:38px; }
+  .conn.down { top:486px; height:48px; }
+
+  .sub { margin-top:60px; font-size:38px; line-height:1.4; color:#cbd5e1; font-weight:500; max-width:820px; }
+  .sub b { color:#fff; font-weight:800; }
+
+  .footer { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:24px; }
+  .cta { display:inline-flex; align-items:center; gap:16px; padding:34px 60px; border-radius:22px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); font-size:42px; font-weight:800; letter-spacing:-.4px;
+    box-shadow:0 24px 60px rgba(79,70,229,.6); }
+  .price { font-size:28px; color:#94a3b8; }
+  .price b { color:#fff; font-family:'Space Grotesk'; font-weight:700; font-size:36px; }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="pad">
+      <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+      <div class="pill"><span class="dot"></span> Triagem automática · Gupy</div>
+      <h1>Parou na <span class="gupy">Gupy</span><br>de novo?</h1>
+
+      <div class="funnel">
+        <div class="doc top-doc">
+          <div class="ln l"></div><div class="ln m"></div><div class="ln s"></div><div class="ln l"></div>
+          <span class="stamp">BARRADO</span>
+        </div>
+        <div class="conn up"></div>
+        <div class="beam"></div>
+        <div class="robot">
+          <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+          <div class="rlabel">Filtro de palavras-chave</div>
+        </div>
+        <div class="conn down"></div>
+        <div class="doc bot-doc">
+          <div class="ln l hl"></div><div class="ln m"></div><div class="ln l hl"></div><div class="ln s"></div>
+          <span class="stamp">APROVADO</span>
+        </div>
+      </div>
+
+      <p class="sub">A gente lê a vaga e reescreve seu currículo com as <b>palavras-chave certas</b> pra passar na triagem — em ~30s.</p>
+
+      <div class="footer">
+        <div class="cta">Adaptar pra Gupy <span>→</span></div>
+        <div class="price">Pagamento único <b>R$39</b> · sem assinatura</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

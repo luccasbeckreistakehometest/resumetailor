@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResumeTailor — Ad Creatives Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #0f172a; padding: 56px 40px 80px; }
+  header { max-width: 1200px; margin: 0 auto 48px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #6366f1); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(79,70,229,.3); }
+  .logo-mark svg { width: 24px; height: 24px; }
+  .brand-name { font-weight: 800; font-size: 24px; letter-spacing: -.5px; }
+  .brand-name span { color: #4f46e5; }
+  h1 { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; margin-top: 28px; }
+  .lede { font-size: 18px; color: #475569; margin-top: 10px; max-width: 680px; line-height: 1.5; }
+
+  .grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 32px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,.06); display: flex; flex-direction: column; }
+  .frame { background: #e2e8f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  /* iframe scaled down to thumbnail; wrapper sets aspect via padding */
+  .thumb { position: relative; width: 100%; background: #e2e8f0; }
+  .thumb iframe { border: 0; transform-origin: top left; position: absolute; top: 0; left: 0; }
+
+  /* square 1080x1080 -> scaled to 340 wide => factor .3148 => height 340 */
+  .sq .thumb { padding-top: 100%; }
+  .sq iframe { width: 1080px; height: 1080px; transform: scale(.3148); }
+  /* story 1080x1920 -> 340 wide => factor .3148 => height ~604 */
+  .st .thumb { padding-top: 177.78%; }
+  .st iframe { width: 1080px; height: 1920px; transform: scale(.3148); }
+  /* landscape 1200x628 -> 340 wide => factor .2833 => height ~177.8 */
+  .ls .thumb { padding-top: 52.33%; }
+  .ls iframe { width: 1200px; height: 628px; transform: scale(.2833); }
+
+  .meta { padding: 18px 20px 20px; }
+  .label { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+  .dims { font-size: 13px; font-weight: 700; color: #4f46e5; background: #eef2ff; padding: 4px 10px; border-radius: 999px; display: inline-block; margin-top: 8px; }
+  .angle { font-size: 14px; color: #64748b; margin-top: 10px; line-height: 1.4; }
+  .open { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 700; color: #4f46e5; text-decoration: none; }
+  .open:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="#fff" stroke-width="1.8"/><path d="M13 3v5h5" stroke="#fff" stroke-width="1.8"/><path d="M8.5 13.5l2.2 2.2 4.3-4.6" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="brand-name">Resume<span>Tailor</span></div>
+    </div>
+    <h1>Ad Creatives Gallery</h1>
+    <p class="lede">Six static, export-ready ad templates. Click any creative to open it at full pixel size, then screenshot/export to PNG. See <strong>README.md</strong> for export and copy-swap instructions.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card sq">
+      <div class="thumb"><iframe src="square-1080-matchscore.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">Match Score (hero)</div>
+        <span class="dims">1080 × 1080</span>
+        <p class="angle">Leads with the 38% → 91% match-score wow. Best all-purpose feed creative.</p>
+        <a class="open" href="square-1080-matchscore.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+
+    <div class="card st">
+      <div class="thumb"><iframe src="story-1080x1920-jobseeker.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">Job Seeker (story)</div>
+        <span class="dims">1080 × 1920</span>
+        <p class="angle">Vertical IG/TikTok story. Big circular match gauge + bottom CTA.</p>
+        <a class="open" href="story-1080x1920-jobseeker.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+
+    <div class="card ls">
+      <div class="thumb"><iframe src="landscape-1200x628-vs-chatgpt.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">ChatGPT vs ResumeTailor</div>
+        <span class="dims">1200 × 628</span>
+        <p class="angle">Landscape comparison. Great for link ads / Twitter / LinkedIn.</p>
+        <a class="open" href="landscape-1200x628-vs-chatgpt.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+
+    <div class="card sq">
+      <div class="thumb"><iframe src="square-1080-firstjob.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">First Job / No Experience</div>
+        <span class="dims">1080 × 1080</span>
+        <p class="angle">"No experience? Build your first resume." 3-step framing.</p>
+        <a class="open" href="square-1080-firstjob.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+
+    <div class="card st">
+      <div class="thumb"><iframe src="story-1080x1920-careerchange.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">Career Change (story)</div>
+        <span class="dims">1080 × 1920</span>
+        <p class="angle">"Same you. New industry." Role-to-role swap visual.</p>
+        <a class="open" href="story-1080x1920-careerchange.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+
+    <div class="card sq">
+      <div class="thumb"><iframe src="square-1080-physical-digital.html" scrolling="no" tabindex="-1"></iframe></div>
+      <div class="meta">
+        <div class="label">ATS + In-Person</div>
+        <span class="dims">1080 × 1080</span>
+        <p class="angle">"One for the robots, one to hand over in person." Two-version angle.</p>
+        <a class="open" href="square-1080-physical-digital.html" target="_blank">Open full size →</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

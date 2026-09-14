@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -12,15 +12,156 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Resume print documents (PDF export) ===== */
+/* ATS / plain — maximally parseable */
+.doc-ats {
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.45;
+}
+.doc-ats h1 { font-size: 20pt; font-weight: 700; margin: 0 0 2pt; }
+.doc-ats h2 {
+  font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid #000; margin: 14pt 0 6pt; padding-bottom: 2pt;
+}
+.doc-ats h3 { font-size: 11pt; font-weight: 700; margin: 8pt 0 2pt; }
+.doc-ats p { margin: 4pt 0; }
+.doc-ats ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
+.doc-ats li { margin: 2pt 0; }
+.doc-ats hr { border: none; border-top: 1px solid #999; margin: 8pt 0; }
+.doc-ats a { color: #111; text-decoration: none; }
+
+/* Modern — clean professional, indigo accents */
+.doc-modern {
+  color: #1e293b;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+}
+.doc-modern h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
+.doc-modern h2 {
+  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
+}
+.doc-modern h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
+.doc-modern h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
+.doc-modern p { margin: 4pt 0; }
+.doc-modern ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
+.doc-modern li { margin: 3pt 0; }
+.doc-modern li::marker { color: #6366f1; }
+.doc-modern hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
+.doc-modern a { color: #4f46e5; text-decoration: none; }
+
+/* Elegant — serif headings, refined */
+.doc-elegant {
+  color: #1f2937;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+}
+.doc-elegant h1 { font-family: Georgia, "Times New Roman", serif; font-size: 26pt; font-weight: 700; margin: 0 0 4pt; color: #111827; }
+.doc-elegant h2 {
+  font-family: Georgia, "Times New Roman", serif; font-size: 13pt; font-weight: 700; color: #111827;
+  border-bottom: 1px solid #9ca3af; margin: 16pt 0 6pt; padding-bottom: 3pt; letter-spacing: 0.02em;
+}
+.doc-elegant h3 { font-size: 10.5pt; font-weight: 700; margin: 8pt 0 2pt; }
+.doc-elegant p { margin: 4pt 0; }
+.doc-elegant ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
+.doc-elegant li { margin: 3pt 0; }
+.doc-elegant hr { border: none; border-top: 1px solid #d1d5db; margin: 10pt 0; }
+.doc-elegant a { color: #111827; text-decoration: underline; }
+
+/* Compact — tight spacing to fit one page */
+.doc-compact {
+  color: #111827;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.32;
+}
+.doc-compact h1 { font-size: 18pt; font-weight: 800; margin: 0 0 1pt; color: #111827; }
+.doc-compact h2 {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: #4f46e5; border-bottom: 1px solid #e5e7eb; margin: 9pt 0 3pt; padding-bottom: 1pt;
+}
+.doc-compact h3 { font-size: 9.5pt; font-weight: 700; margin: 5pt 0 1pt; }
+.doc-compact p { margin: 2pt 0; }
+.doc-compact ul { margin: 2pt 0; padding-left: 14pt; list-style: disc; }
+.doc-compact li { margin: 1pt 0; }
+.doc-compact hr { border: none; border-top: 1px solid #e5e7eb; margin: 6pt 0; }
+.doc-compact a { color: #111827; text-decoration: none; }
+
+/* Bold — strong colored header band */
+.doc-bold {
+  color: #1e293b;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+}
+.doc-bold h1 {
+  font-size: 24pt; font-weight: 800; color: #fff; background: #4f46e5;
+  margin: -4pt -8pt 8pt; padding: 14pt 14pt 12pt; border-radius: 8px; letter-spacing: -0.01em;
+}
+.doc-bold h2 {
+  font-size: 11pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;
+  margin: 14pt 0 5pt; border-left: 4px solid #6366f1; padding-left: 8px;
+}
+.doc-bold h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
+.doc-bold p { margin: 4pt 0; }
+.doc-bold ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
+.doc-bold li { margin: 3pt 0; }
+.doc-bold li::marker { color: #6366f1; }
+.doc-bold hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
+.doc-bold a { color: #4f46e5; text-decoration: none; }
+
+/* Designed — for printing / handing over in person */
+.doc-designed {
+  color: #1e293b;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+}
+.doc-designed h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
+.doc-designed h2 {
+  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
+}
+.doc-designed h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
+.doc-designed h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
+.doc-designed p { margin: 4pt 0; }
+.doc-designed ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
+.doc-designed li { margin: 3pt 0; }
+.doc-designed li::marker { color: #6366f1; }
+.doc-designed hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
+.doc-designed a { color: #4f46e5; text-decoration: none; }
+
+@media print {
+  .no-print { display: none !important; }
+  @page { margin: 14mm; }
+  html, body { background: #fff !important; }
+}
+
+/* Subtle marquee for the role ticker */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
 }

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResumeTailor — Ad Creatives v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --indigo:#4f46e5; --violet:#6366f1; --green:#10b981; --ink:#0b0b14; --slate:#f8fafc; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Plus Jakarta Sans', sans-serif; color:var(--slate);
+    background:
+      radial-gradient(1000px 700px at 80% -10%, rgba(99,102,241,.22), transparent 60%),
+      radial-gradient(900px 700px at -10% 110%, rgba(16,185,129,.12), transparent 60%),
+      #07070d;
+    min-height:100vh; padding:56px 48px 90px; }
+  header { max-width:1500px; margin:0 auto 40px; }
+  .brand { display:flex; align-items:center; gap:14px; }
+  .logo { width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg,var(--violet),var(--indigo));
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:27px; box-shadow:0 10px 30px rgba(79,70,229,.5); }
+  .brand b { font-size:26px; font-weight:800; letter-spacing:-.3px; }
+  h1.title { margin-top:26px; font-family:'Space Grotesk'; font-weight:700; font-size:54px; letter-spacing:-1.6px; }
+  .sub { margin-top:12px; font-size:20px; color:#94a3b8; max-width:760px; line-height:1.5; }
+  .legend { margin-top:22px; display:flex; flex-wrap:wrap; gap:10px; }
+  .lg { font-size:13px; font-weight:700; letter-spacing:.5px; padding:8px 14px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.14); color:#c7d2fe; background:rgba(255,255,255,.04); }
+
+  .niche { max-width:1500px; margin:0 auto; }
+  .niche-head { margin:54px 0 6px; display:flex; align-items:center; gap:16px; }
+  .niche-head h2 { font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-.6px; }
+  .niche-head .flag { font-size:30px; }
+  .niche-head .count { font-size:15px; color:#64748b; font-weight:600; }
+  .rule { height:1px; background:linear-gradient(90deg, rgba(255,255,255,.18), transparent); margin:14px 0 30px; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:30px; align-items:start; }
+
+  .card { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09); border-radius:18px;
+    overflow:hidden; transition:transform .15s ease, border-color .15s ease; }
+  .card:hover { transform:translateY(-4px); border-color:rgba(99,102,241,.6); }
+  .thumb { position:relative; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .thumb iframe { border:0; transform-origin:top left; pointer-events:none; }
+  .badge-size { position:absolute; top:10px; right:10px; z-index:2; font-family:'Space Grotesk'; font-weight:600;
+    font-size:12px; letter-spacing:.5px; padding:6px 10px; border-radius:8px; background:rgba(7,7,13,.78);
+    border:1px solid rgba(255,255,255,.16); color:#e2e8f0; backdrop-filter:blur(4px); }
+  .badge-lang { position:absolute; top:10px; left:10px; z-index:2; font-weight:800; font-size:12px;
+    padding:6px 10px; border-radius:8px; color:#fff; background:linear-gradient(135deg,var(--violet),var(--indigo)); }
+
+  .meta { padding:16px 18px 18px; }
+  .meta .concept { font-weight:800; font-size:18px; letter-spacing:-.2px; }
+  .meta .desc { margin-top:5px; font-size:13.5px; color:#94a3b8; line-height:1.45; }
+  .meta .row { margin-top:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .open { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; color:#fff;
+    text-decoration:none; padding:10px 16px; border-radius:11px; background:linear-gradient(135deg,var(--violet),var(--indigo));
+    box-shadow:0 8px 22px rgba(79,70,229,.4); }
+  .open:hover { filter:brightness(1.08); }
+  .fname { font-family:'Space Grotesk'; font-size:11.5px; color:#64748b; word-break:break-all; }
+  .star { color:#fbbf24; font-weight:800; }
+  .pick { border-color:rgba(251,191,36,.55) !important; box-shadow:0 0 0 1px rgba(251,191,36,.25), 0 18px 40px rgba(0,0,0,.4); }
+  .pick-tag { position:absolute; bottom:10px; left:10px; z-index:2; font-size:11px; font-weight:800; letter-spacing:.5px;
+    padding:6px 10px; border-radius:8px; color:#1a1400; background:#fbbf24; box-shadow:0 8px 20px rgba(251,191,36,.4); }
+
+  footer { max-width:1500px; margin:70px auto 0; font-size:14px; color:#64748b; line-height:1.6; }
+  footer code { font-family:'Space Grotesk'; color:#c7d2fe; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+    <h1 class="title">Paid-social creatives — v2</h1>
+    <p class="sub">Eleven art-directed concepts across two niches. Thumbnails render the real HTML scaled to true aspect ratio. Click "Open full size" to view at exact pixel dimensions, then screenshot to PNG (see README).</p>
+    <div class="legend">
+      <span class="lg">1080×1080 · feed square</span>
+      <span class="lg">1080×1920 · story / reels</span>
+      <span class="lg">1200×628 · link / landscape</span>
+      <span class="lg star">★ strongest per niche</span>
+    </div>
+  </header>
+
+  <!-- ============ GLOBAL ============ -->
+  <section class="niche">
+    <div class="niche-head"><span class="flag">🌐</span><h2>Global</h2><span class="count">English + Spanish · 6 creatives</span></div>
+    <div class="rule"></div>
+    <div class="grid" id="grid-global"></div>
+  </section>
+
+  <!-- ============ BRASIL ============ -->
+  <section class="niche">
+    <div class="niche-head"><span class="flag">🇧🇷</span><h2>Brasil</h2><span class="count">pt-BR · made-for-Brazil · 5 creatives</span></div>
+    <div class="rule"></div>
+    <div class="grid" id="grid-br"></div>
+  </section>
+
+  <footer>
+    Files live alongside this page in <code>marketing/creatives-v2/</code>. Filenames encode <code>niche-concept-lang-size</code>.
+    The <strong>38% → 91%</strong> match figure is an illustrative sample. No guarantees, fake reviews, or testimonials appear on the art. See <code>README.md</code> for export + customization.
+  </footer>
+
+<script>
+  // thumbnail render width (px) — iframe is scaled down to fit
+  var THUMB_W = 340;
+  var creatives = [
+    // GLOBAL
+    { niche:'global', file:'global-matchscore-en-1080x1080.html', concept:'Match Score', lang:'EN', w:1080, h:1080,
+      desc:'Conic gauge 38%→91% with keyword chips lighting up. The signature proof.', pick:true },
+    { niche:'global', file:'global-matchscore-en-1080x1920.html', concept:'Match Score · Story', lang:'EN', w:1080, h:1920,
+      desc:'Vertical hero gauge for Stories/Reels, dark premium tone.' },
+    { niche:'global', file:'global-7seconds-en-1080x1080.html', concept:'7 Seconds', lang:'EN', w:1080, h:1080,
+      desc:'Stopwatch dial motif — the recruiter skim test.' },
+    { niche:'global', file:'global-7seconds-es-1080x1080.html', concept:'7 Segundos', lang:'ES', w:1080, h:1080,
+      desc:'Spanish variant of the stopwatch skim concept.' },
+    { niche:'global', file:'global-beatrobot-en-1200x628.html', concept:'Beat the Robot', lang:'EN', w:1200, h:628,
+      desc:'ATS scanner with REJECTED→APPROVED stamps. Workday/Greenhouse angle.' },
+    { niche:'global', file:'global-noexperience-en-1080x1080.html', concept:'No Experience', lang:'EN', w:1080, h:1080,
+      desc:'Blank page → built first résumé.' },
+    { niche:'global', file:'global-chatgptvskit-en-1200x628.html', concept:'Text vs Kit', lang:'EN', w:1200, h:628,
+      desc:'Generic AI wall-of-text vs a hired-ready 3-doc kit.' },
+    // BRASIL
+    { niche:'br', file:'br-gupy-ptbr-1080x1080.html', concept:'Barrado pela Gupy', lang:'PT-BR', w:1080, h:1080,
+      desc:'Antes/depois da triagem da Gupy: Barrado → Aprovado.', pick:true },
+    { niche:'br', file:'br-gupy-ptbr-1080x1920.html', concept:'Gupy · Story', lang:'PT-BR', w:1080, h:1920,
+      desc:'Funil com robô/filtro da Gupy derrubando o BARRADO em APROVADO.' },
+    { niche:'br', file:'br-7segundos-ptbr-1080x1080.html', concept:'7 Segundos', lang:'PT-BR', w:1080, h:1080,
+      desc:'Cronômetro — o teste da triagem do recrutador.' },
+    { niche:'br', file:'br-primeiroemprego-ptbr-1080x1080.html', concept:'Primeiro Emprego', lang:'PT-BR', w:1080, h:1080,
+      desc:'Página em branco → primeiro currículo pronto pra vaga.' },
+  ];
+
+  function makeCard(c){
+    var scale = THUMB_W / c.w;
+    var thumbH = Math.round(c.h * scale);
+    var card = document.createElement('div');
+    card.className = 'card' + (c.pick ? ' pick' : '');
+    card.innerHTML =
+      '<div class="thumb" style="width:'+THUMB_W+'px;height:'+thumbH+'px;">' +
+        '<span class="badge-lang">'+c.lang+'</span>' +
+        '<span class="badge-size">'+c.w+'×'+c.h+'</span>' +
+        (c.pick ? '<span class="pick-tag">★ STRONGEST</span>' : '') +
+        '<iframe src="'+c.file+'" scrolling="no" ' +
+          'style="width:'+c.w+'px;height:'+c.h+'px;transform:scale('+scale+');"></iframe>' +
+      '</div>' +
+      '<div class="meta">' +
+        '<div class="concept">'+(c.pick?'<span class="star">★</span> ':'')+c.concept+'</div>' +
+        '<div class="desc">'+c.desc+'</div>' +
+        '<div class="row">' +
+          '<a class="open" href="'+c.file+'" target="_blank">Open full size ↗</a>' +
+        '</div>' +
+        '<div class="fname" style="margin-top:10px;">'+c.file+'</div>' +
+      '</div>';
+    return card;
+  }
+
+  var gg = document.getElementById('grid-global');
+  var gb = document.getElementById('grid-br');
+  creatives.forEach(function(c){ (c.niche==='br'?gb:gg).appendChild(makeCard(c)); });
+</script>
+</body>
+</html>

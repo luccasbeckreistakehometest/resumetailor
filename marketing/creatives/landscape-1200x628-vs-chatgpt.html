@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResumeTailor vs ChatGPT — 1200x628</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .creative {
+    width: 1200px;
+    height: 628px;
+    position: relative;
+    overflow: hidden;
+    background: #f8fafc;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    padding: 52px 60px 48px;
+  }
+  .blob { position: absolute; border-radius: 50%; opacity: .5; }
+  .blob-a { width: 320px; height: 320px; right: -110px; top: -120px; background: radial-gradient(circle, #6366f1 0%, rgba(99,102,241,0) 70%); }
+
+  .top { display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #6366f1); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(79,70,229,.32); }
+  .logo-mark svg { width: 24px; height: 24px; }
+  .brand-name { font-weight: 800; font-size: 24px; letter-spacing: -.5px; }
+  .brand-name span { color: #4f46e5; }
+  .eyebrow { font-size: 17px; font-weight: 700; color: #4f46e5; background: #eef2ff; padding: 9px 18px; border-radius: 999px; }
+
+  h1 { font-size: 46px; line-height: 1.05; font-weight: 800; letter-spacing: -1.5px; margin-top: 26px; z-index: 2; max-width: 940px; }
+  h1 em { font-style: normal; color: #4f46e5; }
+
+  .compare { display: flex; gap: 24px; margin-top: 30px; z-index: 2; flex: 1; }
+  .col {
+    flex: 1; background: #fff; border-radius: 20px; padding: 26px 28px;
+    border: 1px solid #e2e8f0; box-shadow: 0 12px 30px rgba(15,23,42,.06);
+    display: flex; flex-direction: column;
+  }
+  .col.win { border: 2px solid #4f46e5; box-shadow: 0 18px 40px rgba(79,70,229,.18); }
+  .col-head { display: flex; align-items: center; justify-content: space-between; }
+  .col-title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+  .col.win .col-title { color: #4f46e5; }
+  .tag { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; }
+  .tag.meh { background: #f1f5f9; color: #64748b; }
+  .tag.best { background: #4f46e5; color: #fff; }
+  ul { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 11px; }
+  li { font-size: 18px; font-weight: 500; color: #334155; display: flex; align-items: flex-start; gap: 10px; line-height: 1.25; }
+  li .ic { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; margin-top: 1px; }
+  li .x { background: #fee2e2; color: #ef4444; }
+  li .c { background: #d1fae5; color: #10b981; }
+
+  .score-strip { margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 16px; }
+  .score-strip .lbl { font-size: 14px; font-weight: 600; color: #64748b; }
+  .score-strip .val { font-size: 30px; font-weight: 800; color: #10b981; letter-spacing: -1px; }
+  .score-strip .from { font-size: 18px; font-weight: 600; color: #94a3b8; text-decoration: line-through; }
+  .score-strip svg { width: 22px; height: 22px; }
+
+  .bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 26px; z-index: 2; }
+  .bottom .line { font-size: 18px; font-weight: 600; color: #475569; }
+  .bottom .line b { color: #0f172a; }
+  .cta { background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; font-weight: 700; font-size: 21px; padding: 16px 30px; border-radius: 14px; box-shadow: 0 14px 30px rgba(79,70,229,.36); }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="blob blob-a"></div>
+
+    <div class="top">
+      <div class="brand">
+        <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="#fff" stroke-width="1.8"/><path d="M13 3v5h5" stroke="#fff" stroke-width="1.8"/><path d="M8.5 13.5l2.2 2.2 4.3-4.6" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name">Resume<span>Tailor</span></div>
+      </div>
+      <div class="eyebrow">STILL USING CHATGPT FOR THIS?</div>
+    </div>
+
+    <h1>ChatGPT gives you <em>text.</em> We give you a <em>match score</em> + 2 ready-to-send formats.</h1>
+
+    <div class="compare">
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title">ChatGPT</div>
+          <div class="tag meh">DIY prompting</div>
+        </div>
+        <ul>
+          <li><span class="ic x">×</span> No idea how well you actually match</li>
+          <li><span class="ic x">×</span> You re-prompt, copy, paste, reformat</li>
+          <li><span class="ic x">×</span> One blob of text, not job-ready files</li>
+        </ul>
+      </div>
+      <div class="col win">
+        <div class="col-head">
+          <div class="col-title">ResumeTailor</div>
+          <div class="tag best">$9 · 30 SECONDS</div>
+        </div>
+        <ul>
+          <li><span class="ic c">✓</span> A real match score, before &amp; after</li>
+          <li><span class="ic c">✓</span> Resume + cover letter + LinkedIn About</li>
+          <li><span class="ic c">✓</span> Tuned to the exact job you paste in</li>
+        </ul>
+        <div class="score-strip">
+          <span class="lbl">Match</span>
+          <span class="from">38%</span>
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="#4f46e5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="val">91%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="line">One paste. One <b>$9</b> payment. Three job-ready documents.</div>
+      <div class="cta">Try ResumeTailor →</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ResumeTailor — Match Score (EN)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; justify-content:center; align-items:center; background:#222; min-height:100vh; }
+  .creative {
+    position:relative; width:1080px; height:1080px; overflow:hidden;
+    background:
+      radial-gradient(900px 500px at 50% -8%, #eef2ff, transparent 60%),
+      linear-gradient(180deg, #f8fafc 0%, #eef0f7 100%);
+    font-family:'Plus Jakarta Sans', sans-serif; color:#0b0b14;
+  }
+  .pad { position:absolute; inset:0; padding:78px 76px; display:flex; flex-direction:column; }
+  .top { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:13px; }
+  .logo { width:46px; height:46px; border-radius:13px; background:linear-gradient(135deg,#6366f1,#4f46e5);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:26px;
+    box-shadow:0 10px 24px rgba(79,70,229,.4); }
+  .brand b { font-size:24px; font-weight:800; letter-spacing:-.3px; }
+  .tag { font-family:'Space Grotesk'; font-weight:500; font-size:18px; letter-spacing:1px; text-transform:uppercase;
+    color:#4f46e5; padding:9px 16px; border-radius:999px; background:#fff; border:1px solid #e2e8f0;
+    box-shadow:0 4px 14px rgba(2,6,23,.05); }
+
+  h1 { margin-top:46px; font-size:74px; line-height:.98; font-weight:800; letter-spacing:-2px; }
+  h1 .pct { color:#ef4444; }
+  h1 .arr { color:#94a3b8; font-family:'Space Grotesk'; }
+  h1 .pct2 { color:#10b981; }
+
+  /* gauge + chips row */
+  .stage { margin-top:40px; display:flex; align-items:center; gap:40px; }
+
+  .gauge { position:relative; width:430px; height:430px; flex:none; }
+  .ring { position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(#10b981 0deg, #34d399 200deg, #6366f1 280deg, #4f46e5 327.6deg, rgba(15,23,42,.07) 327.6deg 360deg);
+    -webkit-mask:radial-gradient(transparent 150px, #000 152px); mask:radial-gradient(transparent 150px, #000 152px);
+    filter:drop-shadow(0 18px 40px rgba(79,70,229,.28)); transform:rotate(90deg); }
+  .gauge-core { position:absolute; inset:60px; border-radius:50%; background:#fff;
+    box-shadow:0 24px 60px rgba(2,6,23,.12), inset 0 0 0 1px #eef2ff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .from { font-family:'Space Grotesk'; font-size:26px; color:#94a3b8; font-weight:500; }
+  .from s { color:#ef4444; text-decoration-thickness:3px; }
+  .score { font-family:'Space Grotesk'; font-weight:700; font-size:148px; line-height:.85; letter-spacing:-4px;
+    background:linear-gradient(135deg,#10b981,#059669); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .score .sym { font-size:64px; vertical-align:14px; }
+  .mlabel { margin-top:6px; font-size:22px; font-weight:700; letter-spacing:3px; color:#10b981; text-transform:uppercase; }
+  .needle { position:absolute; left:50%; top:50%; width:8px; height:188px; border-radius:8px;
+    background:linear-gradient(180deg,#0b0b14,#334155); transform-origin:50% 100%;
+    transform:translate(-50%,-100%) rotate(58deg); box-shadow:0 6px 18px rgba(2,6,23,.35); z-index:3; }
+  .hub { position:absolute; left:50%; top:50%; width:30px; height:30px; border-radius:50%; background:#0b0b14;
+    transform:translate(-50%,-50%); box-shadow:0 0 0 6px #fff, 0 8px 20px rgba(2,6,23,.3); z-index:4; }
+
+  .chips { flex:1; display:flex; flex-direction:column; gap:14px; }
+  .chips .ch-label { font-size:18px; font-weight:700; color:#64748b; letter-spacing:1px; text-transform:uppercase; margin-bottom:2px; }
+  .chip { display:flex; align-items:center; gap:12px; padding:15px 18px; border-radius:14px; background:#fff;
+    border:1px solid #e6e9f2; box-shadow:0 6px 16px rgba(2,6,23,.05); font-size:23px; font-weight:600; }
+  .chip .ic { width:26px; height:26px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+    background:#10b981; color:#fff; font-size:16px; font-weight:800; }
+  .chip.on { border-color:#bbf7d0; box-shadow:0 8px 22px rgba(16,185,129,.18); }
+  .chip.miss .ic { background:#fde68a; color:#92400e; }
+
+  .sub { margin-top:38px; font-size:30px; line-height:1.4; color:#334155; font-weight:500; }
+  .sub b { color:#0b0b14; font-weight:800; }
+
+  .footer { margin-top:auto; display:flex; align-items:center; justify-content:space-between; }
+  .cta { display:inline-flex; align-items:center; gap:14px; padding:26px 42px; border-radius:18px; color:#fff;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); font-size:30px; font-weight:800; letter-spacing:-.3px;
+    box-shadow:0 18px 44px rgba(79,70,229,.4); }
+  .price .big { font-family:'Space Grotesk'; font-weight:700; font-size:50px; text-align:right; }
+  .price .lbl { font-size:19px; color:#64748b; text-align:right; }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="pad">
+      <div class="top">
+        <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+        <div class="tag">Match Score</div>
+      </div>
+
+      <h1>Your match jumps<br><span class="pct">38%</span> <span class="arr">→</span> <span class="pct2">91%</span></h1>
+
+      <div class="stage">
+        <div class="gauge">
+          <div class="ring"></div>
+          <div class="needle"></div>
+          <div class="hub"></div>
+          <div class="gauge-core">
+            <div class="from">was <s>38%</s></div>
+            <div class="score">91<span class="sym">%</span></div>
+            <div class="mlabel">job match</div>
+          </div>
+        </div>
+
+        <div class="chips">
+          <div class="ch-label">Keywords now matched</div>
+          <div class="chip on"><span class="ic">✓</span> Stakeholder management</div>
+          <div class="chip on"><span class="ic">✓</span> SQL · Python · A/B testing</div>
+          <div class="chip on"><span class="ic">✓</span> Roadmap ownership</div>
+          <div class="chip miss"><span class="ic">+</span> 9 more added for you</div>
+        </div>
+      </div>
+
+      <p class="sub">We read the job post, then rewrite your resume so the right keywords <b>line up</b> — in ~30 seconds.</p>
+
+      <div class="footer">
+        <div class="cta">See my score <span>→</span></div>
+        <div class="price"><div class="big">$9</div><div class="lbl">one-time · resume + cover letter</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

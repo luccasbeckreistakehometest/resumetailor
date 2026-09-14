@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ResumeTailor — Beat the Robot (EN)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; justify-content:center; align-items:center; background:#222; min-height:100vh; }
+  .creative {
+    position:relative; width:1200px; height:628px; overflow:hidden;
+    background:
+      radial-gradient(700px 500px at 18% 0%, rgba(99,102,241,.30), transparent 60%),
+      #0b0b14;
+    font-family:'Plus Jakarta Sans', sans-serif; color:#f8fafc; display:flex;
+  }
+  /* LEFT: message */
+  .left { width:640px; padding:58px 50px 52px 62px; display:flex; flex-direction:column; position:relative; z-index:2; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#4f46e5);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:24px;
+    box-shadow:0 10px 26px rgba(79,70,229,.5); }
+  .brand b { font-size:22px; font-weight:800; letter-spacing:-.3px; }
+  .kicker { margin-top:30px; display:inline-flex; align-self:flex-start; align-items:center; gap:9px; padding:9px 16px;
+    border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+    font-family:'Space Grotesk'; font-weight:500; font-size:15px; letter-spacing:1px; text-transform:uppercase; color:#c7d2fe; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b; }
+  h1 { margin-top:22px; font-size:62px; line-height:.96; font-weight:800; letter-spacing:-1.8px; }
+  h1 .hl { color:#10b981; }
+  .sub { margin-top:20px; font-size:23px; line-height:1.4; color:#cbd5e1; font-weight:500; max-width:480px; }
+  .sub b { color:#fff; font-weight:700; }
+  .footer { margin-top:auto; display:flex; align-items:center; gap:22px; }
+  .cta { display:inline-flex; align-items:center; gap:11px; padding:18px 30px; border-radius:15px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); font-size:23px; font-weight:800; letter-spacing:-.3px;
+    box-shadow:0 14px 36px rgba(79,70,229,.55); }
+  .price { font-size:17px; color:#94a3b8; }
+  .price b { color:#fff; font-family:'Space Grotesk'; font-weight:700; font-size:23px; }
+
+  /* RIGHT: ATS scanner */
+  .right { flex:1; position:relative; border-left:1px solid rgba(255,255,255,.07);
+    background:radial-gradient(500px 500px at 70% 30%, rgba(16,185,129,.16), transparent 60%); }
+  .scanner { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  /* robot face */
+  .bot { position:absolute; top:54px; left:50%; transform:translateX(-50%); width:118px; height:96px;
+    border-radius:22px; background:linear-gradient(160deg,#1e1e2c,#12121b); border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 14px 30px rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; gap:18px; }
+  .bot:before { content:""; position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:4px; height:18px; background:#475569; }
+  .bot:after { content:""; position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:14px; height:14px; border-radius:50%; background:#10b981; box-shadow:0 0 16px #10b981; }
+  .eye { width:26px; height:26px; border-radius:50%; background:#10b981; box-shadow:0 0 18px #10b981; }
+  /* two resume cards: rejected behind, approved front */
+  .doc { position:absolute; width:182px; height:236px; border-radius:14px; background:#fff;
+    box-shadow:0 24px 50px rgba(0,0,0,.5); padding:20px 18px; overflow:hidden; }
+  .doc .ln { height:8px; border-radius:4px; background:#e2e8f0; margin-bottom:11px; }
+  .doc .ln.s { width:55%; } .doc .ln.m { width:80%; } .doc .ln.l { width:100%; }
+  .doc.rej { left:34%; top:200px; transform:rotate(-9deg); filter:grayscale(.4) brightness(.92); }
+  .doc.app { left:50%; top:178px; transform:translateX(-30%) rotate(6deg); border:2px solid #10b981; }
+  .doc.app .ln { background:#bbf7d0; }
+  .doc.app .ln.hl { background:#10b981; }
+  /* scan line */
+  .scanline { position:absolute; left:0; right:0; top:300px; height:3px;
+    background:linear-gradient(90deg,transparent, #10b981, transparent); box-shadow:0 0 18px #10b981; }
+  /* stamps */
+  .stamp { position:absolute; font-family:'Space Grotesk'; font-weight:700; letter-spacing:2px;
+    border:4px solid; border-radius:10px; padding:6px 14px; font-size:22px; text-transform:uppercase; }
+  .stamp.rej { color:#ef4444; border-color:#ef4444; left:30%; top:300px; transform:rotate(-12deg); opacity:.85; }
+  .stamp.app { color:#10b981; border-color:#10b981; left:55%; top:148px; transform:rotate(7deg);
+    background:rgba(16,185,129,.08); box-shadow:0 0 30px rgba(16,185,129,.4); }
+</style>
+</head>
+<body>
+  <div class="creative">
+    <div class="left">
+      <div class="brand"><div class="logo">R</div><b>ResumeTailor</b></div>
+      <div class="kicker"><span class="dot"></span> ATS · Workday · Greenhouse · LinkedIn</div>
+      <h1>A robot reads<br>your resume<br><span class="hl">first.</span></h1>
+      <p class="sub">75% of resumes get filtered before a human sees them. We rewrite yours to <b>pass the ATS</b> for the exact job.</p>
+      <div class="footer">
+        <div class="cta">Beat the filter →</div>
+        <div class="price">One-time <b>$9</b></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="scanner">
+        <div class="bot"><div class="eye"></div><div class="eye"></div></div>
+        <div class="doc rej">
+          <div class="ln l"></div><div class="ln m"></div><div class="ln s"></div>
+          <div class="ln l"></div><div class="ln m"></div><div class="ln l"></div><div class="ln s"></div>
+        </div>
+        <div class="doc app">
+          <div class="ln l hl"></div><div class="ln m"></div><div class="ln l hl"></div>
+          <div class="ln s"></div><div class="ln l"></div><div class="ln m hl"></div><div class="ln s"></div>
+        </div>
+        <div class="scanline"></div>
+        <div class="stamp rej">Rejected</div>
+        <div class="stamp app">Approved</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
