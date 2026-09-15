@@ -42,13 +42,25 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const speak = (text: string) => {
+  // The AI voice comes from the server (ElevenLabs / OpenAI TTS). Never the browser's own
+  // synthesiser: if no provider is configured the prompt is shown, not spoken.
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [voiceOn, setVoiceOn] = useState(false);
+  useEffect(() => {
+    fetch("/api/voice/speak").then((r) => r.json()).then((j) => { const id = requestAnimationFrame(() => setVoiceOn(!!j.provider)); return () => cancelAnimationFrame(id); }).catch(() => {});
+  }, []);
+  const hush = () => { try { audio.current?.pause(); } catch {} audio.current = null; };
+  useEffect(() => { if (voiceOn && !followUp) void speak(x.voice.opener); return hush; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [voiceOn, lang]);
+  const speak = async (text: string) => {
+    hush();
     try {
-      if (!("speechSynthesis" in window)) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text); u.lang = BCP[lang] ?? "en-US"; u.rate = 1.02;
-      window.speechSynthesis.speak(u);
-    } catch {}
+      const r = await fetch("/api/voice/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, lang }) });
+      if (r.status !== 200) return;
+      const url = URL.createObjectURL(await r.blob());
+      const a = new Audio(url); audio.current = a;
+      a.onended = () => URL.revokeObjectURL(url);
+      await a.play();
+    } catch { /* autoplay blocked or no audio: the text is on screen */ }
   };
 
   useEffect(() => {
@@ -59,7 +71,7 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
   }, [briefingId, briefing, turns, lang]);
 
   function start() {
-    setError("");
+    setError(""); hush();
     const Ctor = getRec();
     if (!Ctor) { setPhase("listening"); return; }   // test mode: wait for feed
     const r = new Ctor(); rec.current = r;
@@ -72,7 +84,7 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
     };
     r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { setError(x.voice.denied); setPhase("idle"); } };
     r.onend = () => { if (phase === "listening") { /* Chrome ends after silence; keep the turn open */ try { r.start(); } catch {} } };
-    try { r.start(); setPhase("listening"); speak(prompt); } catch { setError(x.voice.unsupported); }
+    try { r.start(); setPhase("listening"); } catch { setError(x.voice.unsupported); }
   }
 
   async function finishTurn() {
@@ -89,8 +101,8 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || x.errors.generic);
       setBriefing(j.briefing); setBriefingId(j.briefingId);
-      if (j.briefing.missing.length && j.briefing.followUp) { setFollowUp(j.briefing.followUp); speak(j.briefing.followUp); }
-      else speak(x.voice.ready);
+      if (j.briefing.missing.length && j.briefing.followUp) { setFollowUp(j.briefing.followUp); void speak(j.briefing.followUp); }
+      else void speak(x.voice.ready);
       setPhase("review");
     } catch (e) { setError(e instanceof Error ? e.message : x.errors.generic); setPhase("idle"); }
   }
@@ -114,6 +126,10 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
 
       <div className="mt-6 rounded-xl border border-edge bg-paper p-5">
         <p className="text-[15px] leading-relaxed text-ink" data-testid="voice-prompt">“{prompt}”</p>
+        <div className="mt-3 flex items-center gap-3">
+          {voiceOn && <button type="button" onClick={() => void speak(prompt)} className="text-xs font-semibold text-oxblood underline-offset-4 hover:underline" data-testid="voice-replay">▶ {x.voice.listenPrompt}</button>}
+          {!voiceOn && <span className="text-xs text-muted">{x.voice.textOnly}</span>}
+        </div>
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-4">
