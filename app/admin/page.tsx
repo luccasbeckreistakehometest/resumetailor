@@ -40,9 +40,9 @@ export default function AdminPage() {
         <h1 className="font-display mt-2 text-4xl text-ink">{x.admin.title}</h1>
         {data && (
           <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-7" data-testid="admin-totals">
+            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-4" data-testid="admin-totals">
               {[[x.admin.users, data.totals.users], [x.admin.generations, data.totals.generations], [x.admin.unlocked, data.totals.unlocked], [x.admin.voice, data.totals.voice],
-                [x.admin.interviews, `${data.totals.interviewsDone}/${data.totals.interviews}`],
+                [x.admin.interviews, `${data.totals.interviewsDone}/${data.totals.interviews}`], [x.admin.applications, `${data.totals.applicationsInterview}/${data.totals.applications}`],
                 [x.admin.tours, `${data.totals.toursCompleted}/${data.totals.toursStarted}`], [x.admin.aiCost, `$${(data.totals.aiCostUsd + data.totals.interviewCostUsd).toFixed(2)}`]].map(([k, v]) => (
                 <div key={String(k)} className="card p-4"><p className="eyebrow">{k}</p><p className="font-display mt-1 text-3xl text-ink">{v}</p></div>
               ))}

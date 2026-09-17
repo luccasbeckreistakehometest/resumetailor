@@ -16,6 +16,7 @@ export function SiteFooter() {
         <nav className="flex flex-wrap gap-5">
           <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
           <Link href="/library" className="hover:text-ink">{d.nav.myCVs}</Link>
+          <Link href="/applications" className="hover:text-ink">{x.nav.applications}</Link>
           <Link href="/start" className="hover:text-ink">{d.nav.start}</Link>
         </nav>
         <p className="text-xs">© {new Date().getFullYear()} ResumeTailor</p>

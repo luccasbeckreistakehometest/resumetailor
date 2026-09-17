@@ -26,6 +26,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
           <nav className="hidden items-center gap-6 text-sm font-medium text-ink-2 md:flex">
             <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
             <Link href="/library" className="hover:text-ink" data-tour="nav-library">{d.nav.myCVs}</Link>
+            <Link href="/applications" className="hover:text-ink" data-testid="nav-applications">{x.nav.applications}</Link>
             {user?.role === "admin" && <Link href="/admin" className="hover:text-ink">Admin</Link>}
           </nav>
         )}

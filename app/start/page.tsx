@@ -249,6 +249,7 @@ function StartInner() {
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
                   <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
+                  <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
                 <Section title={d.quiz.result.coverPreview.replace(" preview", "")} body={gen.kit.coverLetter} />
@@ -283,6 +284,7 @@ function StartInner() {
                 <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-edge pt-5">
                   <Link href={`/interview/${gen.id}`} className="btn btn-ghost !py-2 !text-sm" data-testid="practice">🎙 {x.interview.practice}</Link>
                   <span className="text-xs text-muted">{x.interview.previewBadge}</span>
+                  <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost !py-2 !text-sm" data-testid="track">{x.applications.trackFromKit}</Link>
                 </div>
               </div>
             )}

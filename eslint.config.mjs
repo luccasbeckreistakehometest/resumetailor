@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Playwright output: the html reporter copies its minified trace viewer in after a failing run.
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

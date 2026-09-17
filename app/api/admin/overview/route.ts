@@ -19,6 +19,8 @@ export async function GET() {
       interviews: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions").n,
       interviewsDone: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions WHERE status='done'").n,
       interviewCostUsd: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM interview_sessions").c,
+      applications: one<{ n: number }>("SELECT COUNT(*) n FROM applications").n,
+      applicationsInterview: one<{ n: number }>("SELECT COUNT(*) n FROM applications WHERE interviewAt IS NOT NULL").n,
     },
     revenue: all<{ currency: string; total: number; count: number }>("SELECT currency, SUM(amount) total, COUNT(*) count FROM payments WHERE status='approved' GROUP BY currency"),
     byDay: all<{ day: string; generations: number; unlocks: number }>("SELECT substr(createdAt,1,10) day, COUNT(*) generations, SUM(unlocked) unlocks FROM generations GROUP BY day ORDER BY day DESC LIMIT 30"),

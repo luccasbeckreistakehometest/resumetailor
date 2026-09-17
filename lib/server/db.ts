@@ -127,5 +127,29 @@ function migrate(d: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_interview_user ON interview_sessions(userId, createdAt DESC);
     CREATE INDEX IF NOT EXISTS idx_interview_anon ON interview_sessions(anonId, createdAt DESC);
     CREATE INDEX IF NOT EXISTS idx_interview_gen ON interview_sessions(generationId, createdAt DESC);
+
+    -- The application tracker: one row per job, its stage, and the first date it reached each
+    -- milestone (so the funnel still counts an interview after the card moves to rejected).
+    CREATE TABLE IF NOT EXISTS applications (
+      id TEXT PRIMARY KEY,
+      userId TEXT REFERENCES users(id) ON DELETE SET NULL,
+      anonId TEXT,
+      generationId TEXT REFERENCES generations(id) ON DELETE SET NULL,
+      company TEXT NOT NULL DEFAULT '',
+      role TEXT NOT NULL DEFAULT '',
+      link TEXT NOT NULL DEFAULT '',
+      stage TEXT NOT NULL DEFAULT 'saved',         -- saved | applied | interview | offer | rejected
+      notes TEXT NOT NULL DEFAULT '',
+      nextStepAt TEXT,                             -- YYYY-MM-DD
+      appliedAt TEXT,
+      interviewAt TEXT,
+      offerAt TEXT,
+      rejectedAt TEXT,
+      stageChangedAt TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_app_user ON applications(userId, updatedAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_app_anon ON applications(anonId, updatedAt DESC);
   `);
 }

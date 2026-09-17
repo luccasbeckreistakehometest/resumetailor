@@ -4,7 +4,7 @@
  * pt is written for Brazil in its own voice, not translated from en.
  */
 const en = {
-  nav: { pricing: "Pricing", signIn: "Sign in", signOut: "Sign out", account: "Account" },
+  nav: { pricing: "Pricing", signIn: "Sign in", signOut: "Sign out", account: "Account", applications: "Applications" },
   credits: {
     badge: (n: number) => `${n} credit${n === 1 ? "" : "s"}`,
     none: "You're out of credits.",
@@ -48,6 +48,7 @@ const en = {
       { t: "Talk or type", b: "You can describe yourself out loud and we fill in the form — or paste your resume and the job posting." },
       { t: "Your credits", b: "Previews are free. One credit unlocks one full kit. Your first credit is on us when you create an account." },
       { t: "Everything you make lives here", b: "Every kit is saved to your account: rename, reopen, print in five templates, re-tailor for the next job." },
+      { t: "Track every application", b: "A board for the jobs you're chasing: saved, applied, interview, offer. Move cards, set next steps, and watch your interview rate." },
       { t: "Rehearse the interview", b: "Every kit comes with a mock interview: questions from the kit, answers by voice, scored and coached — with a summary of what to rehearse." },
     ],
   },
@@ -58,7 +59,7 @@ const en = {
   },
   admin: {
     title: "Admin", users: "Users", generations: "Kits", unlocked: "Unlocked", voice: "By voice", revenue: "Revenue", aiCost: "AI cost",
-    tours: "Tours completed", interviews: "Interviews", recent: "Recent kits", payments: "Payments", onboarding: "First sessions", grant: "Grant", credits: "Credits",
+    tours: "Tours completed", interviews: "Interviews", applications: "Applications", recent: "Recent kits", payments: "Payments", onboarding: "First sessions", grant: "Grant", credits: "Credits",
     email: "Email", when: "When", mode: "Mode", match: "Match", status: "Status", provider: "Provider", amount: "Amount", events: "events", forbidden: "Admins only.",
   },
   errors: { generic: "Something went wrong. Please try again.", aiOff: "The AI service isn't configured on this server yet." },
@@ -92,11 +93,25 @@ const en = {
     sessionsEmpty: "No practice sessions yet. Open a kit and press “Practice interview”.", practice: "Practice interview",
     answered: (a: number, n: number) => `${a}/${n} answered`, avg: "avg", inProgress: "In progress", completed: "Completed", preview: "Preview", open: "Open",
   },
+  applications: {
+    eyebrow: "Application tracker", title: "Your applications",
+    subtitle: "Every job in one board — where it stands, what's next, which kit you sent. No AI here: this is your record, kept tidy.",
+    anonNote: "Saved on this device until you create an account — then it follows you everywhere.",
+    stages: { saved: "Saved", applied: "Applied", interview: "Interview", offer: "Offer", rejected: "Rejected" },
+    add: "Add job", addTitle: "Quick add", company: "Company", role: "Role", link: "Job link (optional)", kit: "Kit used", noKit: "No kit", stage: "Stage",
+    notes: "Notes", nextStep: "Next step", save: "Save", cancel: "Cancel", edit: "Edit", delete: "Delete", movePrev: "Move back", moveNext: "Move forward", open: "Open posting",
+    funnel: { total: "Tracked", applied: "Applied", interviews: "Interviews", rate: "Interview rate", offers: "Offers", rejected: "Rejected" },
+    rateHint: "Interviews ÷ applications. Under 10% usually means the résumé isn't landing — tailor harder, apply to fewer.",
+    upcoming: "Coming up", overdue: "overdue", noUpcoming: "No next steps scheduled. Put a date on any card so nothing slips.",
+    empty: "Nothing tracked yet. Add the job you're applying to — it takes ten seconds.",
+    needName: "Give it at least a company or a role.", trackFromKit: "Track this application",
+    daysIn: (n: number) => `${n}d here`,
+  },
   footer: "Secure payments by Stripe · No subscription",
 };
 
 const pt: typeof en = {
-  nav: { pricing: "Planos", signIn: "Entrar", signOut: "Sair", account: "Conta" },
+  nav: { pricing: "Planos", signIn: "Entrar", signOut: "Sair", account: "Conta", applications: "Candidaturas" },
   credits: {
     badge: (n: number) => `${n} crédito${n === 1 ? "" : "s"}`,
     none: "Seus créditos acabaram.",
@@ -140,6 +155,7 @@ const pt: typeof en = {
       { t: "Falando ou digitando", b: "Dá pra contar sua história em voz alta e a gente preenche — ou colar currículo e vaga." },
       { t: "Seus créditos", b: "Ver a nota é de graça. Um crédito libera um kit completo. O primeiro é por nossa conta quando você cria a conta." },
       { t: "Tudo que você fizer fica aqui", b: "Cada kit fica salvo na sua conta: renomeia, reabre, imprime em cinco modelos, reajusta pra próxima vaga." },
+      { t: "Acompanha cada candidatura", b: "Um quadro com as vagas que você está correndo atrás: salva, aplicada, entrevista, proposta. Move os cartões, marca o próximo passo e vê sua taxa de entrevista." },
       { t: "Ensaia a entrevista", b: "Todo kit vem com uma entrevista simulada: perguntas do kit, respostas por voz, nota e orientação — e um resumo do que ensaiar." },
     ],
   },
@@ -150,7 +166,7 @@ const pt: typeof en = {
   },
   admin: {
     title: "Admin", users: "Usuários", generations: "Kits", unlocked: "Liberados", voice: "Por voz", revenue: "Receita", aiCost: "Custo de IA",
-    tours: "Tours concluídos", interviews: "Entrevistas", recent: "Kits recentes", payments: "Pagamentos", onboarding: "Primeiras sessões", grant: "Conceder", credits: "Créditos",
+    tours: "Tours concluídos", interviews: "Entrevistas", applications: "Candidaturas", recent: "Kits recentes", payments: "Pagamentos", onboarding: "Primeiras sessões", grant: "Conceder", credits: "Créditos",
     email: "E-mail", when: "Quando", mode: "Modo", match: "Nota", status: "Status", provider: "Meio", amount: "Valor", events: "eventos", forbidden: "Só admin.",
   },
   errors: { generic: "Deu algo errado. Tenta de novo.", aiOff: "A IA ainda não está configurada neste servidor." },
@@ -184,11 +200,25 @@ const pt: typeof en = {
     sessionsEmpty: "Nenhum treino ainda. Abre um kit e aperta “Simular entrevista”.", practice: "Simular entrevista",
     answered: (a: number, n: number) => `${a}/${n} respondidas`, avg: "média", inProgress: "Em andamento", completed: "Concluída", preview: "Prévia", open: "Abrir",
   },
+  applications: {
+    eyebrow: "Acompanhamento de candidaturas", title: "Suas candidaturas",
+    subtitle: "Toda vaga num quadro só — em que pé está, qual o próximo passo, qual kit você mandou. Aqui não tem IA: é o seu registro, organizado.",
+    anonNote: "Fica salvo neste aparelho até você criar sua conta — depois vai com você pra qualquer lugar.",
+    stages: { saved: "Salva", applied: "Aplicada", interview: "Entrevista", offer: "Proposta", rejected: "Recusada" },
+    add: "Adicionar vaga", addTitle: "Adicionar rápido", company: "Empresa", role: "Cargo", link: "Link da vaga (opcional)", kit: "Kit usado", noKit: "Sem kit", stage: "Etapa",
+    notes: "Anotações", nextStep: "Próximo passo", save: "Salvar", cancel: "Cancelar", edit: "Editar", delete: "Excluir", movePrev: "Voltar etapa", moveNext: "Avançar etapa", open: "Abrir vaga",
+    funnel: { total: "No radar", applied: "Aplicadas", interviews: "Entrevistas", rate: "Taxa de entrevista", offers: "Propostas", rejected: "Recusadas" },
+    rateHint: "Entrevistas ÷ candidaturas. Abaixo de 10% normalmente é o currículo que não está passando — personaliza mais e aplica pra menos vagas.",
+    upcoming: "Vem aí", overdue: "atrasado", noUpcoming: "Nenhum próximo passo marcado. Coloca uma data em qualquer cartão pra nada escapar.",
+    empty: "Nada no radar ainda. Adiciona a vaga que você está aplicando — leva dez segundos.",
+    needName: "Coloca pelo menos a empresa ou o cargo.", trackFromKit: "Acompanhar essa candidatura",
+    daysIn: (n: number) => `${n}d aqui`,
+  },
   footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
 const es: typeof en = {
-  nav: { pricing: "Precios", signIn: "Entrar", signOut: "Salir", account: "Cuenta" },
+  nav: { pricing: "Precios", signIn: "Entrar", signOut: "Salir", account: "Cuenta", applications: "Postulaciones" },
   credits: {
     badge: (n: number) => `${n} crédito${n === 1 ? "" : "s"}`,
     none: "Te quedaste sin créditos.",
@@ -232,6 +262,7 @@ const es: typeof en = {
       { t: "Hablando o escribiendo", b: "Puedes contar tu historia en voz alta y lo completamos — o pegar tu CV y la oferta." },
       { t: "Tus créditos", b: "Ver el puntaje es gratis. Un crédito desbloquea un kit completo. El primero va por nuestra cuenta al crear la cuenta." },
       { t: "Todo lo que hagas vive aquí", b: "Cada kit queda guardado en tu cuenta: renombra, reabre, imprime en cinco plantillas, reajusta para la próxima." },
+      { t: "Sigue cada postulación", b: "Un tablero con los empleos que persigues: guardado, postulado, entrevista, oferta. Mueve tarjetas, marca el próximo paso y mira tu tasa de entrevistas." },
       { t: "Ensaya la entrevista", b: "Cada kit trae una entrevista simulada: preguntas del kit, respuestas por voz, puntaje y coaching — con un resumen de qué ensayar." },
     ],
   },
@@ -242,7 +273,7 @@ const es: typeof en = {
   },
   admin: {
     title: "Admin", users: "Usuarios", generations: "Kits", unlocked: "Desbloqueados", voice: "Por voz", revenue: "Ingresos", aiCost: "Costo de IA",
-    tours: "Tours completados", interviews: "Entrevistas", recent: "Kits recientes", payments: "Pagos", onboarding: "Primeras sesiones", grant: "Otorgar", credits: "Créditos",
+    tours: "Tours completados", interviews: "Entrevistas", applications: "Postulaciones", recent: "Kits recientes", payments: "Pagos", onboarding: "Primeras sesiones", grant: "Otorgar", credits: "Créditos",
     email: "Email", when: "Cuándo", mode: "Modo", match: "Puntaje", status: "Estado", provider: "Medio", amount: "Monto", events: "eventos", forbidden: "Solo admins.",
   },
   errors: { generic: "Algo salió mal. Inténtalo de nuevo.", aiOff: "La IA aún no está configurada en este servidor." },
@@ -275,6 +306,20 @@ const es: typeof en = {
     sessionsTitle: "Práctica de entrevista", sessionsIntro: "Ensaya la entrevista de cualquier kit: preguntas del kit, respuestas por voz, puntaje y coaching.",
     sessionsEmpty: "Aún no hay prácticas. Abre un kit y pulsa “Practicar entrevista”.", practice: "Practicar entrevista",
     answered: (a: number, n: number) => `${a}/${n} respondidas`, avg: "prom.", inProgress: "En curso", completed: "Completada", preview: "Vista previa", open: "Abrir",
+  },
+  applications: {
+    eyebrow: "Seguimiento de postulaciones", title: "Tus postulaciones",
+    subtitle: "Cada empleo en un solo tablero — en qué etapa está, qué sigue, qué kit enviaste. Aquí no hay IA: es tu registro, ordenado.",
+    anonNote: "Se guarda en este dispositivo hasta que crees tu cuenta — después te acompaña a todas partes.",
+    stages: { saved: "Guardada", applied: "Postulada", interview: "Entrevista", offer: "Oferta", rejected: "Rechazada" },
+    add: "Agregar empleo", addTitle: "Agregar rápido", company: "Empresa", role: "Puesto", link: "Link de la oferta (opcional)", kit: "Kit usado", noKit: "Sin kit", stage: "Etapa",
+    notes: "Notas", nextStep: "Próximo paso", save: "Guardar", cancel: "Cancelar", edit: "Editar", delete: "Eliminar", movePrev: "Retroceder", moveNext: "Avanzar", open: "Abrir oferta",
+    funnel: { total: "En seguimiento", applied: "Postuladas", interviews: "Entrevistas", rate: "Tasa de entrevistas", offers: "Ofertas", rejected: "Rechazadas" },
+    rateHint: "Entrevistas ÷ postulaciones. Bajo 10% suele ser el CV que no pasa — adapta más y postula a menos.",
+    upcoming: "Se viene", overdue: "atrasado", noUpcoming: "Sin próximos pasos agendados. Ponle fecha a cualquier tarjeta para que nada se escape.",
+    empty: "Nada en seguimiento todavía. Agrega el empleo al que postulas — toma diez segundos.",
+    needName: "Pon al menos la empresa o el puesto.", trackFromKit: "Seguir esta postulación",
+    daysIn: (n: number) => `${n}d aquí`,
   },
   footer: "Pagos seguros con Stripe · Sin suscripción",
 };

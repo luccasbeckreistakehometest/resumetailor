@@ -1,0 +1,40 @@
+import { z } from "zod";
+import { withOwner, bad } from "@/lib/server/http";
+import { STAGES, funnel, isIsoDate } from "@/lib/applications/logic";
+import { createApplication, listApplications, serialiseApplication } from "@/lib/server/applications";
+import { getGeneration, ownsGeneration } from "@/lib/server/generations";
+import { recordEvent } from "@/lib/server/onboarding";
+
+/** Body shape shared by create and update. `nextStepAt` is a calendar date, not a timestamp. */
+export const applicationSchema = z.object({
+  company: z.string().max(120).optional(),
+  role: z.string().max(120).optional(),
+  link: z.string().max(500).optional(),
+  stage: z.enum(STAGES).optional(),
+  notes: z.string().max(4000).optional(),
+  nextStepAt: z.string().nullable().optional().refine((v) => v == null || v === "" || isIsoDate(v), "date"),
+  generationId: z.string().nullable().optional(),
+});
+
+export async function GET() {
+  return withOwner(async (owner) => {
+    const rows = listApplications(owner.userId, owner.anonId);
+    return { body: { items: rows.map((r) => serialiseApplication(r, r.kitTitle)), funnel: funnel(rows) } };
+  });
+}
+
+export async function POST(request: Request) {
+  const parsed = applicationSchema.safeParse(await request.json().catch(() => ({})));
+  return withOwner(async (owner) => {
+    if (!parsed.success) return bad("Check the fields.");
+    const b = parsed.data;
+    if (!(b.company ?? "").trim() && !(b.role ?? "").trim()) return bad("Give it at least a company or a role.");
+    // A linked kit has to be the caller's own; a stranger's id is treated as no kit at all.
+    let generationId: string | null = null;
+    if (b.generationId) { const g = getGeneration(b.generationId); if (g && ownsGeneration(g, owner.userId, owner.anonId)) generationId = g.id; }
+    const row = createApplication({ userId: owner.userId, anonId: owner.anonId }, { ...b, nextStepAt: b.nextStepAt || null, generationId });
+    recordEvent(owner.key, "application_add", { stage: row.stage, withKit: !!generationId });
+    const rows = listApplications(owner.userId, owner.anonId);
+    return { body: { item: serialiseApplication(row, rows.find((r) => r.id === row.id)?.kitTitle ?? null), funnel: funnel(rows) } };
+  });
+}
