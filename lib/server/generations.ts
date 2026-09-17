@@ -10,6 +10,7 @@ export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
   targetRole: string; input: string; result: string; matchBefore: number; matchAfter: number; unlocked: number;
   unlockedAt: string | null; model: string; costUsd: number; deepened: number; createdAt: string;
+  publishBlockedAt: string | null;
 }
 
 /** "Go deeper" passes per kit. Each is a full generation, so the count is bounded; override per deployment. */

@@ -220,6 +220,8 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "payments", "reversedAt", "TEXT");
   // Moderation: a page the admin took down stays down, whatever the owner toggles.
   addColumnIfMissing(d, "public_resumes", "takenDownAt", "TEXT");
+  // ...and on the kit itself, so deleting the page and publishing again cannot undo a takedown.
+  addColumnIfMissing(d, "generations", "publishBlockedAt", "TEXT");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }

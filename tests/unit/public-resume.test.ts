@@ -10,7 +10,7 @@ fs.rmSync(DIR, { recursive: true, force: true });
 const { createUser } = await import("@/lib/server/users");
 const { saveGeneration, unlockGeneration, deleteGeneration, serialise, getGeneration } = await import("@/lib/server/generations");
 const { mockKit } = await import("@/lib/ai/kit");
-const { upsertPublic, getPublicBySlug, getPublicByGeneration, verifyPin, pinToken, pinTokenValid, bumpViews, listPublic, deletePublic } = await import("@/lib/server/publicResumes");
+const { upsertPublic, getPublicBySlug, getPublicByGeneration, verifyPin, pinToken, pinTokenValid, bumpViews, listPublic, deletePublic, setTakenDown } = await import("@/lib/server/publicResumes");
 
 describe("access rules", () => {
   it("only an enabled page opens; a PIN page opens only once verified; missing and off look alike", async () => {
@@ -84,6 +84,21 @@ describe("publishing", () => {
     expect(pinTokenValid(cleared, pinToken(changed))).toBe(false);
     await expect(upsertPublic(g.id, u.id, g.title, { pin: "12" })).rejects.toThrow("pin");
     await expect(upsertPublic(g.id, u.id, g.title, { pin: "has space" })).rejects.toThrow("pin");
+  });
+
+  it("a takedown survives the owner deleting the page and publishing again; a restore lifts it", async () => {
+    const u = await user(); const g = gen(u.id); unlockGeneration(g.id, u.id);
+    const row = await upsertPublic(g.id, u.id, g.title, { enabled: true });
+    setTakenDown(row.slug, true);
+    expect(getGeneration(g.id)!.publishBlockedAt).toBeTruthy();
+    deletePublic(g.id);
+    const again = await upsertPublic(g.id, u.id, g.title, { enabled: true });
+    expect(again.slug).not.toBe(row.slug);
+    expect(again.enabled).toBe(0);
+    expect(again.takenDownAt).toBeTruthy();
+    setTakenDown(again.slug, false);
+    expect(getGeneration(g.id)!.publishBlockedAt).toBeNull();
+    expect((await upsertPublic(g.id, u.id, g.title, { enabled: true })).enabled).toBe(1);
   });
 
   it("counts views, and the page disappears with the kit", async () => {

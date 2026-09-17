@@ -34,7 +34,7 @@ export async function PUT(request: Request, ctx: Ctx) {
     if (!owner.userId) return bad("account_required", 401);
     if (row.unlocked !== 1) return bad("unlock_first", 409);
     const current = getPublicByGeneration(id);
-    if (current?.takenDownAt && parsed.data.enabled) return bad("taken_down", 409);
+    if ((current?.takenDownAt || row.publishBlockedAt) && parsed.data.enabled) return bad("taken_down", 409);
     try {
       const p = await upsertPublic(id, owner.userId, row.title, parsed.data);
       if (parsed.data.enabled !== undefined) recordEvent(owner.userId, parsed.data.enabled ? "cv_publish" : "cv_unpublish", { generationId: id });

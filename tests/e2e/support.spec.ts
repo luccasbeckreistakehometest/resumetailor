@@ -81,9 +81,20 @@ test.describe("support and admin tools", () => {
     await expect(u).toHaveURL(/\/start/);
     await u.goto("/account");
     await expect(u.getByTestId("must-change")).toBeVisible();
-    const re = await u.request.put(`/api/generations/${(await u.evaluate(() => fetch("/api/generations").then((r) => r.json()))).items[0].id}/publish`, { data: { enabled: true } });
+    const kitId = (await u.evaluate(() => fetch("/api/generations").then((r) => r.json()))).items[0].id;
+    const re = await u.request.put(`/api/generations/${kitId}/publish`, { data: { enabled: true } });
     expect(re.status()).toBe(409);
     expect((await re.json()).error).toBe("taken_down");
+    // Deleting the page and publishing again does not undo the takedown.
+    expect((await u.request.delete(`/api/generations/${kitId}/publish`)).status()).toBe(200);
+    const again = await u.request.put(`/api/generations/${kitId}/publish`, { data: { enabled: true } });
+    expect(again.status()).toBe(409);
+    expect((await again.json()).error).toBe("taken_down");
+    const settings = await u.request.put(`/api/generations/${kitId}/publish`, { data: { template: "modern" } });
+    expect(settings.status()).toBe(200);
+    const fresh = (await settings.json()).publicResume;
+    expect(fresh.enabled).toBe(false);
+    expect((await (await u.context().request.get(`/cv/${fresh.slug}`)).status())).toBe(404);
 
     // Disable: the session ends and sign-in is refused.
     page.once("dialog", (d) => void d.accept());

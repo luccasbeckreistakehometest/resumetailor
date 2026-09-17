@@ -42,8 +42,10 @@ export async function upsertPublic(generationId: string, userId: string, title: 
     let row = getPublicByGeneration(generationId);
     const at = nowIso();
     if (!row) {
-      db.prepare("INSERT INTO public_resumes (id,generationId,userId,slug,enabled,template,pinHash,hideContact,indexable,views,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-        .run(newId("pub"), generationId, userId, freshSlug(title), 0, "modern", null, 0, 0, 0, at, at);
+      // A kit whose page was taken down stays blocked on a new page too (the admin can restore it there).
+      const blocked = (db.prepare("SELECT publishBlockedAt FROM generations WHERE id = ?").get(generationId) as { publishBlockedAt: string | null } | undefined)?.publishBlockedAt ?? null;
+      db.prepare("INSERT INTO public_resumes (id,generationId,userId,slug,enabled,template,pinHash,hideContact,indexable,views,createdAt,updatedAt,takenDownAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .run(newId("pub"), generationId, userId, freshSlug(title), 0, "modern", null, 0, 0, 0, at, at, blocked);
       row = getPublicByGeneration(generationId)!;
     }
     const next = { ...row };
@@ -71,10 +73,18 @@ export function bumpViews(id: string): void {
 
 export const verifyPin = async (row: PublicResumeRow, pin: string): Promise<boolean> => !!row.pinHash && verifyPassword(pin, row.pinHash);
 
-/** Admin moderation: the page goes offline and the owner cannot switch it back on. */
+/**
+ * Admin moderation: the page goes offline and the owner cannot switch it back on. The block is
+ * also stored on the kit, so deleting the page and publishing it again brings nothing back.
+ */
 export function setTakenDown(slug: string, down: boolean): PublicResumeRow | null {
-  getDb().prepare("UPDATE public_resumes SET takenDownAt = ?, enabled = CASE WHEN ? THEN 0 ELSE enabled END, updatedAt = ? WHERE slug = ?")
-    .run(down ? nowIso() : null, down ? 1 : 0, nowIso(), slug);
+  const db = getDb();
+  const at = down ? nowIso() : null;
+  db.transaction(() => {
+    db.prepare("UPDATE public_resumes SET takenDownAt = ?, enabled = CASE WHEN ? THEN 0 ELSE enabled END, updatedAt = ? WHERE slug = ?")
+      .run(at, down ? 1 : 0, nowIso(), slug);
+    db.prepare("UPDATE generations SET publishBlockedAt = ? WHERE id = (SELECT generationId FROM public_resumes WHERE slug = ?)").run(at, slug);
+  })();
   return getPublicBySlug(slug);
 }
 
