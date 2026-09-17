@@ -10,10 +10,10 @@ import { useI18n } from "@/app/i18n/I18nProvider";
  * replays, and the first session's actions are logged with it.
  */
 type Rect = { top: number; left: number; width: number; height: number };
-const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "ats-check", "applications", "interview", "import", "fit"];
+const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "ats-check", "applications", "interview", "import", "fit", "publish"];
 const ROUTE_FOR: Record<string, string> = {
   "nav-start": "/", choose: "/start", credits: "/start", "nav-library": "/start", "ats-check": "/ats-check", applications: "/applications", interview: "/library",
-  import: "/ats-check", fit: "/fit",
+  import: "/ats-check", fit: "/fit", publish: "/library",
 };
 
 export function Tour() {
@@ -25,7 +25,8 @@ export function Tour() {
   const [rect, setRect] = useState<Rect | null>(null);
 
   useEffect(() => {
-    if (pathname.startsWith("/admin") || pathname.startsWith("/print")) return;
+    // Never on the admin panel, the print view, or a résumé someone was sent a link to.
+    if (pathname.startsWith("/admin") || pathname.startsWith("/print") || pathname.startsWith("/cv/")) return;
     fetch("/api/tour", { cache: "no-store" }).then((r) => r.json()).then((j) => {
       if (j.tourCompleted) return setState("done");
       const seen = sessionStorage.getItem("rt_tour_seen");

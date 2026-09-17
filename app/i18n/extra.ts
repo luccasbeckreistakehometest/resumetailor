@@ -53,6 +53,7 @@ const en = {
       { t: "Rehearse the interview", b: "Every kit comes with a mock interview: questions from the kit, answers by voice, scored and coached — with a summary of what to rehearse." },
       { t: "Import your PDF or Word file", b: "No more copy-pasting: drop your résumé on any résumé box and the text is read right here in your browser. Nothing is uploaded." },
       { t: "Am I a fit? — before you apply", b: "Paste a posting and your résumé: every must-have marked found, partial or missing with the proof line, a fit score, and the three gaps that matter. Free, no credit." },
+      { t: "Your résumé as a web page", b: "Any unlocked kit can be published at its own link — mobile-first, parser-friendly, PIN if you want — and shared on WhatsApp or LinkedIn. You see how many people opened it." },
     ],
   },
   library: { open: "Open", print: "Print / PDF", locked: "Preview", unlocked: "Unlocked", voice: "by voice", empty: "Nothing here yet — your kits will appear the moment you make one." },
@@ -216,6 +217,29 @@ const en = {
     ctaTitle: "Worth applying? Make the kit.", ctaBody: "The posting and the résumé go straight into the tailoring flow: résumé rewritten for this role, cover letter, LinkedIn About and interview prep — with the evidence above put where recruiters look.",
     cta: "Make my kit for this job →", carried: "Posting and résumé brought over from the fit check — one click to generate.",
   },
+  publish: {
+    title: "Web résumé", subtitle: "This résumé as a clean page at its own link — mobile-first, readable by parsers and by people. Share it on WhatsApp or LinkedIn; switch it off whenever you like.",
+    toggle: "Publish this résumé", on: "Published", needUnlock: "Unlock the kit to publish it.",
+    link: "Your link", open: "Open", share: "Share", copy: "Copy link", copied: "Copied ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn",
+    shareText: (name: string) => `${name} — my résumé:`,
+    template: "Template", hideContact: "Hide contact details (email, phone, links)", indexable: "Let search engines index it",
+    pin: "PIN", pinPh: "4–12 letters or digits", pinSet: "Set PIN", pinClear: "Remove PIN", pinOn: "PIN on", pinHint: "Whoever opens the link must type it.",
+    views: (n: number) => `${n} view${n === 1 ? "" : "s"}`, noViews: "No views yet", lastViewed: (d: string) => `last on ${d}`,
+  },
+  cv: {
+    eyebrow: "Web résumé", description: (name: string, role: string) => `${name}'s résumé${role ? ` for ${role}` : ""}, published with ResumeTailor.`,
+    pinTitle: "This résumé is protected", pinIntro: "Type the PIN you were given to open it.", pinPh: "PIN", pinSubmit: "Open", pinWrong: "That PIN isn't right.",
+    share: "Share", copy: "Copy link", copied: "Copied ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn", shareText: (name: string) => `${name} — résumé:`,
+    madeWith: "Made with ResumeTailor", makeYours: "Make yours, free →",
+    owner: (n: number) => `You own this page · ${n} view${n === 1 ? "" : "s"}`, edit: "Edit",
+    contactHidden: "Contact details are hidden on this page.",
+  },
+  toolkit: {
+    title: "Every unlocked kit also gives you",
+    items: {
+      publish: { t: "A web résumé", d: "Publish the résumé at its own link — mobile-first, parser-friendly, with a PIN if you want — and share it on WhatsApp or LinkedIn." },
+    },
+  },
   footer: "Secure payments by Stripe · No subscription",
 };
 
@@ -269,6 +293,7 @@ const pt: typeof en = {
       { t: "Ensaia a entrevista", b: "Todo kit vem com uma entrevista simulada: perguntas do kit, respostas por voz, nota e orientação — e um resumo do que ensaiar." },
       { t: "Importa seu PDF ou Word", b: "Chega de copiar e colar: solta o arquivo do currículo em qualquer campo de currículo e o texto é lido aqui mesmo, no seu navegador. Nada é enviado." },
       { t: "Sou um fit? — antes de se candidatar", b: "Cola a vaga e o currículo: cada requisito marcado como tem, tem em parte ou não tem, com a linha que prova, uma nota de aderência e os três buracos que mais pesam. Grátis, sem crédito." },
+      { t: "Seu currículo como página na web", b: "Qualquer kit liberado vira uma página com link próprio — feita pro celular, amiga do robô, com PIN se quiser — pra mandar no WhatsApp ou no LinkedIn. Você vê quantas pessoas abriram." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Prévia", unlocked: "Liberado", voice: "por voz", empty: "Nada aqui ainda — seus kits aparecem assim que você fizer o primeiro." },
@@ -434,6 +459,29 @@ const pt: typeof en = {
     ctaTitle: "Vale mandar? Monta o kit.", ctaBody: "A vaga e o currículo vão direto pro fluxo de personalização: currículo reescrito pra essa vaga, carta, Sobre do LinkedIn e preparação pra entrevista — com a evidência acima colocada onde o recrutador olha.",
     cta: "Montar meu kit pra essa vaga →", carried: "Vaga e currículo trazidos do teste de fit — é um clique pra gerar.",
   },
+  publish: {
+    title: "Currículo online", subtitle: "Esse currículo como uma página limpa com link próprio — feita pro celular, legível pelo robô e por gente. Manda no WhatsApp ou no LinkedIn; desliga quando quiser.",
+    toggle: "Publicar esse currículo", on: "Publicado", needUnlock: "Libera o kit pra publicar.",
+    link: "Seu link", open: "Abrir", share: "Compartilhar", copy: "Copiar link", copied: "Copiado ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn",
+    shareText: (name: string) => `${name} — meu currículo:`,
+    template: "Modelo", hideContact: "Esconder contato (e-mail, telefone, links)", indexable: "Deixar o Google encontrar",
+    pin: "PIN", pinPh: "4 a 12 letras ou números", pinSet: "Definir PIN", pinClear: "Tirar PIN", pinOn: "Com PIN", pinHint: "Quem abrir o link precisa digitar.",
+    views: (n: number) => `${n} visualiza${n === 1 ? "ção" : "ções"}`, noViews: "Ninguém abriu ainda", lastViewed: (d: string) => `última em ${d}`,
+  },
+  cv: {
+    eyebrow: "Currículo online", description: (name: string, role: string) => `Currículo de ${name}${role ? ` para ${role}` : ""}, publicado com o ResumeTailor.`,
+    pinTitle: "Esse currículo é protegido", pinIntro: "Digita o PIN que você recebeu pra abrir.", pinPh: "PIN", pinSubmit: "Abrir", pinWrong: "Esse PIN não confere.",
+    share: "Compartilhar", copy: "Copiar link", copied: "Copiado ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn", shareText: (name: string) => `${name} — currículo:`,
+    madeWith: "Feito com ResumeTailor", makeYours: "Faz o seu, grátis →",
+    owner: (n: number) => `Essa página é sua · ${n} visualiza${n === 1 ? "ção" : "ções"}`, edit: "Editar",
+    contactHidden: "Os dados de contato ficam escondidos nesta página.",
+  },
+  toolkit: {
+    title: "Todo kit liberado também te dá",
+    items: {
+      publish: { t: "Um currículo online", d: "Publica o currículo com link próprio — feito pro celular, amigo do robô, com PIN se quiser — e manda no WhatsApp ou no LinkedIn." },
+    },
+  },
   footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
@@ -487,6 +535,7 @@ const es: typeof en = {
       { t: "Ensaya la entrevista", b: "Cada kit trae una entrevista simulada: preguntas del kit, respuestas por voz, puntaje y coaching — con un resumen de qué ensayar." },
       { t: "Importa tu PDF o Word", b: "Se acabó el copiar y pegar: suelta el archivo de tu CV en cualquier campo de CV y el texto se lee aquí mismo, en tu navegador. No se sube nada." },
       { t: "¿Encajo? — antes de postular", b: "Pega una oferta y tu CV: cada requisito marcado como cumplido, parcial o ausente con la línea que lo prueba, un puntaje de encaje y las tres brechas que pesan. Gratis, sin crédito." },
+      { t: "Tu CV como página web", b: "Cualquier kit desbloqueado se publica con su propio link — pensado para el celular, amigable con el parser, con PIN si quieres — para compartir por WhatsApp o LinkedIn. Ves cuántas personas lo abrieron." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Vista previa", unlocked: "Desbloqueado", voice: "por voz", empty: "Nada aún — tus kits aparecen en cuanto hagas el primero." },
@@ -649,6 +698,29 @@ const es: typeof en = {
     honest: "Juzgado solo por tu CV. Si algo es cierto de ti pero no está escrito, ese es el arreglo: escríbelo — nunca afirmes lo que no tienes.",
     ctaTitle: "¿Vale la pena postular? Arma el kit.", ctaBody: "La oferta y el CV pasan directo al flujo de adaptación: CV reescrito para este puesto, carta, About de LinkedIn y preparación de entrevista — con la evidencia de arriba puesta donde mira el reclutador.",
     cta: "Armar mi kit para este puesto →", carried: "Oferta y CV traídos del chequeo de encaje — un clic para generar.",
+  },
+  publish: {
+    title: "CV en la web", subtitle: "Este CV como una página limpia con su propio link — pensada para el celular, legible por parsers y por personas. Compártelo por WhatsApp o LinkedIn; apágalo cuando quieras.",
+    toggle: "Publicar este CV", on: "Publicado", needUnlock: "Desbloquea el kit para publicarlo.",
+    link: "Tu link", open: "Abrir", share: "Compartir", copy: "Copiar link", copied: "Copiado ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn",
+    shareText: (name: string) => `${name} — mi CV:`,
+    template: "Plantilla", hideContact: "Ocultar datos de contacto (email, teléfono, links)", indexable: "Permitir que los buscadores lo indexen",
+    pin: "PIN", pinPh: "4 a 12 letras o dígitos", pinSet: "Definir PIN", pinClear: "Quitar PIN", pinOn: "Con PIN", pinHint: "Quien abra el link tendrá que escribirlo.",
+    views: (n: number) => `${n} visita${n === 1 ? "" : "s"}`, noViews: "Nadie lo abrió aún", lastViewed: (d: string) => `última el ${d}`,
+  },
+  cv: {
+    eyebrow: "CV en la web", description: (name: string, role: string) => `CV de ${name}${role ? ` para ${role}` : ""}, publicado con ResumeTailor.`,
+    pinTitle: "Este CV está protegido", pinIntro: "Escribe el PIN que te dieron para abrirlo.", pinPh: "PIN", pinSubmit: "Abrir", pinWrong: "Ese PIN no es correcto.",
+    share: "Compartir", copy: "Copiar link", copied: "Copiado ✓", whatsapp: "WhatsApp", linkedin: "LinkedIn", shareText: (name: string) => `${name} — CV:`,
+    madeWith: "Hecho con ResumeTailor", makeYours: "Haz el tuyo, gratis →",
+    owner: (n: number) => `Esta página es tuya · ${n} visita${n === 1 ? "" : "s"}`, edit: "Editar",
+    contactHidden: "Los datos de contacto están ocultos en esta página.",
+  },
+  toolkit: {
+    title: "Cada kit desbloqueado también te da",
+    items: {
+      publish: { t: "Un CV en la web", d: "Publica el CV con su propio link — pensado para el celular, amigable con el parser, con PIN si quieres — y compártelo por WhatsApp o LinkedIn." },
+    },
   },
   footer: "Pagos seguros con Stripe · Sin suscripción",
 };

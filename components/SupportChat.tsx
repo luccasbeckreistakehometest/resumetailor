@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 
 const EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@resumetailor.app";
@@ -9,6 +10,9 @@ const WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || ""; // digits only,
 export function SupportChat() {
   const { d } = useI18n();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  // A published résumé is someone's page, not ours: no support bubble on it.
+  if (pathname.startsWith("/cv/")) return null;
 
   return (
     <>

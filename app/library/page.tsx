@@ -22,6 +22,7 @@ export default function LibraryPage() {
   ]);
   useEffect(() => { void load(); }, [user?.id]);
   const dateOf = (iso: string) => new Date(iso).toLocaleDateString(lang === "pt" ? "pt-BR" : lang);
+  const published = (items ?? []).filter((g) => g.publicResume);
 
   async function rename(id: string) {
     if (draft.trim()) await fetch(`/api/generations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: draft.trim() }) });
@@ -67,6 +68,35 @@ export default function LibraryPage() {
             </li>
           ))}
         </ul>
+
+        {/* What an unlocked kit unlocks beyond the documents — always shown, so the tour can point at it before the first kit exists. */}
+        <section className="mt-14" data-testid="library-toolkit">
+          <Eyebrow>{x.toolkit.title}</Eyebrow>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {(Object.keys(x.toolkit.items) as (keyof typeof x.toolkit.items)[]).map((k) => (
+              <div key={k} className="card p-5" data-tour={k}>
+                <p className="font-semibold text-ink">{x.toolkit.items[k].t}</p>
+                <p className="mt-1.5 text-sm text-ink-2">{x.toolkit.items[k].d}</p>
+              </div>
+            ))}
+          </div>
+          {published.length > 0 && (
+            <ul className="mt-5 space-y-3" data-testid="library-public">
+              {published.map((g) => (
+                <li key={g.id} className="card flex flex-wrap items-center gap-4 p-4" data-testid="library-public-item" data-enabled={g.publicResume!.enabled ? "1" : "0"}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-ink">🌐 {g.title}</p>
+                    <p className="mt-1 text-xs text-muted">
+                      {g.publicResume!.enabled ? <span className="text-moss">{x.publish.on}</span> : <span>{x.library.locked}</span>} · {g.publicResume!.views === 0 ? x.publish.noViews : x.publish.views(g.publicResume!.views)}{g.publicResume!.hasPin ? ` · 🔒 ${x.publish.pinOn}` : ""}
+                    </p>
+                  </div>
+                  {g.publicResume!.enabled && <a href={`/cv/${g.publicResume!.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost !py-1.5 !text-sm">{x.publish.open} ↗</a>}
+                  <Link href={`/start?gen=${g.id}`} className="btn btn-ghost !py-1.5 !text-sm">{x.library.open}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Practice sessions: always shown, so the tour can point at it before the first kit exists. */}
         <section className="mt-14" data-tour="interview" data-testid="library-sessions">

@@ -7,6 +7,7 @@ import { useI18n } from "@/app/i18n/I18nProvider";
 import { MatchScore } from "@/components/MatchScore";
 import { CompanyInsights } from "@/components/CompanyInsights";
 import { PersonalisationMeter } from "@/components/PersonalisationMeter";
+import { PublishPanel } from "@/components/PublishPanel";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
@@ -271,6 +272,7 @@ function StartInner() {
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
+                <div className="mt-6"><PublishPanel key={gen.id} gen={gen} /></div>
                 <Section title={d.quiz.result.coverPreview.replace(" preview", "")} body={gen.kit.coverLetter} />
                 <Section title="LinkedIn" body={gen.kit.linkedinAbout} />
                 <div className="mt-6">

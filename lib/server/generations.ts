@@ -2,6 +2,7 @@ import { getDb, newId, nowIso } from "@/lib/server/db";
 import { moveCredits } from "@/lib/server/users";
 import type { Kit } from "@/lib/ai/kit";
 import { personalisation } from "@/lib/ats/personalisation";
+import { getPublicByGeneration, serialisePublic } from "@/lib/server/publicResumes";
 
 export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
@@ -88,6 +89,7 @@ export function serialise(row: GenerationRow, forAdmin = false) {
     coverLetterPreview: kit.coverLetter.split("\n").slice(0, 4).join("\n"),
     personalisation: input ? personalisation(kit.resume, input.jobDescription ?? "") : null,
     deepened: row.deepened ?? 0, deepenLeft: Math.max(0, DEEPEN_MAX - (row.deepened ?? 0)),
+    publicResume: open ? (() => { const p = getPublicByGeneration(row.id); return p ? serialisePublic(p) : null; })() : null,
     kit: open ? kit : null,
   };
 }

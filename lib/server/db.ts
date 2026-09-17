@@ -167,6 +167,25 @@ function migrate(d: Database.Database): void {
       createdAt TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_fit_owner ON fit_checks(ownerKey, createdAt DESC);
+
+    -- A kit published as a web résumé at /cv/[slug]. One per kit; the slug never changes. Only an
+    -- account can publish (unlocking needs one), and the row goes with the kit when it is deleted.
+    CREATE TABLE IF NOT EXISTS public_resumes (
+      id TEXT PRIMARY KEY,
+      generationId TEXT NOT NULL UNIQUE REFERENCES generations(id) ON DELETE CASCADE,
+      userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      slug TEXT NOT NULL UNIQUE,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      template TEXT NOT NULL DEFAULT 'modern',
+      pinHash TEXT,                                -- scrypt, like passwords; NULL = open
+      hideContact INTEGER NOT NULL DEFAULT 0,
+      indexable INTEGER NOT NULL DEFAULT 0,        -- noindex unless the owner opts in
+      views INTEGER NOT NULL DEFAULT 0,
+      lastViewedAt TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_public_user ON public_resumes(userId, updatedAt DESC);
   `);
   addColumn(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
 }
