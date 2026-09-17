@@ -8,7 +8,7 @@ process.env.DATA_DIR = DIR;
 fs.rmSync(DIR, { recursive: true, force: true });
 
 const { createUser } = await import("@/lib/server/users");
-const { saveGeneration, deepenGeneration, deleteGeneration } = await import("@/lib/server/generations");
+const { saveGeneration, deepenGeneration, deleteGeneration, reserveDeepen, releaseDeepen, getGeneration, DEEPEN_MAX } = await import("@/lib/server/generations");
 const { mockKit } = await import("@/lib/ai/kit");
 const { getVariant, listVariants, saveVariant, clearVariants } = await import("@/lib/server/variants");
 
@@ -55,6 +55,17 @@ describe("cache", () => {
     expect(listVariants(g.id).map((v) => v.kind).sort()).toEqual(["cover:warm", "email:thanks"]);
     clearVariants(g.id);
     expect(listVariants(g.id)).toEqual([]);
+  });
+  it("deepening passes are claimed before the generation runs and given back when it fails", () => {
+    const g = gen();
+    const claims = Array.from({ length: 6 }, () => reserveDeepen(g.id));   // a parallel burst
+    expect(claims.filter(Boolean)).toHaveLength(DEEPEN_MAX);
+    expect(getGeneration(g.id)!.deepened).toBe(DEEPEN_MAX);
+    releaseDeepen(g.id);
+    expect(reserveDeepen(g.id)).toBe(true);
+    deepenGeneration(g.id, kit, "mock", 0);                               // the claim already counted the pass
+    expect(getGeneration(g.id)!.deepened).toBe(DEEPEN_MAX);
+    expect(reserveDeepen("gen_missing")).toBe(false);
   });
   it("is cleared when the kit is deepened, and gone when the kit is deleted", async () => {
     const g = gen();

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { withOwner, bad, limited } from "@/lib/server/http";
 import { aiGate, runAi } from "@/lib/ai/guard";
-import { take } from "@/lib/server/ratelimit";
+import { lease, takeAll } from "@/lib/server/ratelimit";
 import { generateVariant, VARIANT_KINDS } from "@/lib/ai/variants";
 import type { Kit, Lang } from "@/lib/ai/kit";
 import { getGeneration, ownsGeneration } from "@/lib/server/generations";
@@ -36,17 +36,24 @@ export async function POST(request: Request, ctx: Ctx) {
     if (cached) return { body: serialiseVariant(cached, true) };
     const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
-    const rl = take("KIT_EXTRAS_OWNER_HOUR", owner.key);
-    if (!rl.ok) return limited(rl);
-    const kit = JSON.parse(row.result) as Kit;
-    const input = JSON.parse(row.input) as { jobDescription?: string };
-    const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
-    const ran = await runAi("variant", { ownerKey: owner.key, ip: owner.ip }, () =>
-      generateVariant({ kind, kit, title: row.title, targetRole: row.targetRole, posting: input.jobDescription ?? "", lang }));
-    if (!ran.ok) return ran.reply;
-    const { variant, model, costUsd } = ran.value;
-    const saved = saveVariant({ generationId: id, kind, variant, model, costUsd });
-    recordEvent(owner.key, "variant", { generationId: id, kind });
-    return { body: serialiseVariant(saved, false) };
+    const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
+    if (over) return limited(over);
+    // One generation at a time for this text: a parallel duplicate is refused instead of paying twice.
+    const slot = lease("KIT_EXTRA_INFLIGHT", `${id}|${kind}`);
+    if (!slot.ok) return limited(slot.failed, "ai_busy");
+    try {
+      const kit = JSON.parse(row.result) as Kit;
+      const input = JSON.parse(row.input) as { jobDescription?: string };
+      const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
+      const ran = await runAi("variant", { ownerKey: owner.key, ip: owner.ip }, () =>
+        generateVariant({ kind, kit, title: row.title, targetRole: row.targetRole, posting: input.jobDescription ?? "", lang }));
+      if (!ran.ok) return ran.reply;
+      const { variant, model, costUsd } = ran.value;
+      const saved = saveVariant({ generationId: id, kind, variant, model, costUsd });
+      recordEvent(owner.key, "variant", { generationId: id, kind });
+      return { body: serialiseVariant(saved, false) };
+    } finally {
+      slot.release();
+    }
   });
 }

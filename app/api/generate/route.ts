@@ -5,7 +5,7 @@ import { runAi } from "@/lib/ai/guard";
 import { saveGeneration, serialise } from "@/lib/server/generations";
 import { recordEvent } from "@/lib/server/onboarding";
 import { envNumber } from "@/lib/server/env";
-import { hit, peek, takeAll } from "@/lib/server/ratelimit";
+import { reserveSpecs, takeAll } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -38,20 +38,18 @@ export async function POST(request: Request) {
       ...(owner.userId ? [["GENERATE_USER_DAY", owner.userId] as ["GENERATE_USER_DAY", string]] : []),
     ]);
     if (over) return limited(over);
-    // Anonymous previews: counted only when one is actually delivered, capped per IP per day.
-    const anonCap = envNumber("ANON_PREVIEWS_PER_IP_PER_DAY", 3);
-    if (!owner.userId) {
-      const anon = peek("ANON_PREVIEW_IP_DAY", owner.ip, anonCap, 86_400);
-      if (!anon.ok) return limited(anon, "account_required");
-    }
+    // Anonymous previews: capped per IP per day. The slot is claimed before the (slow) generation,
+    // so a parallel burst cannot pass the cap, and given back when no preview was delivered.
+    const anonSlot = owner.userId ? null
+      : reserveSpecs([{ bucket: "ANON_PREVIEW_IP_DAY", key: owner.ip, max: envNumber("ANON_PREVIEWS_PER_IP_PER_DAY", 3), windowSec: 86_400 }]);
+    if (anonSlot && !anonSlot.ok) return limited(anonSlot.failed, "account_required");
     const ran = await runAi("generate", { ownerKey: owner.key, ip: owner.ip }, () => generateKit(b));
-    if (!ran.ok) return ran.reply;
+    if (!ran.ok) { if (anonSlot?.ok) anonSlot.release(); return ran.reply; }
     const { kit, model, costUsd } = ran.value;
     const row = saveGeneration({
       userId: owner.userId, anonId: owner.anonId, mode: b.mode, source: b.source, lang: b.lang, targetRole: b.targetRole,
       input: { jobDescription: b.jobDescription, resume: b.resume, profile: b.profile, briefingId: b.briefingId }, kit, model, costUsd,
     });
-    if (!owner.userId) hit("ANON_PREVIEW_IP_DAY", owner.ip, anonCap, 86_400);
     recordEvent(owner.key, "generate", { mode: b.mode, source: b.source, matchAfter: kit.matchAfter });
     return { body: serialise(row) };
   });

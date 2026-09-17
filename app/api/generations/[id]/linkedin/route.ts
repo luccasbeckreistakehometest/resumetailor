@@ -1,6 +1,6 @@
 import { withOwner, bad, limited } from "@/lib/server/http";
 import { aiGate, runAi } from "@/lib/ai/guard";
-import { take } from "@/lib/server/ratelimit";
+import { lease, takeAll } from "@/lib/server/ratelimit";
 import { generateLinkedIn } from "@/lib/ai/linkedin";
 import type { Kit, Lang } from "@/lib/ai/kit";
 import { linkedinCoverage, roleVocabulary, type LinkedInProfile } from "@/lib/linkedin/logic";
@@ -43,18 +43,25 @@ export async function POST(_: Request, ctx: Ctx) {
     if (cached) return { body: view(row, cached, true) };
     const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
-    const rl = take("KIT_EXTRAS_OWNER_HOUR", owner.key);
-    if (!rl.ok) return limited(rl);
-    const kit = JSON.parse(row.result) as Kit;
-    const input = JSON.parse(row.input) as { jobDescription?: string };
-    const posting = input.jobDescription ?? "";
-    const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
-    const ran = await runAi("linkedin", { ownerKey: owner.key, ip: owner.ip }, () =>
-      generateLinkedIn({ kit, targetRole: row.targetRole, posting, vocabulary: roleVocabulary(posting, kit.keywords), lang }));
-    if (!ran.ok) return ran.reply;
-    const { profile, model, costUsd } = ran.value;
-    const saved = saveVariant({ generationId: id, kind: KIND, variant: { subject: "", body: JSON.stringify(profile) }, model, costUsd });
-    recordEvent(owner.key, "linkedin", { generationId: id });
-    return { body: view(row, saved, false) };
+    const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
+    if (over) return limited(over);
+    // One generation at a time for this kit: a parallel duplicate is refused instead of paying twice.
+    const slot = lease("KIT_EXTRA_INFLIGHT", `${id}|${KIND}`);
+    if (!slot.ok) return limited(slot.failed, "ai_busy");
+    try {
+      const kit = JSON.parse(row.result) as Kit;
+      const input = JSON.parse(row.input) as { jobDescription?: string };
+      const posting = input.jobDescription ?? "";
+      const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
+      const ran = await runAi("linkedin", { ownerKey: owner.key, ip: owner.ip }, () =>
+        generateLinkedIn({ kit, targetRole: row.targetRole, posting, vocabulary: roleVocabulary(posting, kit.keywords), lang }));
+      if (!ran.ok) return ran.reply;
+      const { profile, model, costUsd } = ran.value;
+      const saved = saveVariant({ generationId: id, kind: KIND, variant: { subject: "", body: JSON.stringify(profile) }, model, costUsd });
+      recordEvent(owner.key, "linkedin", { generationId: id });
+      return { body: view(row, saved, false) };
+    } finally {
+      slot.release();
+    }
   });
 }
