@@ -67,6 +67,7 @@ export default function LibraryPage() {
               <div className="flex flex-wrap gap-2">
                 <Link href={`/start?gen=${g.id}`} className="btn btn-ghost !py-1.5 !text-sm">{x.library.open}</Link>
                 <Link href={`/interview/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-practice">🎙 {x.interview.practice}</Link>
+                <Link href={`/pitch/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-pitch">🎬</Link>
                 {g.unlocked && <Link href={`/linkedin/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-linkedin">in</Link>}
                 {g.unlocked && <Link href={`/print?id=${g.id}`} target="_blank" className="btn btn-ink !py-1.5 !text-sm">{x.library.print}</Link>}
                 {g.unlocked && <Link href={`/edit/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-edit">✎ {r.editor.cta}</Link>}

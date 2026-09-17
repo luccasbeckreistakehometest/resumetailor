@@ -25,6 +25,9 @@ test.describe("mock interview", () => {
     await page.evaluate((t) => (window as unknown as { __rtVoiceFeed: (t: string) => void }).__rtVoiceFeed(t), VOICE_ANSWER);
     await expect(page.getByTestId("answer-score")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId("score-overall")).toHaveText(/^\d+(\.\d)?$/);
+    // Spoken answers also get pace and filler words.
+    await expect(page.getByTestId("delivery-pace")).toContainText(/Pace|Ritmo/);
+    await expect(page.getByTestId("delivery-fillers")).toContainText(/Filler words|Vícios/);
     await page.getByTestId("model-toggle").click();
     await expect(page.getByTestId("model-answer")).not.toBeEmpty();
     await page.getByTestId("answer-next").click();

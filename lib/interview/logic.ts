@@ -10,6 +10,8 @@ export type Dimension = "structure" | "specificity" | "relevance";
 export interface Scores { structure: number; specificity: number; relevance: number }
 export interface Turn {
   questionIdx: number; answer: string; source: "voice" | "text"; scores: Scores; coaching: string[]; modelAnswer: string; at: string;
+  /** Pace and filler words, for spoken answers (lib/speech/metrics.ts). */
+  delivery?: import("@/lib/speech/metrics").Delivery | null;
 }
 
 /** A locked kit gets a taste; an unlocked one gets the whole conversation. */
