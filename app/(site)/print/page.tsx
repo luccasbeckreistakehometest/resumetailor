@@ -16,6 +16,17 @@ function PrintInner() {
   const { d, x } = useI18n();
   const [tpl, setTpl] = useState<Template>((TEMPLATES.includes(params.get("template") as Template) ? params.get("template") : "modern") as Template);
   const [gen, setGen] = useState<GenerationView | null | undefined>(undefined);
+  // ?variant=intl:en prints the international version instead of the kit's own résumé.
+  const variant = params.get("variant");
+  const [variantText, setVariantText] = useState<string | null>(null);
+  useEffect(() => {
+    const id = params.get("id");
+    const target = variant?.match(/^intl:(en|pt|es)$/)?.[1];
+    if (!id || !target) return;
+    let alive = true;
+    fetch(`/api/generations/${id}/intl?target=${target}`).then((r) => (r.ok ? r.json() : null)).then((j) => { if (alive) setVariantText(j?.version?.resume ?? null); }).catch(() => {});
+    return () => { alive = false; };
+  }, [params, variant]);
 
   useEffect(() => {
     const id = params.get("id") ?? localStorage.getItem("rt_last_gen");
@@ -57,7 +68,7 @@ function PrintInner() {
         <p className="mx-auto mt-1.5 max-w-5xl text-xs text-muted">{d.print.hint[tpl]} · {d.print.tip}</p>
       </div>
       <div className="mx-auto my-6 w-full max-w-[210mm] bg-white p-6 shadow-lg sm:p-[16mm] print:my-0 print:max-w-none print:p-0 print:shadow-none" data-testid="document">
-        <div className={`doc-${tpl}`}><ReactMarkdown>{gen.kit.resume}</ReactMarkdown></div>
+        <div className={`doc-${tpl}`}><ReactMarkdown>{variantText ?? gen.kit.resume}</ReactMarkdown></div>
       </div>
     </div>
   );

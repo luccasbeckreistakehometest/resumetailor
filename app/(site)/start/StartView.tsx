@@ -11,6 +11,8 @@ import { PublishPanel } from "@/components/PublishPanel";
 import { LetterStudio } from "@/components/LetterStudio";
 import { TruthCards } from "@/components/editor/KitChecks";
 import { QuantifyCard } from "@/components/QuantifyCard";
+import { RedFlagNotice } from "@/components/RedFlagNotice";
+import { IntlCard } from "@/components/IntlCard";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { apiErrorText } from "@/app/i18n/launch";
@@ -261,6 +263,7 @@ function StartInner() {
                 <p className="mt-1 text-sm text-muted">{pasteNeeded?.job ? x.voice.jobNeeded : d.quiz.job.subtitle}</p>
                 <label htmlFor="rt-job" className="sr-only">{d.quiz.job.title}</label>
                 <textarea id="rt-job" className="field mt-6" rows={9} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder={d.quiz.job.placeholder} data-testid="job" />
+                <RedFlagNotice text={jobDescription} />
               </>
             )}
 
@@ -326,6 +329,7 @@ function StartInner() {
                   <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
                   <Link href={`/edit/${gen.id}`} className="btn btn-ink" data-testid="edit-kit">✎ {r.editor.cta}</Link>
                   <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
+                  <Link href={`/pitch/${gen.id}`} className="btn btn-ghost" data-testid="pitch-link">🎬 {r.pitch.cta}</Link>
                   <Link href={`/linkedin/${gen.id}`} className="btn btn-ghost" data-testid="linkedin-link">in · {x.linkedin.cta}</Link>
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>
                   <Link href={`/start?new=tailor&base=kit&kit=${gen.id}`} className="btn btn-ghost" title={r.profile.newJobHint} data-testid="new-job">{r.profile.newJob}</Link>
@@ -334,6 +338,7 @@ function StartInner() {
                 <div className="mt-6"><QuantifyCard key={`q-${gen.id}`} gen={gen} onUpdate={setGen} /></div>
                 <div className="mt-6"><TruthCards gen={gen} compact onGen={setGen} /></div>
                 <Link href={`/edit/${gen.id}#changes`} className="mt-2 inline-block text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="open-changes">{r.checks.seeAll} →</Link>
+                <div className="mt-6"><IntlCard key={`intl-${gen.id}`} gen={gen} /></div>
                 <div className="mt-6"><PublishPanel key={gen.id} gen={gen} /></div>
                 <LetterStudio key={`letters-${gen.id}-${gen.deepened}`} gen={gen} />
                 <Section title="LinkedIn" body={gen.kit.linkedinAbout} />
@@ -369,6 +374,7 @@ function StartInner() {
                 <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-edge pt-5">
                   <Link href={`/interview/${gen.id}`} className="btn btn-ghost !py-2 !text-sm" data-testid="practice">🎙 {x.interview.practice}</Link>
                   <span className="text-xs text-muted">{x.interview.previewBadge}</span>
+                  <Link href={`/pitch/${gen.id}`} className="btn btn-ghost !py-2 !text-sm" data-testid="pitch-link">🎬 {r.pitch.cta}</Link>
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost !py-2 !text-sm" data-testid="track">{x.applications.trackFromKit}</Link>
                 </div>
               </div>
