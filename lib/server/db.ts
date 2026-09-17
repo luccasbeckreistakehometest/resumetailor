@@ -152,6 +152,21 @@ function migrate(d: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_app_user ON applications(userId, updatedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_app_anon ON applications(anonId, updatedAt DESC);
+
+    -- The free "am I a fit?" pre-check. One row per distinct (posting, résumé, language), shared by
+    -- everyone who pastes the same pair; the owner key is who first paid for the AI call, for the daily cap.
+    CREATE TABLE IF NOT EXISTS fit_checks (
+      id TEXT PRIMARY KEY,
+      ownerKey TEXT NOT NULL,                      -- userId or anonId of the first requester
+      hash TEXT NOT NULL UNIQUE,
+      lang TEXT NOT NULL DEFAULT 'en',
+      role TEXT NOT NULL DEFAULT '',
+      result TEXT NOT NULL,                        -- JSON FitAnalysis (no résumé or posting text is kept)
+      model TEXT NOT NULL DEFAULT '',
+      costUsd REAL NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_fit_owner ON fit_checks(ownerKey, createdAt DESC);
   `);
   addColumn(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
 }

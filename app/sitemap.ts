@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: ats.en, lastModified, changeFrequency: "monthly", priority: 0.9, alternates: { languages: ats } },
     { url: ats["pt-BR"], lastModified, changeFrequency: "monthly", priority: 0.9, alternates: { languages: ats } },
     { url: ats.es, lastModified, changeFrequency: "monthly", priority: 0.9, alternates: { languages: ats } },
+    { url: `${BASE}/fit`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/start`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     ...["jobseeker", "firstjob", "careerchange", "vschatgpt"].map((slug) => ({ url: `${BASE}/lp/${slug}`, lastModified, changeFrequency: "monthly" as const, priority: 0.6 })),

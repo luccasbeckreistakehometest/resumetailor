@@ -15,6 +15,7 @@ export function SiteFooter() {
         </div>
         <nav className="flex flex-wrap gap-5">
           <Link href="/ats-check" className="hover:text-ink">{x.nav.atsCheck}</Link>
+          <Link href="/fit" className="hover:text-ink">{x.nav.fit}</Link>
           <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
           <Link href="/library" className="hover:text-ink">{d.nav.myCVs}</Link>
           <Link href="/applications" className="hover:text-ink">{x.nav.applications}</Link>

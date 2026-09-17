@@ -10,10 +10,10 @@ import { useI18n } from "@/app/i18n/I18nProvider";
  * replays, and the first session's actions are logged with it.
  */
 type Rect = { top: number; left: number; width: number; height: number };
-const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "ats-check", "applications", "interview", "import"];
+const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "ats-check", "applications", "interview", "import", "fit"];
 const ROUTE_FOR: Record<string, string> = {
   "nav-start": "/", choose: "/start", credits: "/start", "nav-library": "/start", "ats-check": "/ats-check", applications: "/applications", interview: "/library",
-  import: "/ats-check",
+  import: "/ats-check", fit: "/fit",
 };
 
 export function Tour() {

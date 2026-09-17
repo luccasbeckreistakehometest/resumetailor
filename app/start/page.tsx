@@ -42,6 +42,20 @@ function StartInner() {
   const [gen, setGen] = useState<GenerationView | null>(null);
   const [authOpen, setAuthOpen] = useState(false); const [unlocking, setUnlocking] = useState(false);
   const [needCredits, setNeedCredits] = useState(false);
+  const [carried, setCarried] = useState(false);
+
+  // Arriving from the fit check: the posting and the résumé come along, so the kit is one click away.
+  useEffect(() => {
+    if (params.get("from") !== "fit") return;
+    let carry: { role?: string; posting?: string; resume?: string } | null = null;
+    try { carry = JSON.parse(sessionStorage.getItem("rt_fit_carry") ?? "null"); } catch {}
+    if (!carry?.posting || !carry.resume) return;
+    const c = carry;
+    const id = setTimeout(() => {
+      setVia("text"); setMode("tailor"); setTargetRole(c.role ?? ""); setJobDescription(c.posting ?? ""); setResume(c.resume ?? ""); setStep(FLOWS.tailor.length - 1); setCarried(true);
+    }, 0);
+    return () => clearTimeout(id);
+  }, [params]);
 
   // Reopening a saved kit from the library.
   useEffect(() => {
@@ -201,6 +215,7 @@ function StartInner() {
               <>
                 <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.resume.title}</h1>
                 <p className="mt-1 text-sm text-muted">{pasteNeeded?.resume ? x.voice.resumeNeeded : d.quiz.resume.subtitle}</p>
+                {carried && <p className="mt-3 rounded-xl bg-gold-2 px-4 py-2.5 text-sm text-ink" data-testid="fit-carried">{x.fit.carried}</p>}
                 <div className="mt-6"><ImportableTextarea value={resume} onChange={setResume} rows={11} placeholder={d.quiz.resume.placeholder} testId="resume" importTestId="import" /></div>
               </>
             )}

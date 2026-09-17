@@ -14,7 +14,7 @@ export default defineConfig({
   use: { baseURL: "http://localhost:3100", trace: "retain-on-failure", screenshot: "only-on-failure", locale: "en-US" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "AI_MOCK=1 DATA_DIR=data/e2e ADMIN_EMAIL=admin@resumetailor.app ADMIN_PASSWORD=resumetailor2026 npx next dev -p 3100",
+    command: "AI_MOCK=1 DATA_DIR=data/e2e ADMIN_EMAIL=admin@resumetailor.app ADMIN_PASSWORD=resumetailor2026 FIT_CHECKS_PER_DAY=3 npx next dev -p 3100",
     url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 120_000,

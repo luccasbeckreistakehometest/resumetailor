@@ -25,6 +25,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
         {!minimal && (
           <nav className="hidden items-center gap-6 text-sm font-medium text-ink-2 md:flex">
             <Link href="/ats-check" className="hover:text-ink" data-testid="nav-ats">{x.nav.atsCheck}</Link>
+            <Link href="/fit" className="hover:text-ink" data-testid="nav-fit">{x.nav.fit}</Link>
             <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
             <Link href="/library" className="hover:text-ink" data-tour="nav-library">{d.nav.myCVs}</Link>
             <Link href="/applications" className="hover:text-ink" data-testid="nav-applications">{x.nav.applications}</Link>
