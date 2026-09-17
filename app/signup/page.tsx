@@ -1,9 +1,8 @@
-"use client";
+import type { Metadata } from "next";
+import { AuthPage } from "../login/AuthPage";
 
-import { useRouter } from "next/navigation";
-import { AuthModal } from "@/components/AuthButton";
+export const metadata: Metadata = { title: "Create your account", robots: { index: false, follow: false } };
 
 export default function SignupPage() {
-  const router = useRouter();
-  return <AuthModal onClose={() => router.push("/")} onDone={() => router.push("/start")} />;
+  return <AuthPage mode="up" />;
 }

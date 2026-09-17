@@ -1,32 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
+import { speechAvailable, useSpeechInput } from "@/lib/client/speech";
 import type { Briefing } from "@/lib/ai/voice";
-
-/* Web Speech API is not in the TS lib; only what we touch is declared. */
-type Rec = { lang: string; continuous: boolean; interimResults: boolean; start(): void; stop(): void; abort(): void;
-  onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
-  onerror: ((e: { error: string }) => void) | null; onend: (() => void) | null };
-type RecCtor = new () => Rec;
-const getRec = (): RecCtor | null => {
-  if (typeof window === "undefined") return null;
-  const w = window as unknown as { SpeechRecognition?: RecCtor; webkitSpeechRecognition?: RecCtor };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
-};
-const BCP: Record<string, string> = { en: "en-US", pt: "pt-BR", es: "es-ES" };
 
 /**
  * The listening flow. The user talks; each finished turn goes to the server, which says what it
  * understood and what single thing to ask next. It loops until nothing required is missing, then
- * hands a confirmed briefing to the form. Speech synthesis reads the prompts so eyes stay off the
- * screen; a test hook (`window.__rtVoiceFeed`) lets Playwright inject transcripts.
+ * hands a confirmed briefing to the form. The prompts are read by the server's AI voice; the
+ * microphone goes through the shared speech hook (which keeps the words across Chrome's pauses),
+ * and its test hook (`window.__rtVoiceFeed`) lets Playwright inject transcripts.
  */
 export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Briefing, briefingId: string) => void; onTypeInstead: () => void }) {
-  const { x, lang } = useI18n();
+  const { x, lang, l } = useI18n();
   const [supported, setSupported] = useState(true);
-  const [phase, setPhase] = useState<"idle" | "listening" | "thinking" | "review">("idle");
-  const [interim, setInterim] = useState("");
+  const [thinking, setThinking] = useState(false);
   const [turns, setTurns] = useState<string[]>([]);
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [briefingId, setBriefingId] = useState<string | undefined>();
@@ -34,11 +24,9 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
   const [followUp, setFollowUp] = useState<string | null>(null);
   const prompt = followUp ?? x.voice.opener;
   const [error, setError] = useState("");
-  const rec = useRef<Rec | null>(null);
-  const buffer = useRef("");
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setSupported(!!getRec() || !!(window as unknown as { __rtVoiceTest?: boolean }).__rtVoiceTest));
+    const id = requestAnimationFrame(() => setSupported(speechAvailable()));
     return () => cancelAnimationFrame(id);
   }, []);
 
@@ -47,11 +35,12 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
   const audio = useRef<HTMLAudioElement | null>(null);
   const [voiceOn, setVoiceOn] = useState(false);
   useEffect(() => {
-    fetch("/api/voice/speak").then((r) => r.json()).then((j) => { const id = requestAnimationFrame(() => setVoiceOn(!!j.provider)); return () => cancelAnimationFrame(id); }).catch(() => {});
+    let id = 0;
+    fetch("/api/voice/speak").then((r) => r.json()).then((j) => { id = requestAnimationFrame(() => setVoiceOn(!!j.provider)); }).catch(() => {});
+    return () => cancelAnimationFrame(id);
   }, []);
-  const hush = () => { try { audio.current?.pause(); } catch {} audio.current = null; };
-  useEffect(() => { if (voiceOn && !followUp) void speak(x.voice.opener); return hush; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [voiceOn, lang]);
-  const speak = async (text: string) => {
+  const hush = useCallback(() => { try { audio.current?.pause(); } catch {} audio.current = null; }, []);
+  const speak = useCallback(async (text: string) => {
     hush();
     try {
       const r = await fetch("/api/voice/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, lang }) });
@@ -61,51 +50,43 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
       a.onended = () => URL.revokeObjectURL(url);
       await a.play();
     } catch { /* autoplay blocked or no audio: the text is on screen */ }
-  };
+  }, [hush, lang]);
+  const opener = x.voice.opener;
+  useEffect(() => hush, [hush]);
+  // The opener is spoken once the voice is known to be on, and again if the language changes before the first answer.
+  useEffect(() => { if (voiceOn && !followUp) void speak(opener); }, [voiceOn, followUp, opener, speak]);
 
-  useEffect(() => {
-    // test hook: Playwright feeds a transcript instead of the microphone
-    (window as unknown as { __rtVoiceFeed?: (t: string) => void }).__rtVoiceFeed = (t: string) => { buffer.current = t; void finishTurn(); };
-    return () => { delete (window as unknown as { __rtVoiceFeed?: unknown }).__rtVoiceFeed; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [briefingId, briefing, turns, lang]);
+  // Latest state for the turn handler, which the speech hook calls from its own callback.
+  const latest = useRef({ briefingId, briefing, lang });
+  useEffect(() => { latest.current = { briefingId, briefing, lang }; }, [briefingId, briefing, lang]);
 
-  function start() {
-    setError(""); hush();
-    const Ctor = getRec();
-    if (!Ctor) { setPhase("listening"); return; }   // test mode: wait for feed
-    const r = new Ctor(); rec.current = r;
-    r.lang = BCP[lang] ?? "en-US"; r.continuous = true; r.interimResults = true;
-    buffer.current = "";
-    r.onresult = (e) => {
-      let finals = "", live = "";
-      for (let i = 0; i < e.results.length; i++) { const res = e.results[i]; const t = res[0]?.transcript ?? ""; if (res.isFinal) finals += t + " "; else live += t; }
-      buffer.current = finals.trim(); setInterim(live);
-    };
-    r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { setError(x.voice.denied); setPhase("idle"); } };
-    r.onend = () => { if (phase === "listening") { /* Chrome ends after silence; keep the turn open */ try { r.start(); } catch {} } };
-    try { r.start(); setPhase("listening"); } catch { setError(x.voice.unsupported); }
-  }
-
-  async function finishTurn() {
-    if (rec.current) rec.current.onend = null;
-    try { rec.current?.stop(); } catch {}
-    const text = (buffer.current + " " + interim).trim();
-    setInterim("");
-    if (text.length < 3) { setPhase("idle"); return; }
+  const finishTurn = useCallback(async (spoken: string) => {
+    const text = spoken.trim();
+    if (text.length < 3) return;
+    const cur = latest.current;
     setTurns((t) => [...t, text]);
-    setPhase("thinking");
+    setThinking(true);
     try {
       const r = await fetch("/api/voice/extract", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript: text, lang, briefingId, priorSummary: briefing?.summaryForUser }) });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || x.errors.generic);
+        body: JSON.stringify({ transcript: text, lang: cur.lang, briefingId: cur.briefingId, priorSummary: cur.briefing?.summaryForUser }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(apiErrorText(j, l, x.errors.generic));
       setBriefing(j.briefing); setBriefingId(j.briefingId);
       if (j.briefing.missing.length && j.briefing.followUp) { setFollowUp(j.briefing.followUp); void speak(j.briefing.followUp); }
       else void speak(x.voice.ready);
-      setPhase("review");
-    } catch (e) { setError(e instanceof Error ? e.message : x.errors.generic); setPhase("idle"); }
+    } catch (e) { setError(e instanceof Error ? e.message : x.errors.generic); }
+    finally { setThinking(false); }
+  }, [l, x, speak]);
+
+  const speech = useSpeechInput(lang, (t) => { void finishTurn(t); });
+  const phase: "idle" | "listening" | "thinking" | "review" = thinking ? "thinking" : speech.listening ? "listening" : briefing ? "review" : "idle";
+  const micError = speech.error === "denied" ? x.voice.denied : speech.error === "unsupported" ? x.voice.unsupported : "";
+
+  function start() {
+    setError(""); hush();
+    speech.start();
   }
+  const finish = () => speech.stop();
 
   const complete = !!briefing && briefing.missing.length === 0 && briefing.mode !== "unknown";
 
@@ -135,19 +116,19 @@ export function VoiceBriefing({ onConfirm, onTypeInstead }: { onConfirm: (b: Bri
       <div className="mt-6 flex flex-col items-center gap-4">
         {phase === "listening" ? (
           <>
-            <button onClick={finishTurn} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-oxblood text-white" aria-label={x.voice.stop} data-testid="voice-stop">
+            <button onClick={finish} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-oxblood text-white" aria-label={x.voice.stop} data-testid="voice-stop">
               <span className="text-2xl">■</span>
             </button>
             <p className="text-sm font-medium text-oxblood">{x.voice.listening}</p>
-            <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{(buffer.current + " " + interim).trim()}</p>
-            <button onClick={finishTurn} className="btn btn-ink">{x.voice.stop}</button>
+            <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{speech.interim}</p>
+            <button onClick={finish} className="btn btn-ink">{x.voice.stop}</button>
           </>
         ) : phase === "thinking" ? (
           <p className="text-sm font-medium text-ink-2" data-testid="voice-thinking">{x.voice.thinking}</p>
         ) : (
           <button onClick={start} className="btn btn-primary" data-testid="voice-start">{phase === "review" ? x.voice.again : x.voice.start}</button>
         )}
-        {error && <p className="text-sm text-oxblood" role="alert">{error}</p>}
+        {(error || micError) && <p className="text-sm text-oxblood" role="alert">{error || micError}</p>}
       </div>
 
       {briefing && (

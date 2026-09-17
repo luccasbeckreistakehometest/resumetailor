@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { ImportableTextarea } from "@/components/FileDrop";
 import { Eyebrow, Stamp } from "@/components/ui";
 import type { FitView } from "@/lib/server/fit";
@@ -12,7 +13,7 @@ type Inputs = { targetRole: string; posting: string; resume: string };
 const MIN = 30;
 
 export function FitChecker() {
-  const { x, lang } = useI18n();
+  const { x, lang, l } = useI18n();
   const F = x.fit;
   const router = useRouter();
   const [posting, setPosting] = useState("");
@@ -33,8 +34,8 @@ export function FitChecker() {
     const r = await fetch("/api/fit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ posting, resume, lang }) });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.status === 429) { setLimit(j.resetsAt ?? ""); return; }
-    if (!r.ok) { setError(j.error || x.errors.generic); return; }
+    if (r.status === 429 && j.error === "limit") { setLimit(j.resetsAt ?? ""); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); return; }
     setResult(j);
     setTimeout(() => document.getElementById("fit-result")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }
@@ -59,10 +60,10 @@ export function FitChecker() {
           <Eyebrow>{F.eyebrow}</Eyebrow>
           {last && <button onClick={() => { setPosting(last.posting); setResume(last.resume); }} className="text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="fit-reuse">↺ {F.reuse}</button>}
         </div>
-        <label className="mt-3 block text-sm font-medium text-ink-2">{F.postingLabel}</label>
-        <textarea className="field mt-2" rows={7} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={F.postingPh} data-testid="fit-posting" />
-        <label className="mt-5 block text-sm font-medium text-ink-2">{F.resumeLabel}</label>
-        <div className="mt-2"><ImportableTextarea value={resume} onChange={setResume} rows={9} placeholder={F.resumePh} testId="fit-resume" importTestId="import" /></div>
+        <label htmlFor="fit-posting" className="mt-3 block text-sm font-medium text-ink-2">{F.postingLabel}</label>
+        <textarea id="fit-posting" className="field mt-2" rows={7} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={F.postingPh} data-testid="fit-posting" />
+        <label htmlFor="fit-resume" className="mt-5 block text-sm font-medium text-ink-2">{F.resumeLabel}</label>
+        <div className="mt-2"><ImportableTextarea id="fit-resume" value={resume} onChange={setResume} rows={9} placeholder={F.resumePh} testId="fit-resume" importTestId="import" /></div>
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <button onClick={run} disabled={busy} className="btn btn-primary" data-testid="fit-run">{busy ? F.running : F.run}</button>
           <p className="text-xs text-muted">{F.privacy}</p>

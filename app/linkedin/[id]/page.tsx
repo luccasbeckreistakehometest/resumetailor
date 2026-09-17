@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Container, Eyebrow } from "@/components/ui";
 import { profileAsText } from "@/lib/linkedin/logic";
@@ -13,7 +14,7 @@ type Phase = "loading" | "missing" | "locked" | "generating" | "ready" | "error"
 
 /** /linkedin/[kit id] — the whole LinkedIn profile rewritten for the kit's target role, one screen, copy per section. */
 export default function LinkedInPage() {
-  const { x } = useI18n();
+  const { x, l } = useI18n();
   const L = x.linkedin;
   const params = useParams();
   const id = (Array.isArray(params.id) ? params.id[0] : params.id) ?? "";
@@ -34,7 +35,7 @@ export default function LinkedInPage() {
       const r = await fetch(`/api/generations/${id}/linkedin`, { method: "POST" });
       const j = await r.json().catch(() => ({}));
       if (cancelled) return;
-      if (!r.ok) { setError(j.error || x.errors.generic); setPhase("error"); return; }
+      if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); setPhase("error"); return; }
       setData(j); setPhase("ready");
     })();
     return () => { cancelled = true; };

@@ -134,10 +134,10 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
 
       <div className="card p-6 sm:p-8" data-tour="ats-check">
         <Eyebrow>{A.eyebrow}</Eyebrow>
-        <label className="mt-3 block text-sm font-medium text-ink-2">{A.resumeLabel}</label>
-        <div className="mt-2"><ImportableTextarea value={resume} onChange={setResume} rows={12} placeholder={A.resumePh} testId="ats-resume" importTestId="import" tour="import" /></div>
-        <label className="mt-5 block text-sm font-medium text-ink-2">{A.postingLabel}</label>
-        <textarea className="field mt-2" rows={6} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={A.postingPh} data-testid="ats-posting" />
+        <label htmlFor="ats-resume" className="mt-3 block text-sm font-medium text-ink-2">{A.resumeLabel}</label>
+        <div className="mt-2"><ImportableTextarea id="ats-resume" value={resume} onChange={setResume} rows={12} placeholder={A.resumePh} testId="ats-resume" importTestId="import" tour="import" /></div>
+        <label htmlFor="ats-posting" className="mt-5 block text-sm font-medium text-ink-2">{A.postingLabel}</label>
+        <textarea id="ats-posting" className="field mt-2" rows={6} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={A.postingPh} data-testid="ats-posting" />
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <button onClick={run} className="btn btn-primary" data-testid="ats-check">{A.check}</button>
           <p className="text-xs text-muted">{A.privacy}</p>

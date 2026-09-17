@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { COVER_TONES, EMAIL_KINDS, type CoverTone, type EmailKind, type VariantKind } from "@/lib/ai/variants";
 import type { GenerationView } from "@/lib/server/generations";
 import type { VariantView } from "@/lib/server/variants";
@@ -14,7 +15,7 @@ type Tone = "original" | CoverTone;
  * also open in the person's mail app with subject and body filled in.
  */
 export function LetterStudio({ gen }: { gen: GenerationView }) {
-  const { x } = useI18n();
+  const { x, l } = useI18n();
   const L = x.letters;
   const [ready, setReady] = useState<Record<string, VariantView>>({});
   const [tone, setTone] = useState<Tone>("original");
@@ -40,7 +41,7 @@ export function LetterStudio({ gen }: { gen: GenerationView }) {
     const r = await fetch(`/api/generations/${gen.id}/variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind }) });
     const j = await r.json().catch(() => ({}));
     setBusy(null);
-    if (!r.ok) { setError(j.error || x.errors.generic); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); return; }
     setReady((cur) => ({ ...cur, [kind]: j }));
   }
   const pickTone = (t: Tone) => { setTone(t); if (t !== "original") void load(`cover:${t}`); };

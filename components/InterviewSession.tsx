@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Container, Eyebrow } from "@/components/ui";
 import { speechAvailable, useSpeechInput } from "@/lib/client/speech";
@@ -20,7 +21,7 @@ const post = (url: string, body?: unknown) => fetch(url, { method: "POST", heade
  * server, so a reload with `?session=` resumes where it stopped.
  */
 export function InterviewSession({ generationId, initialSessionId }: { generationId: string; initialSessionId: string | null }) {
-  const { x, lang } = useI18n();
+  const { x, lang, l } = useI18n();
   const [gen, setGen] = useState<GenerationView | null>(null);
   const [session, setSession] = useState<SessionView | null>(null);
   const [phase, setPhase] = useState<Phase>("loading");
@@ -88,9 +89,9 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
     setError(""); setPhase("thinking"); setShowModel(false); hush();
     const r = await post(`/api/interview/${session.id}/answer`, { questionIdx: idx, answer: text, source });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { setError(j.error || x.errors.generic); setPhase("question"); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); setPhase("question"); return; }
     setSession(j); setDraft(""); setTyping(false); setPhase("scored");
-  }, [session, idx, x, hush]);
+  }, [session, idx, x, l, hush]);
 
   const speech = useSpeechInput(sessionLang, (t) => { void submit(t, "voice"); });
 
@@ -98,8 +99,8 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
     setPhase("starting"); setError("");
     const r = await post("/api/interview", { generationId });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 429) { setLimit(true); setPhase("intro"); return; }
-    if (!r.ok) { setError(j.error || x.errors.generic); setPhase("intro"); return; }
+    if (r.status === 429 && j.error === "limit") { setLimit(true); setPhase("intro"); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); setPhase("intro"); return; }
     setSession(j); setIdx(0); setTyping(false); setPhase("question");
     window.history.replaceState(null, "", `/interview/${generationId}?session=${j.id}`);
   }
@@ -110,7 +111,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
     setPhase("thinking"); hush();
     const r = await post(`/api/interview/${session.id}/finish`);
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { setError(j.error || x.errors.generic); setPhase("question"); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); setPhase("question"); return; }
     setSession(j); setPhase("summary");
   }
   function again() { setSession(null); setIdx(0); setError(""); setPhase("intro"); window.history.replaceState(null, "", `/interview/${generationId}`); }
@@ -216,7 +217,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
                 ) : (
                   <>
                     <button onClick={() => void finishEarly()} className="text-sm text-muted hover:text-ink" data-testid="answer-finish">{x.interview.finishEarly}</button>
-                    <button onClick={next} className="btn btn-primary" data-testid="answer-next">{x.interview.next} →</button>
+                    {session.turns.length < total && <button onClick={next} className="btn btn-primary" data-testid="answer-next">{x.interview.next} →</button>}
                   </>
                 )}
               </div>

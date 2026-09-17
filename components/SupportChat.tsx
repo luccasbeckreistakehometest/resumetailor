@@ -1,27 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { useAuth } from "@/components/AuthProvider";
 
-const EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@resumetailor.app";
-const WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || ""; // digits only, e.g. 5511999999999
-
+/**
+ * The support bubble: quick answers, the in-app contact form (always), and email / WhatsApp only
+ * when the server has them configured (SUPPORT_EMAIL / SUPPORT_WHATSAPP).
+ */
 export function SupportChat() {
-  const { d } = useI18n();
+  const { d, l } = useI18n();
+  const { support } = useAuth();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  // A published résumé is someone's page, not ours: no support bubble on it.
-  if (pathname.startsWith("/cv/")) return null;
+  // A published résumé is someone's page, not ours: no support bubble on it (nor on the print view).
+  if (pathname.startsWith("/cv/") || pathname.startsWith("/print")) return null;
 
   return (
     <>
       {/* Panel */}
       {open && (
         <div className="fixed bottom-20 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl sm:right-6">
-          <div className="flex items-center justify-between bg-oxblood px-4 py-3 text-white">
+          <div className="flex items-center justify-between bg-oxblood px-4 py-3 text-white" role="heading" aria-level={2}>
             <span className="font-semibold">{d.chat.title}</span>
-            <button onClick={() => setOpen(false)} aria-label={d.chat.close} className="text-white/80 hover:text-white">
+            <button onClick={() => setOpen(false)} aria-label={d.chat.close} className="text-white/80 hover:text-white" type="button">
               ✕
             </button>
           </div>
@@ -40,18 +44,25 @@ export function SupportChat() {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-2">
-              <a
-                href={`mailto:${EMAIL}`}
+              <Link
+                href="/contact"
+                onClick={() => setOpen(false)}
                 className="rounded-lg bg-oxblood px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-oxblood-2"
+                data-testid="support-contact"
               >
-                {d.chat.emailBtn}
-              </a>
-              {WHATSAPP && (
+                {l.contact.send}
+              </Link>
+              {support.email && (
+                <a href={`mailto:${support.email}`} className="rounded-lg border border-edge-2 px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-paper-2" data-testid="support-email">
+                  {d.chat.emailBtn}
+                </a>
+              )}
+              {support.whatsapp && (
                 <a
-                  href={`https://wa.me/${WHATSAPP}`}
+                  href={`https://wa.me/${support.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-emerald-500 px-4 py-2.5 text-center text-sm font-semibold text-moss hover:bg-moss-2"
+                  className="rounded-lg border border-moss px-4 py-2.5 text-center text-sm font-semibold text-moss hover:bg-moss-2"
                 >
                   {d.chat.whatsappBtn}
                 </a>
@@ -65,6 +76,8 @@ export function SupportChat() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={d.chat.openAria}
+        aria-expanded={open}
+        data-testid="support-open"
         className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-oxblood text-white shadow-lg transition hover:bg-oxblood-2 sm:right-6"
       >
         {open ? (

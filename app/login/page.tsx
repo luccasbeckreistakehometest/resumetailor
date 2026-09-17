@@ -1,9 +1,8 @@
-"use client";
+import type { Metadata } from "next";
+import { AuthPage } from "./AuthPage";
 
-import { useRouter } from "next/navigation";
-import { AuthModal } from "@/components/AuthButton";
+export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
 
 export default function LoginPage() {
-  const router = useRouter();
-  return <AuthModal onClose={() => router.push("/")} onDone={() => router.push("/start")} />;
+  return <AuthPage mode="in" />;
 }

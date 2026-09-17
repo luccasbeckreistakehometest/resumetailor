@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type DragEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { extractTextFromFile, ImportFailure, type ImportError } from "@/lib/client/extract-file";
 import type { Extracted } from "@/lib/text/extract";
@@ -67,13 +67,18 @@ export function ImportDrop({ onText, testId = "import", hint, className = "", to
 }
 
 /** A résumé textarea that also accepts a dropped file; the import strip sits under it. */
-export function ImportableTextarea({ value, onChange, rows = 11, placeholder, testId, importTestId = "import", tour }: {
+export function ImportableTextarea({ value, onChange, rows = 11, placeholder, testId, importTestId = "import", tour, id, label, labelVisible = false }: {
   value: string; onChange: (v: string) => void; rows?: number; placeholder?: string; testId?: string; importTestId?: string; tour?: string;
+  /** Every textarea gets an accessible name: a visible label, or a screen-reader-only one. */
+  id?: string; label?: string; labelVisible?: boolean;
 }) {
   const imp = useFileImport((text) => onChange(text));
+  const fallbackId = useId();
+  const fieldId = id ?? fallbackId;
   return (
     <div>
-      <textarea className={"field " + (imp.over ? "!border-ink !bg-gold-2" : "")} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} data-testid={testId} {...imp.dragProps} />
+      {label && <label htmlFor={fieldId} className={labelVisible ? "mb-1.5 block text-sm font-medium text-ink-2" : "sr-only"}>{label}</label>}
+      <textarea id={fieldId} aria-label={label || id ? undefined : placeholder} className={"field " + (imp.over ? "!border-ink !bg-gold-2" : "")} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} data-testid={testId} {...imp.dragProps} />
       <ImportDrop onText={(text) => onChange(text)} testId={importTestId} className="mt-2" tour={tour} />
     </div>
   );
