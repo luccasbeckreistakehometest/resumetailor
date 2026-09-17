@@ -9,12 +9,13 @@ import { decideAccess, stripContact } from "@/lib/resume/public";
 import { getGeneration } from "@/lib/server/generations";
 import { bumpViews, getPublicBySlug, pinCookieName, pinTokenValid, type PublicResumeRow } from "@/lib/server/publicResumes";
 import { currentUser } from "@/lib/server/session";
+import { baseUrl } from "@/lib/server/env";
+import { launch } from "@/app/i18n/launch";
 import { PinForm } from "./PinForm";
 import { ShareBar } from "./ShareBar";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
-const BASE = (process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const langOf = (l: string): Lang => (["en", "pt", "es"].includes(l) ? (l as Lang) : "en");
 
 async function load(slug: string) {
@@ -38,8 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${title} | ResumeTailor`,
     description: access === "pin" ? C.pinIntro : C.description(gen.title, gen.targetRole),
     robots: { index: open, follow: open },
-    alternates: { canonical: `${BASE}/cv/${slug}` },
-    openGraph: { title, description: access === "pin" ? C.pinIntro : C.description(gen.title, gen.targetRole), url: `${BASE}/cv/${slug}`, type: "profile" },
+    alternates: { canonical: `/cv/${slug}` },
+    openGraph: { title, description: access === "pin" ? C.pinIntro : C.description(gen.title, gen.targetRole), url: `/cv/${slug}`, type: "profile" },
   };
 }
 
@@ -62,7 +63,7 @@ export default async function PublicResumePage({ params }: Props) {
           <p className="text-4xl">🔒</p>
           <h1 className="font-display mt-4 text-2xl text-ink">{C.pinTitle}</h1>
           <p className="mt-2 text-sm text-ink-2">{C.pinIntro}</p>
-          <PinForm slug={slug} labels={{ placeholder: C.pinPh, submit: C.pinSubmit, wrong: C.pinWrong }} />
+          <PinForm slug={slug} labels={{ placeholder: C.pinPh, submit: C.pinSubmit, wrong: C.pinWrong, locked: launch[lang].pin.locked }} />
         </div>
       </Shell>
     );
@@ -71,7 +72,7 @@ export default async function PublicResumePage({ params }: Props) {
   if (!isOwner) bumpViews(row.id);
   const kit = JSON.parse(gen.result) as Kit;
   const markdown = row.hideContact === 1 ? stripContact(kit.resume) : kit.resume;
-  const shareUrl = `${BASE}/cv/${slug}`;
+  const shareUrl = `${baseUrl()}/cv/${slug}`;
 
   return (
     <Shell lang={lang}>
@@ -86,6 +87,8 @@ export default async function PublicResumePage({ params }: Props) {
       </article>
       <p className="mx-auto mt-8 max-w-[210mm] text-center text-xs text-muted">
         {C.madeWith} · <Link href="/" className="font-medium text-oxblood underline-offset-4 hover:underline">{C.makeYours}</Link>
+        {" · "}<Link href={`/legal/privacy?lang=${lang}`} className="underline-offset-4 hover:underline">{launch[lang].footer.privacy}</Link>
+        {" · "}<Link href={`/legal/terms?lang=${lang}`} className="underline-offset-4 hover:underline">{launch[lang].footer.terms}</Link>
       </p>
     </Shell>
   );
