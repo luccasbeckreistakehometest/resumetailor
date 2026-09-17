@@ -95,11 +95,15 @@ describe("sessions", () => {
   it("appends turns in order, sums cost, and closes with a summary", async () => {
     const u = await user();
     const s = createSession({ userId: u.id, anonId: null, generation: gen(u.id, null), model: "mock" });
-    appendTurn(s.id, turn(0, [7, 6, 8]), 0.01);
-    const after = appendTurn(s.id, turn(1, [5, 4, 6]), 0.02);
+    expect(appendTurn(s.id, turn(0, [7, 6, 8]), 0.01)).not.toBeNull();
+    // A double submit of the first answer (it raced past the route's order check) is refused.
+    expect(appendTurn(s.id, turn(0, [7, 6, 8]), 0.01)).toBeNull();
+    const after = appendTurn(s.id, turn(1, [5, 4, 6]), 0.02)!;
     expect(JSON.parse(after.turns)).toHaveLength(2);
     expect(after.costUsd).toBeCloseTo(0.03);
+    expect(appendTurn(s.id, turn(3, [5, 4, 6]), 0)).toBeNull();          // skipping ahead is refused too
     const done = finishSession(s.id, { rehearse: ["a", "b", "c"], overall: "ok" }, 0.005);
+    expect(appendTurn(s.id, turn(2, [5, 5, 5]), 0)).toBeNull();          // and nothing lands on a closed session
     expect(done.status).toBe("done");
     expect(done.completedAt).toBeTruthy();
     const view = serialiseSession(done, { title: "T", targetRole: "R" });
