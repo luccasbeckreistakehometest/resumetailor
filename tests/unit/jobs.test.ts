@@ -46,4 +46,31 @@ describe("red flags", () => {
     const normal = "Buscamos Analista de Dados para o time de Growth. Responsabilidades: construir dashboards em Power BI, analisar funis com SQL, apoiar testes A/B e apresentar resultados para a liderança. Requisitos: 3 anos de experiência com análise de dados, SQL avançado e boa comunicação. Benefícios: vale-refeição, plano de saúde e trabalho híbrido em São Paulo. Processo seletivo: entrevista com RH, case técnico e conversa com a gestora.";
     expect(redFlags(normal)).toEqual({ level: null, flags: [] });
   });
+  it("never calls benefits, a plain WhatsApp number or an ordinary address a scam", () => {
+    const normal = "Buscamos Analista de Dados para o time de Growth. Responsabilidades: construir dashboards em Power BI, analisar funis com SQL, apoiar testes A/B e apresentar resultados para a liderança. Requisitos: 3 anos de experiência com análise de dados, SQL avançado e boa comunicação. Processo seletivo: entrevista com RH, case técnico e conversa com a gestora.";
+    const benign = [
+      "Benefícios: vale-refeição, plano de saúde, investimento em treinamentos e certificações.",
+      "Oferecemos auxílio para pagamento de cursos de idiomas.",
+      "A empresa cobre 100% do custo do curso de inglês.",
+      "Envie seu currículo pelo e-mail ou WhatsApp: (11) 98888-7777",
+      "Chame no WhatsApp para tirar dúvidas sobre o curso pelo WhatsApp da escola.",
+      "Informe no assunto do e-mail o cargo e a cidade.",
+      "Dúvidas: christopher.silva@gmail.com",
+      "We pay for your training and cover your certification exam fee.",
+      "La empresa paga el curso de inglés y ofrece ayuda para capacitación.",
+    ];
+    for (const line of benign) expect(redFlags(`${normal} ${line}`).level, line).not.toBe("high");
+    expect(redFlags(`${normal} Benefícios: auxílio para pagamento de cursos de idiomas.`)).toEqual({ level: null, flags: [] });
+  });
+  it("still catches the charge when it is aimed at the candidate", () => {
+    for (const line of [
+      "Para começar, você precisa pagar o kit de boas-vindas.",
+      "Taxa de inscrição: R$ 49,90.",
+      "Faça um pix de R$ 50 para garantir sua vaga.",
+      "Applicants must pay a registration fee before the interview.",
+      "Debes pagar el curso de capacitación antes de empezar.",
+    ]) expect(redFlags(line).flags, line).toContain("fee");
+    expect(redFlags("Contato apenas via WhatsApp.").flags).toContain("messaging");
+    expect(redFlags("Envie o currículo para recrutamento.vagas@hotmail.com").flags).toContain("freemail");
+  });
 });
