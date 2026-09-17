@@ -31,5 +31,9 @@ export ADMIN_EMAIL="admin@resumetailor.app" ADMIN_PASSWORD="resumetailor2026"
 export FIT_CHECKS_PER_DAY=3
 # The suite runs in a headless browser: let analytics count it (crawlers are still dropped).
 export ANALYTICS_ALLOW_HEADLESS=1
+# Job links are served from fixtures, never fetched.
+export JOB_IMPORT_MOCK=1
+# One international language per kit on the test server, so the cap is reachable (default 2).
+export KIT_INTL_MAX=1
 export AI_PROBE_RETRY_SECONDS=8
 exec npx next start -p "$PORT"

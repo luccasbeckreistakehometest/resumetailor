@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RedFlagNotice } from "@/components/RedFlagNotice";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import { ImportableTextarea } from "@/components/FileDrop";
@@ -62,6 +63,7 @@ export function FitChecker() {
         </div>
         <label htmlFor="fit-posting" className="mt-3 block text-sm font-medium text-ink-2">{F.postingLabel}</label>
         <textarea id="fit-posting" className="field mt-2" rows={7} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={F.postingPh} data-testid="fit-posting" />
+        <RedFlagNotice text={posting} />
         <label htmlFor="fit-resume" className="mt-5 block text-sm font-medium text-ink-2">{F.resumeLabel}</label>
         <div className="mt-2"><ImportableTextarea id="fit-resume" value={resume} onChange={setResume} rows={9} placeholder={F.resumePh} testId="fit-resume" importTestId="import" /></div>
         <div className="mt-5 flex flex-wrap items-center gap-4">
