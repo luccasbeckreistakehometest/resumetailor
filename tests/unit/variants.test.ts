@@ -10,7 +10,8 @@ fs.rmSync(DIR, { recursive: true, force: true });
 const { createUser } = await import("@/lib/server/users");
 const { saveGeneration, deepenGeneration, deleteGeneration, reserveDeepen, releaseDeepen, getGeneration, DEEPEN_MAX } = await import("@/lib/server/generations");
 const { mockKit } = await import("@/lib/ai/kit");
-const { getVariant, listVariants, saveVariant, clearVariants } = await import("@/lib/server/variants");
+const { getVariant, listVariants, saveVariant, clearVariants, staleTextVariants, clearStaleTextVariants } = await import("@/lib/server/variants");
+const { updateResume } = await import("@/lib/server/versions");
 
 const kit = mockKit({ mode: "tailor", targetRole: "Growth Lead", lang: "pt", resume: "x", jobDescription: "y" });
 const args = { kit, title: "Alex Ribeiro", targetRole: "Growth Lead", posting: "posting" };
@@ -66,6 +67,20 @@ describe("cache", () => {
     deepenGeneration(g.id, kit, "mock", 0);                               // the claim already counted the pass
     expect(getGeneration(g.id)!.deepened).toBe(DEEPEN_MAX);
     expect(reserveDeepen("gen_missing")).toBe(false);
+  });
+  it("a refresh removes only letters written before the résumé last changed", async () => {
+    const g = gen();
+    saveVariant({ generationId: g.id, kind: "cover:formal", variant: { subject: "", body: "old" }, model: "mock", costUsd: 0 });
+    expect(staleTextVariants(g.id)).toBe(0);                          // never edited: nothing is stale
+    expect(clearStaleTextVariants(g.id)).toBe(0);
+    await new Promise((ok) => setTimeout(ok, 5));
+    updateResume(g.id, "# Alex\n\n## Summary\nedited", "user");
+    expect(staleTextVariants(g.id)).toBe(1);
+    await new Promise((ok) => setTimeout(ok, 5));
+    saveVariant({ generationId: g.id, kind: "email:thanks", variant: { subject: "s", body: "new" }, model: "mock", costUsd: 0 });
+    expect(clearStaleTextVariants(g.id)).toBe(1);
+    expect(listVariants(g.id).map((v) => v.kind)).toEqual(["email:thanks"]);   // written after the edit: kept
+    expect(staleTextVariants(g.id)).toBe(0);
   });
   it("is cleared when the kit is deepened, and gone when the kit is deleted", async () => {
     const g = gen();

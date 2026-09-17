@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { withOwner, bad, limited } from "@/lib/server/http";
 import { aiGate, runAi } from "@/lib/ai/guard";
-import { lease, takeAll } from "@/lib/server/ratelimit";
+import { lease, reserve, takeAll } from "@/lib/server/ratelimit";
 import { generateVariant, VARIANT_KINDS } from "@/lib/ai/variants";
 import type { Kit, Lang } from "@/lib/ai/kit";
 import { getGeneration, ownsGeneration } from "@/lib/server/generations";
-import { clearTextVariants, getVariant, listVariants, saveVariant, serialiseVariant } from "@/lib/server/variants";
+import { clearStaleTextVariants, getVariant, listVariants, saveVariant, serialiseVariant, staleTextVariants } from "@/lib/server/variants";
 import { recordEvent } from "@/lib/server/onboarding";
 
 export const runtime = "nodejs";
@@ -61,6 +61,8 @@ export async function POST(request: Request, ctx: Ctx) {
 /**
  * "Refresh letters and e-mails with the new version": after an edit, the cached letters and
  * e-mails (and the LinkedIn pass) were written from the old text. Only on request, never automatic.
+ * Only texts older than the last résumé change go, and a kit may be refreshed a few times a day
+ * (RL_KIT_REFRESH_KIT_DAY, 3): otherwise refresh + regenerate would be an unlimited AI loop.
  */
 export async function DELETE(_: Request, ctx: Ctx) {
   const { id } = await ctx.params;
@@ -68,7 +70,11 @@ export async function DELETE(_: Request, ctx: Ctx) {
     const row = getGeneration(id);
     if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     if (row.unlocked !== 1) return bad("unlock_first", 403);
-    const removed = clearTextVariants(id);
+    if (staleTextVariants(id) === 0) return { body: { ok: true, removed: 0 } };
+    const slot = reserve([["KIT_REFRESH_KIT_DAY", id]]);
+    if (!slot.ok) return limited(slot.failed);
+    const removed = clearStaleTextVariants(id);
+    if (removed === 0) slot.release();
     recordEvent(owner.key, "variants_refresh", { generationId: id, removed });
     return { body: { ok: true, removed } };
   });

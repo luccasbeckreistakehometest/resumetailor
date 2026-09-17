@@ -81,4 +81,22 @@ test.describe("résumé editor", () => {
     await expect(stranger.getByTestId("edit-locked")).toBeVisible();
     await other.close();
   });
+
+  test("refreshing letters removes only the ones older than the last edit, a few times a day", async ({ page }) => {
+    const { id } = await unlockedTailorKit(page);
+    const letter = async () => (await (await page.request.post(`/api/generations/${id}/variants`, { data: { kind: "cover:formal" } })).json()).cached;
+    const refresh = () => page.request.delete(`/api/generations/${id}/variants`);
+    expect(await letter()).toBe(false);
+    // Nothing edited yet: nothing to refresh, and nothing is counted.
+    expect(await (await refresh()).json()).toEqual({ ok: true, removed: 0 });
+    const base = (await (await page.request.get(`/api/generations/${id}`)).json()).kit.resume as string;
+    for (let i = 0; i < 4; i++) {
+      if (i > 0) expect(await letter()).toBe(false);                   // rewritten after the last refresh
+      expect((await page.request.patch(`/api/generations/${id}/resume`, { data: { resume: `${base}\n- Edit number ${i}` } })).status()).toBe(200);
+      const res = await refresh();
+      if (i < 3) expect(await res.json()).toEqual({ ok: true, removed: 1 });
+      else expect(res.status()).toBe(429);
+    }
+    expect(await letter()).toBe(true);                                  // the capped refresh removed nothing
+  });
 });

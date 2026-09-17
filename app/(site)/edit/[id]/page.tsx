@@ -66,7 +66,10 @@ export default function EditPage() {
 
   async function refreshLetters() {
     const res = await fetch(`/api/generations/${id}/variants`, { method: "DELETE" });
-    if (res.ok) setNote(E.refreshed);
+    if (res.status === 429) { setNote(E.refreshCapped); return; }
+    if (!res.ok) return;
+    const j = (await res.json().catch(() => ({}))) as { removed?: number };
+    setNote(j.removed ? E.refreshed : E.upToDate);
   }
 
   if (gen === undefined) return <div className="min-h-screen"><SiteHeader /></div>;
