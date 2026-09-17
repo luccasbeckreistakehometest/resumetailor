@@ -11,6 +11,7 @@ export const API_ERRORS = [
   "invalid_signup", "email_taken", "email_disposable", "terms_required", "payments_off", "checkout_failed",
   "password_wrong", "password_short", "taken_down", "unknown_variant", "confirm_mismatch", "contact_invalid",
   "admin_protected", "password_change_required", "voice_turns_limit", "voucher_not_found", "voucher_expired", "voucher_used",
+  "bullet_changed", "refresh_capped",
 ] as const;
 export type ApiErrorCode = (typeof API_ERRORS)[number];
 export const isApiErrorCode = (v: unknown): v is ApiErrorCode => typeof v === "string" && (API_ERRORS as readonly string[]).includes(v);

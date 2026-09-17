@@ -20,9 +20,11 @@ const schema = z.object({
 
 /**
  * The person's answers to the "missing numbers" questions → one patch call that rewrites only
- * those bullets with only those figures. Free on an unlocked kit, capped per kit (the round is
- * claimed before the call and given back if it fails). Answers become truth-check sources and
- * profile facts; the previous résumé stays in the version history.
+ * those bullets with only those figures. Free on an unlocked kit, capped per kit: the round is
+ * claimed before the call and given back only if the call fails (a call that ran counts, even if
+ * nothing matched). Bullets the person already rewrote in the editor are not sent (409 when none
+ * is left). Answers become truth-check sources and profile facts; the previous résumé stays in
+ * the version history.
  */
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -33,10 +35,13 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     if (!parsed.success) return bad("answer_first");
     const k = JSON.parse(kit.row.result) as Kit;
     const asks = k.quantifyAsks ?? [];
-    const answers: QuantifyAnswer[] = parsed.data.answers
+    const given: QuantifyAnswer[] = parsed.data.answers
       .filter((a) => a.value.trim() && asks[a.index])
       .map((a) => ({ bullet: asks[a.index].bullet, question: asks[a.index].question, value: a.value.trim(), context: a.context.trim() }));
-    if (!answers.length) return bad("answer_first");
+    if (!given.length) return bad("answer_first");
+    // Only bullets still in the résumé as asked: an edited one cannot be patched by exact replace.
+    const answers = given.filter((a) => k.resume.includes(a.bullet));
+    if (!answers.length) return bad("bullet_changed", 409);
     if ((kit.row.quantified ?? 0) >= QUANTIFY_MAX) return { body: { error: "limit" }, status: 429 };
     const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
@@ -50,10 +55,10 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const { text, applied } = applyPatch(k.resume, patch.edits);
     const db = getDb();
     const input = kitInput(kit.row);
-    const said = answers.map((a) => `${a.question} → ${a.value}${a.context ? ` ${a.context}` : ""}`).join("\n");
-    db.prepare("UPDATE generations SET input = ?, costUsd = costUsd + ? WHERE id = ?").run(JSON.stringify({ ...input, answers: [input.answers, said].filter(Boolean).join("\n") }), costUsd, id);
-    // Nothing matched: the round is given back (the person got nothing from it).
-    if (applied > 0) { updateResume(id, text, "quantify"); clearTextVariants(id); } else releaseQuantify(id);
+    const lines = new Set((input.answers ?? "").split("\n").filter(Boolean));
+    for (const a of answers) lines.add(`${a.question} → ${a.value}${a.context ? ` ${a.context}` : ""}`);
+    db.prepare("UPDATE generations SET input = ?, costUsd = costUsd + ? WHERE id = ?").run(JSON.stringify({ ...input, answers: [...lines].join("\n") }), costUsd, id);
+    if (applied > 0) { updateResume(id, text, "quantify"); clearTextVariants(id); }
     saveProfile(owner.key, { facts: { ...emptyFacts(), numbers: answers.map((a) => ({ bullet: a.bullet, value: a.value, context: a.context })) } });
     recordEvent(owner.key, "quantify", { generationId: id, answered: answers.length, applied });
     return { body: { ...serialise(getGeneration(id)!), applied } };

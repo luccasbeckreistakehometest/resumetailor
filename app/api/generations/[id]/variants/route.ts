@@ -72,7 +72,7 @@ export async function DELETE(_: Request, ctx: Ctx) {
     if (row.unlocked !== 1) return bad("unlock_first", 403);
     if (staleTextVariants(id) === 0) return { body: { ok: true, removed: 0 } };
     const slot = reserve([["KIT_REFRESH_KIT_DAY", id]]);
-    if (!slot.ok) return limited(slot.failed);
+    if (!slot.ok) return limited(slot.failed, "refresh_capped");
     const removed = clearStaleTextVariants(id);
     if (removed === 0) slot.release();
     recordEvent(owner.key, "variants_refresh", { generationId: id, removed });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Container, Eyebrow } from "@/components/ui";
 import { ResumeEditor } from "@/components/editor/ResumeEditor";
@@ -21,7 +22,7 @@ type Tab = "edit" | "form" | "changes";
 /** /edit/[id]: the unlocked kit's résumé, editable, with history, downloads and the form mode. */
 export default function EditPage() {
   const { id } = useParams<{ id: string }>();
-  const { d, r } = useI18n();
+  const { d, r, l, x } = useI18n();
   const E = r.editor;
   const [gen, setGen] = useState<GenerationView | null | undefined>(undefined);
   const [parsed, setParsed] = useState<ParsedResume | null>(null);
@@ -66,10 +67,8 @@ export default function EditPage() {
 
   async function refreshLetters() {
     const res = await fetch(`/api/generations/${id}/variants`, { method: "DELETE" });
-    if (res.status === 429) { setNote(E.refreshCapped); return; }
-    if (!res.ok) return;
     const j = (await res.json().catch(() => ({}))) as { removed?: number };
-    setNote(j.removed ? E.refreshed : E.upToDate);
+    setNote(res.ok ? (j.removed ? E.refreshed : E.upToDate) : apiErrorText(j, l, x.errors.generic));
   }
 
   if (gen === undefined) return <div className="min-h-screen"><SiteHeader /></div>;
