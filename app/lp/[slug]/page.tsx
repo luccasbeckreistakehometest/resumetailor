@@ -13,7 +13,7 @@ const ANGLES: AngleKey[] = ["jobseeker", "firstjob", "careerchange", "vschatgpt"
 
 /** Ad landing: one angle, one CTA, nothing to wander off to. */
 export default function AdLandingPage() {
-  const { d } = useI18n();
+  const { d, lang } = useI18n();
   const params = useParams();
   const raw = (Array.isArray(params.slug) ? params.slug[0] : params.slug) || "jobseeker";
   const key: AngleKey = (ANGLES.includes(raw as AngleKey) ? raw : "jobseeker") as AngleKey;
@@ -30,6 +30,7 @@ export default function AdLandingPage() {
           <ul className="mt-6 space-y-2.5">{a.bullets.map((b) => <li key={b} className="flex items-start gap-3 text-ink-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-oxblood" />{b}</li>)}</ul>
           <Link href={`/start${via}`} className="btn btn-primary mt-8 !px-7 !py-4 !text-base">{d.lp.cta}</Link>
           <p className="mt-3 text-sm text-muted">{d.lp.secondary}</p>
+          <p className="mt-4 text-sm"><Link href={lang === "en" ? "/ats-check" : `/ats-check/${lang}`} className="font-medium text-oxblood underline-offset-4 hover:underline" data-testid="lp-ats">{d.lp.atsCta}</Link></p>
         </div>
         <div className="card p-5"><LiveMatchDemo /></div>
       </Container>

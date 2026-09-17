@@ -38,6 +38,7 @@ test.describe("landing", () => {
       await page.goto(`/lp/${slug}`);
       await expect(page.locator("h1")).not.toBeEmpty();
       await expect(page.getByRole("link", { name: /start free|match score/i })).toBeVisible();
+      await expect(page.getByTestId("lp-ats")).toHaveAttribute("href", /ats-check/);
     }
   });
 });
