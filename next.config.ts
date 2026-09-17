@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 /**
  * Security headers for every route. No script CSP (Next's inline bootstrap would need nonces);
  * what is set is the part that cannot break the app: no framing, no MIME sniffing, a strict
- * referrer, HTTPS pinned, and the microphone only for this origin (voice briefing and interview).
+ * referrer, HTTPS pinned, and the microphone and camera only for this origin (voice briefing,
+ * interview and the video-introduction studio).
  */
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
@@ -11,7 +12,7 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "microphone=(self), camera=(), geolocation=(), payment=()" },
+  { key: "Permissions-Policy", value: "microphone=(self), camera=(self), geolocation=(), payment=()" },
 ];
 
 const nextConfig: NextConfig = {
@@ -21,6 +22,8 @@ const nextConfig: NextConfig = {
   // NEXT_DEV_MEMORY_EVICTION=full makes Turbopack move cold data to that disk cache instead of RAM
   // (long local dev sessions; the e2e suite runs on a production build instead).
   experimental: {
+    // Three root layouts (English, /pt, /es): an unmatched URL needs its own branded 404.
+    globalNotFound: true,
     turbopackFileSystemCacheForDev: process.env.NEXT_DEV_FS_CACHE !== "0",
     ...(process.env.NEXT_DEV_MEMORY_EVICTION === "full" ? { turbopackMemoryEviction: "full" as const } : {}),
   },

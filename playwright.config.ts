@@ -19,7 +19,9 @@ export default defineConfig({
   globalSetup: "./tests/e2e/global-setup.ts",
   use: { baseURL: `http://localhost:${PORT}`, trace: "retain-on-failure", screenshot: "only-on-failure", locale: "en-US" },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /mobile\.spec\.ts/ },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /(mobile|pitch)\.spec\.ts/ },
+    // A fake camera and microphone for the pitch studio (nothing real is captured).
+    { name: "media", use: { ...devices["Desktop Chrome"], permissions: ["camera", "microphone"], launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] } }, testMatch: /pitch\.spec\.ts/ },
     // Phone width: menu, sign-out and no sideways scrolling on the main pages.
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],

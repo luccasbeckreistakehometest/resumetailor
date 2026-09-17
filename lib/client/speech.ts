@@ -30,7 +30,7 @@ export const speechAvailable = () => !!getRec() || testMode();
  * automatic stops after a pause are restarted and the words heard so far are kept. The e2e hook
  * `window.__rtVoiceFeed` injects a transcript instead of talking.
  */
-export function useSpeechInput(lang: string, onFinal: (text: string) => void) {
+export function useSpeechInput(lang: string, onFinal: (text: string) => void, opts: { onHeard?: (text: string) => void; onNoSpeech?: () => void } = {}) {
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
   const [error, setError] = useState<SpeechError>("");
@@ -38,7 +38,9 @@ export function useSpeechInput(lang: string, onFinal: (text: string) => void) {
   const said = useRef(createTranscript());
   const active = useRef(false);
   const final = useRef(onFinal);
-  useEffect(() => { final.current = onFinal; }, [onFinal]);
+  const heard = useRef(opts.onHeard);
+  const noSpeech = useRef(opts.onNoSpeech);
+  useEffect(() => { final.current = onFinal; heard.current = opts.onHeard; noSpeech.current = opts.onNoSpeech; });
 
   const stop = useCallback(() => {
     active.current = false;
@@ -49,6 +51,16 @@ export function useSpeechInput(lang: string, onFinal: (text: string) => void) {
     said.current.reset();
     setInterim(""); setListening(false);
     final.current(text);
+  }, []);
+
+  /** Closes the microphone and drops what was heard (a paused conversation). */
+  const cancel = useCallback(() => {
+    active.current = false;
+    if (rec.current) rec.current.onend = null;
+    try { rec.current?.abort(); } catch {}
+    rec.current = null;
+    said.current.reset();
+    setInterim(""); setListening(false);
   }, []);
 
   /** Opens the microphone; false when the browser cannot listen (the caller offers typing instead). */
@@ -67,8 +79,12 @@ export function useSpeechInput(lang: string, onFinal: (text: string) => void) {
       for (let i = 0; i < e.results.length; i++) { const res = e.results[i]; const t = res[0]?.transcript ?? ""; if (res.isFinal) finals += t + " "; else partial += t; }
       said.current.result(finals, partial);
       setInterim(said.current.partial());
+      heard.current?.(said.current.text());
     };
-    r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { setError("denied"); active.current = false; setListening(false); } };
+    r.onerror = (e) => {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") { setError("denied"); active.current = false; setListening(false); }
+      else if (e.error === "no-speech") noSpeech.current?.();
+    };
     // Chrome closes the recogniser after a pause; the turn stays open until the person says they are done.
     r.onend = () => {
       if (!active.current) return;
@@ -79,11 +95,14 @@ export function useSpeechInput(lang: string, onFinal: (text: string) => void) {
   }, [lang]);
 
   useEffect(() => {
-    (window as unknown as { __rtVoiceFeed?: (t: string) => void }).__rtVoiceFeed = (t: string) => { said.current.set(t); stop(); };
-    return () => { delete (window as unknown as { __rtVoiceFeed?: unknown }).__rtVoiceFeed; };
+    const w = window as unknown as { __rtVoiceFeed?: (t: string) => void; __rtVoiceHear?: (t: string) => void };
+    // __rtVoiceFeed: a whole turn, ended at once. __rtVoiceHear: words heard, the turn stays open (automatic end-of-turn).
+    w.__rtVoiceFeed = (t: string) => { said.current.set(t); stop(); };
+    w.__rtVoiceHear = (t: string) => { said.current.set(t); setInterim(t); heard.current?.(t); };
+    return () => { delete w.__rtVoiceFeed; delete w.__rtVoiceHear; };
   }, [stop]);
 
   useEffect(() => () => { active.current = false; try { rec.current?.abort(); } catch {} }, []);
 
-  return { listening, interim, error, start, stop };
+  return { listening, interim, error, start, stop, cancel };
 }

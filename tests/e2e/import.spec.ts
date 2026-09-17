@@ -7,7 +7,12 @@ const fixture = (n: string) => path.join(process.cwd(), "tests", "fixtures", n);
 test.describe("import PDF / DOCX", () => {
   test("the ATS check reads a PDF and a DOCX in the browser, counts the words, and refuses a scan", async ({ page }) => {
     const uploads: string[] = [];
-    page.on("request", (r) => { if (r.url().includes("/api/") && r.method() !== "GET") uploads.push(new URL(r.url()).pathname); });
+    const beacons: string[] = [];
+    page.on("request", (r) => {
+      if (!r.url().includes("/api/") || r.method() === "GET") return;
+      const path = new URL(r.url()).pathname;
+      if (path === "/api/e") beacons.push(r.postDataBuffer()?.toString() ?? ""); else uploads.push(path);
+    });
     await page.goto("/ats-check");
     await skipTour(page);
     await page.goto("/ats-check");
@@ -37,8 +42,9 @@ test.describe("import PDF / DOCX", () => {
     await expect(page.getByTestId("import-status")).toContainText(/scanned|escaneado/i);
     expect(await page.getByTestId("ats-resume").inputValue()).toContain("Maria Souza");   // a failed import never wipes the text
 
-    // The file was parsed locally: nothing was posted anywhere.
+    // The file was parsed locally: nothing was posted anywhere (analytics beacons carry no text).
     expect(uploads.filter((p) => p !== "/api/tour")).toEqual([]);
+    for (const b of beacons) expect(b).not.toMatch(/Alex Ribeiro|pipeline/);
   });
 
   test("the résumé step of /start accepts a dropped file and the build step places a draft under Experience", async ({ page }) => {

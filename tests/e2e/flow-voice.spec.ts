@@ -17,8 +17,9 @@ test("voice flow: talk → understood → follow-up → confirm → kit", async 
   await expect(page.getByTestId("voice-prompt")).toContainText(/role|vaga|puesto/i);
   await expect(page.getByTestId("voice-confirm")).toBeDisabled();
 
+  // The listener asked its question and opens the microphone by itself (no TTS here: after a short delay).
+  await expect(page.getByTestId("voice-stop")).toBeVisible({ timeout: 1_500 });
   // Second turn completes the briefing.
-  await page.getByTestId("voice-start").click();
   await page.evaluate(() => (window as unknown as { __rtVoiceFeed: (t: string) => void }).__rtVoiceFeed(
     "I'm looking for an entry-level marketing analyst role. I studied marketing, graduated in 2025, did an eight-month internship at a local agency, I'm good with Excel and Google Analytics and I speak English.",
   ));

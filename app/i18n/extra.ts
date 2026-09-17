@@ -156,6 +156,7 @@ const en = {
       format_images: { t: "Images", fix: "Remove photos, logos and icons; keep the file text-only." },
       format_symbols: { t: "Icons and symbols", fix: "Replace icons (☎ ✉ ★) with words — many parsers drop the text next to them." },
       format_personal: { t: "Personal data", fix: "Drop ID numbers, marital status and birth date: not needed, and a privacy risk." },
+      human: { t: "Sounds human", fix: "Cut the chatbot phrases (“results-driven”, “spearheaded”, “passionate about”) and vary how bullets start — recruiters say they skip text that reads like AI." },
       format_caps: { t: "ALL-CAPS lines", fix: "Use normal casing; all-caps blocks parse and read worse." },
     },
     tips: { title: "ATS habits that pay off", items: [
@@ -438,6 +439,7 @@ const pt: typeof en = {
       format_images: { t: "Imagens", fix: "Tira foto, logo e ícone; deixa o arquivo só com texto." },
       format_symbols: { t: "Ícones e símbolos", fix: "Troca ícone (☎ ✉ ★) por palavra — muitos robôs descartam o texto do lado." },
       format_personal: { t: "Dados pessoais", fix: "Tira CPF, RG, estado civil e data de nascimento: não precisa, e é risco de privacidade." },
+      human: { t: "Soa humano", fix: "Corta as frases de ChatGPT (“proativo”, “dinâmico”, “apaixonado por”, “vasta experiência”) e varia o começo dos tópicos — recrutador pula texto com cara de robô." },
       format_caps: { t: "Linhas em CAIXA ALTA", fix: "Usa maiúscula normal; bloco em caixa alta é pior pra ler e pra parsear." },
     },
     tips: { title: "Hábitos de ATS que valem a pena", items: [] as string[] },
@@ -722,6 +724,7 @@ const es: typeof en = {
       format_images: { t: "Imágenes", fix: "Quita fotos, logos e íconos; deja el archivo solo con texto." },
       format_symbols: { t: "Íconos y símbolos", fix: "Cambia los íconos (☎ ✉ ★) por palabras — muchos parsers descartan el texto de al lado." },
       format_personal: { t: "Datos personales", fix: "Quita documentos, estado civil y fecha de nacimiento: no hacen falta y son un riesgo de privacidad." },
+      human: { t: "Suena humano", fix: "Quita las frases de chatbot (“proactivo”, “orientado a resultados”, “apasionado por”) y varía cómo empiezan las viñetas — los reclutadores saltan el texto que suena a IA." },
       format_caps: { t: "Líneas en MAYÚSCULAS", fix: "Usa mayúsculas normales; los bloques en mayúsculas se leen y parsean peor." },
     },
     tips: { title: "Hábitos ATS que rinden", items: [

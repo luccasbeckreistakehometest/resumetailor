@@ -10,11 +10,10 @@ import { useI18n } from "@/app/i18n/I18nProvider";
  * replays, and the first session's actions are logged with it.
  */
 type Rect = { top: number; left: number; width: number; height: number };
-const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "ats-check", "applications", "interview", "import", "fit", "publish", "letters", "progress", "linkedin"];
-const ROUTE_FOR: Record<string, string> = {
-  "nav-start": "/", choose: "/start", credits: "/start", "nav-library": "/start", "ats-check": "/ats-check", applications: "/applications", interview: "/library",
-  import: "/ats-check", fit: "/fit", publish: "/library", letters: "/library", progress: "/interview", linkedin: "/library",
-};
+/** Tour v2: six steps; the free tools and the finale live on the tools hub (in the visitor's language). */
+const ANCHORS = ["choose", "free-tools", "credits", "nav-library", "interview", "hub"];
+const routeFor = (anchor: string, hub: string): string | undefined =>
+  ({ choose: "/start", "free-tools": hub, "nav-library": "/library", interview: "/library", hub } as Record<string, string>)[anchor];
 
 /** The first anchor for a step that is actually on screen (desktop and mobile render different ones). */
 function visibleAnchor(name: string): HTMLElement | null {
@@ -28,7 +27,8 @@ function visibleAnchor(name: string): HTMLElement | null {
 }
 
 export function Tour() {
-  const { x, l } = useI18n();
+  const { x, l, r, to } = useI18n();
+  const hub = to("tools");
   const pathname = usePathname();
   const router = useRouter();
   const [state, setState] = useState<"idle" | "welcome" | "running" | "done">("idle");
@@ -67,7 +67,7 @@ export function Tour() {
 
   useLayoutEffect(() => {
     if (state !== "running") return;
-    const wanted = ROUTE_FOR[ANCHORS[step]];
+    const wanted = routeFor(ANCHORS[step], hub);
     if (wanted && pathname !== wanted) { router.push(wanted as never); return; }
     const id = window.setTimeout(measure, 120);
     // Nothing to point at once the page has settled: move on instead of showing an empty spotlight.
@@ -79,7 +79,7 @@ export function Tour() {
     }, 1500);
     window.addEventListener("resize", measure); window.addEventListener("scroll", measure, true);
     return () => { window.clearTimeout(id); window.clearTimeout(skip); window.removeEventListener("resize", measure); window.removeEventListener("scroll", measure, true); };
-  }, [state, step, pathname, measure, router, save]);
+  }, [state, step, pathname, measure, router, save, hub]);
 
   useEffect(() => {
     if (state !== "running" || !rect) return;
@@ -103,7 +103,7 @@ export function Tour() {
     );
   }
 
-  const s = x.tour.steps[step];
+  const s = r.tour.steps[step];
   const last = step === ANCHORS.length - 1;
   const cardStyle = rect
     ? { top: Math.min(window.innerHeight - 220, rect.top + rect.height + 12), left: Math.max(12, Math.min(rect.left, window.innerWidth - 360)) }
@@ -111,7 +111,8 @@ export function Tour() {
 
   return (
     <>
-      <div className="tour-mask"><div className="tour-hole" style={rect ? { top: rect.top, left: rect.left, width: rect.width, height: rect.height } : { top: -9999, left: -9999, width: 0, height: 0 }} /></div>
+      {/* Nothing to point at (hidden on this screen): no empty spotlight, just the card. */}
+      <div className="tour-mask">{rect && <div className="tour-hole" data-testid="tour-hole" style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }} />}</div>
       <div className="tour-card card p-5" style={cardStyle} data-testid="tour-step" data-step={step} data-total={ANCHORS.length}>
         <p className="eyebrow">{step + 1} / {ANCHORS.length}</p>
         <p className="font-display mt-1 text-xl text-ink">{s.t}</p>

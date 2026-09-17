@@ -42,19 +42,20 @@ test.describe("phone width", () => {
     expect((await page.evaluate(() => fetch("/api/auth/me").then((r) => r.json()))).user).toBeNull();
   });
 
-  test("the tour skips steps whose target is hidden on a phone", async ({ page }) => {
+  test("the six-step tour fits the phone screen and never spotlights an empty box", async ({ page }) => {
     await page.goto("/");
     await page.getByTestId("tour-start").click();
-    await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "0");
-    await page.getByTestId("tour-next").click();   // → "choose" on /start
-    await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "1");
-    await page.getByTestId("tour-next").click();   // → "credits" (visible: the sign-in button)
-    await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "2");
-    await page.getByTestId("tour-next").click();   // → "nav-library" lives in the desktop nav: skipped
-    await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "4", { timeout: 10_000 });
-    const box = await page.getByTestId("tour-step").boundingBox();
     const width = page.viewportSize()!.width;
-    expect(box!.x).toBeGreaterThanOrEqual(0);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+    for (let i = 0; i < 6; i++) {
+      await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", String(i), { timeout: 10_000 });
+      await page.waitForTimeout(300);
+      const box = await page.getByTestId("tour-step").boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+      const hole = page.getByTestId("tour-hole");
+      if (await hole.count()) { const h = await hole.boundingBox(); expect(h!.width * h!.height).toBeGreaterThan(0); }
+      await page.getByTestId("tour-next").click();
+    }
+    await expect(page.getByTestId("tour-step")).toBeHidden();
   });
 });

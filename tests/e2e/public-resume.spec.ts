@@ -36,10 +36,10 @@ test.describe("public web résumé", () => {
     await v1.page.waitForTimeout(600);
     await expect(v1.page.getByTestId("tour-welcome")).toBeHidden();
     await expect(v1.page.getByTestId("cv-copy")).toBeVisible();
+    // The unfurl card renders as an image (its URL carries a build hash; read it from the page).
+    const ogUrl = new URL((await v1.page.locator('meta[property="og:image"]').first().getAttribute("content"))!);
     await v1.ctx.close();
-
-    // The unfurl card renders as an image.
-    const og = await request.get(`${url}/opengraph-image`);
+    const og = await request.get(ogUrl.pathname + ogUrl.search);
     expect(og.status()).toBe(200);
     expect(og.headers()["content-type"]).toContain("image/png");
 

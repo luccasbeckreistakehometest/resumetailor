@@ -24,12 +24,22 @@ export function saveFit(input: { ownerKey: string; hash: string; lang: string; r
   return getCachedFit(input.hash)!;
 }
 
+/**
+ * The daily cap by who is asking: visitors FIT_CHECKS_PER_DAY (5), accounts FIT_CHECKS_PER_DAY_USER
+ * (10), accounts with a paid purchase FIT_CHECKS_PER_DAY_PAID (30) — the job comparator runs several.
+ */
+export function fitLimitFor(userId: string | null): number {
+  if (!userId) return FIT_DAILY_LIMIT;
+  const paid = getDb().prepare("SELECT 1 FROM payments WHERE userId = ? AND status = 'approved' LIMIT 1").get(userId);
+  return paid ? envNumber("FIT_CHECKS_PER_DAY_PAID", 30) : envNumber("FIT_CHECKS_PER_DAY_USER", 10);
+}
+
 /** How many AI-costing checks this person ran in the last 24 hours, and when the oldest one drops out of the window. */
-export function fitUsage(ownerKey: string, now = Date.now()): { used: number; left: number; resetsAt: string | null } {
+export function fitUsage(ownerKey: string, now = Date.now(), limit = FIT_DAILY_LIMIT): { used: number; left: number; resetsAt: string | null } {
   const since = new Date(now - DAY_MS).toISOString();
   const rows = getDb().prepare("SELECT createdAt FROM fit_checks WHERE ownerKey = ? AND createdAt >= ? ORDER BY createdAt ASC").all(ownerKey, since) as { createdAt: string }[];
   const used = rows.length;
-  return { used, left: Math.max(0, FIT_DAILY_LIMIT - used), resetsAt: rows[0] ? new Date(new Date(rows[0].createdAt).getTime() + DAY_MS).toISOString() : null };
+  return { used, left: Math.max(0, limit - used), resetsAt: rows[0] ? new Date(new Date(rows[0].createdAt).getTime() + DAY_MS).toISOString() : null };
 }
 
 /** The caller's most recent kit tailored to a posting: what "reuse my last inputs" fills in. Never anyone else's. */

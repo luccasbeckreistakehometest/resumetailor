@@ -5,6 +5,7 @@ import { SESSION_COOKIE_OPTIONS, anonId, sessionTokenFor } from "@/lib/server/se
 import { authenticate, claimAnonymous, ensureAdmin, toPublic } from "@/lib/server/users";
 import { jsonError, requestIp } from "@/lib/server/http";
 import { clearLimit, reserve } from "@/lib/server/ratelimit";
+import { linkVisitor } from "@/lib/server/analytics";
 
 const schema = z.object({ email: z.string().trim().max(200), password: z.string().max(200) });
 
@@ -25,7 +26,9 @@ export async function POST(request: Request) {
   if (!user) return jsonError("wrong_credentials", 401);   // the reserved slots stay counted
   slot.release();
   clearLimit("LOGIN_FAIL_ACCOUNT_15M", account);
-  claimAnonymous(user.id, await anonId());
+  const anon = await anonId();
+  claimAnonymous(user.id, anon);
+  linkVisitor(user.id, anon);
   const res = NextResponse.json({ ok: true, user: toPublic(user) });
   res.cookies.set(SESSION_COOKIE, sessionTokenFor(user), SESSION_COOKIE_OPTIONS);
   res.cookies.set(ANON_COOKIE, "", { ...SESSION_COOKIE_OPTIONS, maxAge: 0 });

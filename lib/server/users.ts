@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { getDb, getSetting, newId, nowIso, setSetting } from "@/lib/server/db";
 import { authSecret, hashPassword, verifyPassword } from "@/lib/server/auth";
 import { envNumber } from "@/lib/server/env";
+import { claimProfile } from "@/lib/server/profiles";
 
 export interface UserRow {
   id: string; email: string; name: string; passwordHash: string; role: "user" | "admin";
@@ -122,6 +123,7 @@ export function claimAnonymous(userId: string, anonId: string | undefined): void
   db.prepare("UPDATE applications SET userId = ?, anonId = NULL WHERE anonId = ? AND userId IS NULL").run(userId, anonId);
   db.prepare("UPDATE voice_briefings SET ownerId = ? WHERE ownerId = ?").run(userId, anonId);
   db.prepare("UPDATE fit_checks SET ownerKey = ? WHERE ownerKey = ?").run(userId, anonId);
+  claimProfile(userId, anonId);
   type Onb = { events: string; tourCompleted: number; tourStep: number; firstSeenAt: string; completedAt: string | null };
   const onb = db.prepare("SELECT * FROM onboarding WHERE id = ?").get(anonId) as Onb | undefined;
   if (onb && !db.prepare("SELECT 1 FROM onboarding WHERE id = ?").get(userId)) {

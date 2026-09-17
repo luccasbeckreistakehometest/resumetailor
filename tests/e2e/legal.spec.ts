@@ -73,6 +73,10 @@ test.describe("legal pages, errors and share metadata", () => {
     expect(h["x-frame-options"]).toBe("DENY");
     expect(h["strict-transport-security"]).toContain("max-age");
     expect(h["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+    // Microphone (voice) and camera (pitch studio) for this site only; nothing else.
+    expect(h["permissions-policy"]).toContain("microphone=(self)");
+    expect(h["permissions-policy"]).toContain("camera=(self)");
+    expect(h["permissions-policy"]).toContain("geolocation=()");
 
     await page.goto("/");
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://localhost:3100");

@@ -126,3 +126,14 @@ describe("share card", () => {
     expect(decodeShare(btoa('{"s":"x"}'))).toBeNull();
   });
 });
+
+describe("sounds-human check", () => {
+  it("costs points for chatbot phrases, in the page's language, without any network", () => {
+    const base = "Ana Lima\nana@example.com · +55 11 91234-5678\n\nResumo\nAnalista de dados.\n\nExperiência\nAnalista — Acme (2019–2023)\n- Reduzi relatórios de 6h para 40 min\n";
+    const clean = atsCheck(base, "", "pt").checks.find((c) => c.id === "human")!;
+    const robotic = atsCheck(base + "- Profissional proativo, dinâmico e apaixonado por dados\n- Vasta experiência e foco em sinergia\n", "", "pt").checks.find((c) => c.id === "human")!;
+    expect(clean.ok).toBe(true);
+    expect(robotic.ok).toBe(false);
+    expect(robotic.detail.hits).toBeGreaterThanOrEqual(4);
+  });
+});

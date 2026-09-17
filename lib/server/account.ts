@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { getDb, nowIso } from "@/lib/server/db";
 import { findById } from "@/lib/server/users";
 
@@ -27,6 +28,9 @@ export function exportAccount(userId: string) {
     voiceBriefings: all("SELECT lang, transcript, extracted, createdAt FROM voice_briefings WHERE ownerId = ? ORDER BY createdAt", userId)
       .map((v) => ({ ...v, extracted: parse(v.extracted as string) })),
     onboarding: db.prepare("SELECT tourCompleted, tourStep, firstSeenAt, completedAt, events FROM onboarding WHERE id = ?").get(userId) ?? null,
+    careerProfile: (() => { const p = db.prepare("SELECT resume, facts, roles, updatedAt FROM career_profiles WHERE ownerKey = ?").get(userId) as Record<string, string> | undefined; return p ? { ...p, facts: parse(p.facts), roles: parse(p.roles) } : null; })(),
+    voucherRedemptions: all("SELECT code, createdAt FROM voucher_redemptions WHERE userId = ?", userId),
+    referrals: all("SELECT status, createdAt, rewardedAt FROM referrals WHERE referrerId = ?", userId),
     contactMessages: all("SELECT topic, message, status, createdAt FROM contact_messages WHERE userId = ? ORDER BY createdAt", userId),
   };
 }
@@ -54,7 +58,14 @@ export function deleteAccount(userId: string): boolean {
     db.prepare("DELETE FROM voice_briefings WHERE ownerId = ?").run(userId);
     db.prepare("DELETE FROM onboarding WHERE id = ?").run(userId);
     db.prepare("DELETE FROM fit_checks WHERE ownerKey = ?").run(userId);
+    db.prepare("DELETE FROM career_profiles WHERE ownerKey = ?").run(userId);
+    db.prepare("DELETE FROM referrals WHERE referrerId = ? OR referredId = ?").run(userId, userId);
     db.prepare("DELETE FROM contact_messages WHERE userId = ? OR lower(email) = lower(?)").run(userId, u.email);
+    // Analytics: the first-touch row goes; events stay for the totals under a fresh random visitor
+    // id with no account, so nothing links them to the person or to their browser cookie.
+    const visitor = (db.prepare("SELECT attributionVisitorId v FROM users WHERE id = ?").get(userId) as { v: string | null }).v;
+    db.prepare("DELETE FROM attribution WHERE userId = ? OR visitorId = ?").run(userId, visitor ?? "");
+    db.prepare("UPDATE events SET userId = NULL, visitorId = ? WHERE userId = ? OR visitorId = ?").run(`deleted_${randomBytes(8).toString("hex")}`, userId, visitor ?? "");
     // Cost records stay for the spend totals, with nothing that points to the person.
     db.prepare("UPDATE ai_usage SET ownerKey = 'deleted', ip = NULL WHERE ownerKey = ?").run(userId);
     db.prepare("UPDATE payments SET userId = NULL WHERE userId = ?").run(userId);

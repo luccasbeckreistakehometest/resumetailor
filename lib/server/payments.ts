@@ -1,6 +1,8 @@
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { findById, moveCredits } from "@/lib/server/users";
 import { canSell, secretEnv, testFixturesAllowed } from "@/lib/server/env";
+import { serverEvent } from "@/lib/server/analytics";
+import { reverseReferralForPayment, rewardReferralOnPurchase } from "@/lib/server/vouchers";
 
 export type Provider = "stripe" | "mercadopago";
 export type SettleStatus = "approved" | "rejected" | "pending";
@@ -40,6 +42,9 @@ export function settlePayment(input: {
     }
     if (input.status !== "approved") return { granted: false };
     moveCredits(input.userId, input.credits, "purchase", id);
+    // Referral: the referred account's first paid purchase rewards both sides, once.
+    rewardReferralOnPurchase(input.userId, id);
+    serverEvent({ userId: input.userId }, "purchase", { amount: input.amount, currency: input.currency, pack: input.pack, provider: input.provider });
     return { granted: true };
   })();
 }
@@ -50,6 +55,7 @@ export function settlePayment(input: {
  * actually taken). `share` is the refunded fraction (1 = everything; less marks the payment
  * partially_refunded); repeated notifications are idempotent because reversedCredits remembers how
  * much of the payment was already handled. A full refund or a chargeback is never downgraded.
+ * If this purchase paid a referral, any refund of it takes that reward back from both sides.
  */
 export function reversePayment(input: { provider: Provider; externalId?: string; providerRef?: string; status: "refunded" | "charged_back"; share?: number }):
   { found: boolean; taken: number } {
@@ -66,6 +72,7 @@ export function reversePayment(input: { provider: Provider; externalId?: string;
       : share >= 1 || row.status === "refunded" ? "refunded" : "partially_refunded";
     db.prepare("UPDATE payments SET status = ?, reversedAt = COALESCE(reversedAt, ?) WHERE id = ?").run(next, nowIso(), row.id);
     if (!wasPaid || !row.userId) return { found: true, taken: 0 };
+    reverseReferralForPayment(row.id);
     const target = Math.floor(row.credits * share);
     const due = target - row.reversedCredits;
     if (due <= 0) return { found: true, taken: 0 };

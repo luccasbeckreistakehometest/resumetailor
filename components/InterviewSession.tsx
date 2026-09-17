@@ -7,6 +7,7 @@ import { apiErrorText } from "@/app/i18n/launch";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Container, Eyebrow } from "@/components/ui";
 import { speechAvailable, useSpeechInput } from "@/lib/client/speech";
+import { DeliveryLine } from "@/components/DeliveryLine";
 import { DIMENSIONS, MAX_QUESTIONS, overallOf, type Scores } from "@/lib/interview/logic";
 import type { SessionView } from "@/lib/server/interviews";
 import type { GenerationView } from "@/lib/server/generations";
@@ -82,18 +83,26 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
     void speak(question.text);
   }, [phase, voiceOn, question, speak]);
 
+  // When the microphone opened, and when words arrived: pace and pauses for spoken answers.
+  const listenedAt = useRef<number | null>(null);
+  const heardAt = useRef<number[]>([]);
   const submit = useCallback(async (answer: string, source: "voice" | "text") => {
     if (!session) return;
     const text = answer.trim();
     if (text.split(/\s+/).filter(Boolean).length < 4) { setError(x.interview.tooShort); setPhase("question"); return; }
     setError(""); setPhase("thinking"); setShowModel(false); hush();
-    const r = await post(`/api/interview/${session.id}/answer`, { questionIdx: idx, answer: text, source });
+    const started = listenedAt.current;
+    const timing = source === "voice" && started ? { seconds: Math.max(1, (Date.now() - started) / 1000), pauses: heardAt.current.slice(-400) } : {};
+    listenedAt.current = null; heardAt.current = [];
+    const r = await post(`/api/interview/${session.id}/answer`, { questionIdx: idx, answer: text, source, ...timing });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); setPhase("question"); return; }
     setSession(j); setDraft(""); setTyping(false); setPhase("scored");
   }, [session, idx, x, l, hush]);
 
-  const speech = useSpeechInput(sessionLang, (t) => { void submit(t, "voice"); });
+  const speech = useSpeechInput(sessionLang, (t) => { void submit(t, "voice"); }, {
+    onHeard: () => { if (listenedAt.current) heardAt.current.push(Date.now() - listenedAt.current); },
+  });
 
   async function start() {
     setPhase("starting"); setError("");
@@ -104,7 +113,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
     setSession(j); setIdx(0); setTyping(false); setPhase("question");
     window.history.replaceState(null, "", `/interview/${generationId}?session=${j.id}`);
   }
-  function listen() { hush(); setError(""); if (speech.start()) setPhase("listening"); }
+  function listen() { hush(); setError(""); if (speech.start()) { listenedAt.current = Date.now(); heardAt.current = []; setPhase("listening"); } }
   function next() { setIdx(idx + 1); setShowModel(false); setPhase("question"); }
   async function finishEarly() {
     if (!session) return;
@@ -202,6 +211,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
                   <p className="eyebrow mt-2">{x.interview.overall} / 10</p>
                 </div>
               </div>
+              {turn.delivery && <DeliveryLine d={turn.delivery} />}
               <p className="eyebrow mt-7">{x.interview.coaching}</p>
               <ul className="mt-2 space-y-1.5">{turn.coaching.map((c, i) => <li key={i} className="flex gap-2 text-sm text-ink-2"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />{c}</li>)}</ul>
               <div className="mt-5 rounded-xl border border-edge bg-paper p-4">

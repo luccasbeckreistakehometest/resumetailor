@@ -38,7 +38,12 @@ You will run lifecycle marketing programmes, manage paid acquisition budgets, an
 test.describe("free ATS check", () => {
   test("scores a paste without an account, ranks the fixes, matches keywords, and shares a card", async ({ page, context }) => {
     const apiCalls: string[] = [];
-    page.on("request", (r) => { if (r.url().includes("/api/")) apiCalls.push(new URL(r.url()).pathname); });
+    const beacons: string[] = [];
+    page.on("request", (r) => {
+      if (!r.url().includes("/api/")) return;
+      apiCalls.push(new URL(r.url()).pathname);
+      if (new URL(r.url()).pathname === "/api/e") beacons.push(r.postDataBuffer()?.toString() ?? "");
+    });
     await page.goto("/ats-check");
     await skipTour(page);
     await page.goto("/ats-check");
@@ -75,7 +80,9 @@ test.describe("free ATS check", () => {
     expect(url).not.toContain("HubSpot");
 
     // Nothing about the résumé went to the server.
-    expect(apiCalls.filter((p) => !["/api/auth/me", "/api/tour"].includes(p))).toEqual([]);
+    // The résumé never leaves the browser: only first-party analytics beacons (no text in them) go out.
+    expect(apiCalls.filter((p) => !["/api/auth/me", "/api/tour", "/api/e"].includes(p))).toEqual([]);
+    for (const b of beacons) expect(b).not.toMatch(/HubSpot|pipeline|Acme/i);
   });
 
   test("/ats-check/pt is served in Portuguese with Gupy tips; sitemap and robots cover it", async ({ page, request }) => {

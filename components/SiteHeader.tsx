@@ -10,8 +10,9 @@ import { useDialog } from "@/components/useDialog";
 import { Portal } from "@/components/Portal";
 
 export function Logo() {
+  const { to } = useI18n();
   return (
-    <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="ResumeTailor">
+    <Link href={to("home")} className="flex shrink-0 items-center gap-2.5" aria-label="ResumeTailor">
       <span className="grid h-8 w-8 place-items-center rounded-md bg-ink font-display text-lg leading-none text-paper">R</span>
       <span className="font-display text-xl tracking-tight text-ink">Resume<span className="text-oxblood">Tailor</span></span>
     </Link>
@@ -19,7 +20,7 @@ export function Logo() {
 }
 
 export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
-  const { d, x, l } = useI18n();
+  const { d, x, l, r, to, startHref } = useI18n();
   const { user } = useAuth();
   const [menu, setMenu] = useState(false);
   return (
@@ -28,11 +29,13 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
         <Logo />
         {!minimal && (
           <nav className="hidden items-center gap-6 text-sm font-medium text-ink-2 md:flex" aria-label={l.menu.title}>
-            <Link href="/ats-check" className="hover:text-ink" data-testid="nav-ats">{x.nav.atsCheck}</Link>
-            <Link href="/fit" className="hover:text-ink" data-testid="nav-fit">{x.nav.fit}</Link>
-            <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
+            <Link href={to("ats")} className="hover:text-ink" data-testid="nav-ats">{x.nav.atsCheck}</Link>
+            <Link href={to("fit")} className="hover:text-ink" data-testid="nav-fit">{x.nav.fit}</Link>
+            <Link href={to("compare")} className="hover:text-ink" data-testid="nav-compare">{r.compare.navLabel}</Link>
+            <Link href={to("pricing")} className="hover:text-ink">{x.nav.pricing}</Link>
             <Link href="/library" className="hover:text-ink" data-tour="nav-library">{d.nav.myCVs}</Link>
             <Link href="/applications" className="hover:text-ink" data-testid="nav-applications">{x.nav.applications}</Link>
+            <Link href={to("tools")} className="hover:text-ink" data-testid="nav-tools">{r.showcase.navLabel}</Link>
             {user?.role === "admin" && <Link href="/admin" className="hover:text-ink">Admin</Link>}
           </nav>
         )}
@@ -43,7 +46,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
             <AuthButton />
           </div>
           <div className="hidden md:block"><LanguageSwitcher /></div>
-          {!minimal && <Link href="/start" className="btn btn-primary hidden !py-2 !text-sm md:inline-flex" data-tour="nav-start">{d.nav.start}</Link>}
+          {!minimal && <Link href={startHref()} className="btn btn-primary hidden !py-2 !text-sm md:inline-flex" data-tour="nav-start">{d.nav.start}</Link>}
           <button type="button" onClick={() => setMenu(true)} className="grid h-10 w-10 place-items-center rounded-lg border border-edge-2 text-ink md:hidden" aria-label={l.menu.open} aria-expanded={menu} aria-haspopup="dialog" data-testid="menu-open">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" /></svg>
           </button>
@@ -56,7 +59,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
 /** Below md: everything the desktop header offers — navigation, credits, account, language, sign out. */
 function MobileMenu({ onClose, minimal }: { onClose: () => void; minimal: boolean }) {
-  const { d, x, l } = useI18n();
+  const { d, x, l, r, lang, to, startHref } = useI18n();
   const { user, signOut } = useAuth();
   const ref = useDialog<HTMLDivElement>(onClose);
   const link = "block rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-paper-2";
@@ -76,13 +79,16 @@ function MobileMenu({ onClose, minimal }: { onClose: () => void; minimal: boolea
           </div>
         )}
         <nav className="mt-3 flex flex-col" aria-label={l.menu.title} onClick={onClose}>
-          {!minimal && <Link href="/start" className="btn btn-primary mb-2 w-full">{l.menu.start}</Link>}
-          <Link href="/ats-check" className={link}>{x.nav.atsCheck}</Link>
-          <Link href="/fit" className={link}>{x.nav.fit}</Link>
-          <Link href="/pricing" className={link}>{x.nav.pricing}</Link>
+          {!minimal && <Link href={startHref()} className="btn btn-primary mb-2 w-full">{l.menu.start}</Link>}
+          <Link href={to("ats")} className={link}>{x.nav.atsCheck}</Link>
+          <Link href={to("fit")} className={link}>{x.nav.fit}</Link>
+          <Link href={to("compare")} className={link}>{r.compare.navLabel}</Link>
+          {lang === "pt" && <Link href={to("calculator")} className={link}>{r.showcase.cards.calculator.t}</Link>}
+          <Link href={to("pricing")} className={link}>{x.nav.pricing}</Link>
           <Link href="/library" className={link} data-testid="menu-library">{d.nav.myCVs}</Link>
           <Link href="/applications" className={link}>{x.nav.applications}</Link>
           <Link href="/interview" className={link}>{x.interview.sessionsTitle}</Link>
+          <Link href={to("tools")} className={link} data-testid="menu-tools">{r.showcase.hubTitle}</Link>
           {user && <Link href="/account" className={link} data-testid="menu-account">{l.menu.account}</Link>}
           {user?.role === "admin" && <Link href="/admin" className={link}>{l.menu.admin}</Link>}
           <Link href="/contact" className={link}>{l.footer.contact}</Link>

@@ -206,6 +206,7 @@ function migrate(d: Database.Database): void {
     );
   `);
   d.exec(LAUNCH_TABLES);
+  d.exec(ROUND3_TABLES);
   addColumnIfMissing(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
   // Accounts: session revocation, disabling, consent, and where the signup came from (bonus cap).
   addColumnIfMissing(d, "users", "sessionVersion", "INTEGER NOT NULL DEFAULT 0");
@@ -222,9 +223,152 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "public_resumes", "takenDownAt", "TEXT");
   // ...and on the kit itself, so deleting the page and publishing again cannot undo a takedown.
   addColumnIfMissing(d, "generations", "publishBlockedAt", "TEXT");
+  // Round 3: truth-check confirmations ("that's right, it's mine") per kit.
+  addColumnIfMissing(d, "generations", "truthAck", "TEXT NOT NULL DEFAULT '[]'");
+  // How many "missing numbers" rounds a kit used (capped by KIT_QUANTIFY_MAX).
+  addColumnIfMissing(d, "generations", "quantified", "INTEGER NOT NULL DEFAULT 0");
+  // The visitor cookie an account was created from (first-touch attribution survives signup).
+  addColumnIfMissing(d, "users", "attributionVisitorId", "TEXT");
+  // Tracker: interview time, the contact, follow-ups sent, and the offer (for the CLT × PJ comparison).
+  addColumnIfMissing(d, "applications", "interviewAtTime", "TEXT");
+  addColumnIfMissing(d, "applications", "contactName", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "contactChannel", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "contactValue", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "lastContactAt", "TEXT");
+  addColumnIfMissing(d, "applications", "followUps", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(d, "applications", "offerType", "TEXT");
+  addColumnIfMissing(d, "applications", "offerAmount", "REAL");
+  // Languages of the international versions a kit used (KIT_INTL_MAX); never reset by a rewrite.
+  addColumnIfMissing(d, "generations", "intlLangs", "TEXT NOT NULL DEFAULT '[]'");
+  // The account's share code for referrals (created on first use).
+  addColumnIfMissing(d, "users", "refCode", "TEXT");
+  d.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_refcode ON users(refCode) WHERE refCode IS NOT NULL");
+  // Which version of the tour a visitor's saved step belongs to (the steps changed in round 3).
+  addColumnIfMissing(d, "onboarding", "tourVersion", "INTEGER NOT NULL DEFAULT 1");
+  // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
+  addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
+  // The purchase that paid a referral, so its refund or chargeback can take the reward back.
+  addColumnIfMissing(d, "referrals", "paymentId", "TEXT");
+  addColumnIfMissing(d, "referrals", "reversedAt", "TEXT");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }
+
+/** Round 3: saved profile, résumé versions, analytics, pitch takes, job imports, vouchers, referrals. */
+const ROUND3_TABLES = `
+  -- The candidate's base résumé and the facts they told us (voice, number answers), reused for
+  -- every new kit. Owned by the account, or by the visitor cookie until signup.
+  CREATE TABLE IF NOT EXISTS career_profiles (
+    ownerKey TEXT PRIMARY KEY,
+    resume TEXT NOT NULL DEFAULT '',
+    facts TEXT NOT NULL DEFAULT '{}',
+    roles TEXT NOT NULL DEFAULT '[]',
+    updatedAt TEXT NOT NULL
+  );
+
+  -- Every version of a kit's résumé: the AI's, each deepening or number pass, the person's edits
+  -- (consecutive autosaves coalesce) and restores. The first row is the AI original and is kept.
+  CREATE TABLE IF NOT EXISTS resume_versions (
+    id TEXT PRIMARY KEY,
+    generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    source TEXT NOT NULL,                        -- ai | deepen | quantify | user | restore
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_versions_gen ON resume_versions(generationId, createdAt);
+
+  -- First-party analytics: page views and conversions per visitor cookie (no IP), kept
+  -- ANALYTICS_RETENTION_DAYS; and where each visitor first came from (first touch).
+  CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    at TEXT NOT NULL,
+    day TEXT NOT NULL,
+    visitorId TEXT NOT NULL,
+    sessionId TEXT,
+    userId TEXT,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL DEFAULT '',
+    lang TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    medium TEXT NOT NULL DEFAULT '',
+    campaign TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    term TEXT NOT NULL DEFAULT '',
+    refHost TEXT NOT NULL DEFAULT '',
+    device TEXT NOT NULL DEFAULT '',
+    props TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_events_day_name ON events(day, name);
+  CREATE INDEX IF NOT EXISTS idx_events_visitor ON events(visitorId, day);
+  CREATE INDEX IF NOT EXISTS idx_events_campaign ON events(campaign, day);
+  -- Feedback on a pitch-video take: the delivery numbers and the coaching only. The video and
+  -- the transcript are never stored.
+  CREATE TABLE IF NOT EXISTS pitch_takes (
+    id TEXT PRIMARY KEY,
+    generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+    ownerKey TEXT NOT NULL,
+    seconds INTEGER NOT NULL,
+    metrics TEXT NOT NULL,
+    feedback TEXT,
+    costUsd REAL NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_pitch_gen ON pitch_takes(generationId, createdAt);
+  -- Postings read from public job-board APIs (Greenhouse, Lever, Ashby), cached for a day.
+  CREATE TABLE IF NOT EXISTS job_imports (
+    urlHash TEXT PRIMARY KEY,
+    url TEXT NOT NULL,
+    host TEXT NOT NULL,
+    company TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
+    salary TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL,
+    postedAt TEXT,
+    fetchedAt TEXT NOT NULL
+  );
+  -- Promo / partner codes, who redeemed them, and referrals (paid on the first purchase only).
+  CREATE TABLE IF NOT EXISTS vouchers (
+    code TEXT PRIMARY KEY,
+    credits INTEGER NOT NULL,
+    maxRedemptions INTEGER NOT NULL DEFAULT 1,
+    redeemed INTEGER NOT NULL DEFAULT 0,
+    expiresAt TEXT,
+    campaign TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    disabled INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_vouchers_campaign ON vouchers(campaign, createdAt);
+  CREATE TABLE IF NOT EXISTS voucher_redemptions (
+    code TEXT NOT NULL REFERENCES vouchers(code) ON DELETE CASCADE,
+    userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    createdAt TEXT NOT NULL,
+    PRIMARY KEY (code, userId)
+  );
+  CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrerId TEXT NOT NULL,
+    referredId TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'pending',       -- pending | rewarded | reversed
+    createdAt TEXT NOT NULL,
+    rewardedAt TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrerId);
+  CREATE TABLE IF NOT EXISTS attribution (
+    visitorId TEXT PRIMARY KEY,
+    firstAt TEXT NOT NULL,
+    landingPath TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    medium TEXT NOT NULL DEFAULT '',
+    campaign TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    term TEXT NOT NULL DEFAULT '',
+    refHost TEXT NOT NULL DEFAULT '',
+    userId TEXT
+  );
+`;
 
 const LAUNCH_TABLES = `
   -- Small key/value store for operational state (admin password fingerprint, AI health).

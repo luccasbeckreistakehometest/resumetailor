@@ -4,12 +4,14 @@
  * (Gupy, Workday, Greenhouse…) effectively asks: can I find your contact details, your sections,
  * your dates; are your bullets concrete; do you use the posting's words; is the layout parseable.
  */
+import { clicheCheck } from "@/lib/ats/cliche";
+
 export type Lang = "en" | "pt" | "es";
 export type Severity = "high" | "medium" | "low";
 export type CheckId =
   | "contact" | "summary" | "experience" | "education" | "skills"
   | "dates" | "bullets" | "quantified" | "length" | "keywords"
-  | "format_tables" | "format_images" | "format_symbols" | "format_personal" | "format_caps";
+  | "format_tables" | "format_images" | "format_symbols" | "format_personal" | "format_caps" | "human";
 
 export interface Check {
   id: CheckId; ok: boolean; severity: Severity;
@@ -38,7 +40,7 @@ const YEAR = /\b(?:19|20)\d{2}\b/g;
 const MONTH = /\b(?:jan|feb|fev|mar|apr|abr|may|mai|jun|jul|aug|ago|sep|set|oct|out|nov|dec|dez|january|february|march|april|june|july|august|september|october|november|december|janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|enero|febrero|marzo|mayo|junio|julio|septiembre|octubre|noviembre|diciembre)\b\.?\s*(?:de\s+|\/|-)?\s*(?:19|20)\d{2}/gi;
 const PRESENT = /\b(?:present|current|now|atual|atualmente|hoje|o momento|actual|actualidad|presente)\b/i;
 
-const HEADINGS: Record<Exclude<CheckId, "contact" | "dates" | "bullets" | "quantified" | "length" | "keywords" | `format_${string}`>, RegExp> = {
+const HEADINGS: Record<Exclude<CheckId, "contact" | "dates" | "bullets" | "quantified" | "length" | "keywords" | "human" | `format_${string}`>, RegExp> = {
   summary: /^(?:#+\s*)?(?:professional\s+)?(?:summary|profile|about(?:\s+me)?|objective|resumo(?:\s+profissional)?|perfil(?:\s+profissional)?|objetivo(?:\s+profissional)?|sobre(?:\s+mim)?|apresentacao|resumen(?:\s+profesional)?|extracto)\b/,
   experience: /^(?:#+\s*)?(?:(?:work|professional|relevant)\s+)?(?:experience|work\s+history|employment(?:\s+history)?|experiencia(?:\s+profissional|\s+laboral)?|historico\s+profissional|trajetoria(?:\s+profissional)?|atuacao\s+profissional|historial\s+laboral)\b/,
   education: /^(?:#+\s*)?(?:education|academic(?:s|\s+background)?|formacao(?:\s+academica)?|educacao|escolaridade|educacion|formacion(?:\s+academica)?|estudios)\b/,
@@ -111,11 +113,12 @@ const WEIGHTS: Record<CheckId, { max: number; severity: Severity }> = {
   contact: { max: 8, severity: "high" }, summary: { max: 4, severity: "low" }, experience: { max: 10, severity: "high" }, education: { max: 5, severity: "medium" }, skills: { max: 6, severity: "medium" },
   dates: { max: 8, severity: "high" }, bullets: { max: 8, severity: "medium" }, quantified: { max: 12, severity: "high" }, length: { max: 6, severity: "medium" }, keywords: { max: 20, severity: "high" },
   format_tables: { max: 4, severity: "medium" }, format_images: { max: 2, severity: "medium" }, format_symbols: { max: 2, severity: "low" }, format_personal: { max: 3, severity: "low" }, format_caps: { max: 2, severity: "low" },
+  human: { max: 4, severity: "low" },
 };
 
 const SYMBOLS = /[☀-➿←-⇿⬀-⯿\u{1F300}-\u{1FAFF}]/gu;   // icons and emoji; plain bullets (•, ‣) are outside these ranges
 
-export function atsCheck(resumeText: string, posting = ""): AtsResult {
+export function atsCheck(resumeText: string, posting = "", lang: Lang = "en"): AtsResult {
   const raw = resumeText ?? "";
   const ls = lines(raw);
   const body = nonEmpty(ls);
@@ -172,6 +175,10 @@ export function atsCheck(resumeText: string, posting = ""): AtsResult {
   add("format_personal", personal ? 0 : 3, { hits: personal });
   const capsLines = body.filter((l) => /[A-ZÀ-Ü]{3,}/.test(l) && l === l.toUpperCase() && wordCount(l) >= 3).length;
   add("format_caps", body.length && capsLines / body.length > 0.3 ? 0 : 2, { lines: capsLines });
+
+  // "Sounds human?": chatbot clichés and patterns recruiters say they skip (lib/ats/cliche.ts).
+  const human = clicheCheck(raw, lang);
+  add("human", human.score >= 90 ? 4 : human.score >= 75 ? 2 : human.score >= 50 ? 1 : 0, { score: human.score, hits: human.hits.length, patterns: human.patterns.length });
 
   const max = checks.reduce((a, c) => a + c.max, 0);
   const earned = checks.reduce((a, c) => a + c.earned, 0);

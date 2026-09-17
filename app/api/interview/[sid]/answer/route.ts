@@ -9,10 +9,15 @@ import { recordEvent } from "@/lib/server/onboarding";
 import { lease, takeAll } from "@/lib/server/ratelimit";
 import type { Lang } from "@/lib/ai/kit";
 import type { Question, Turn } from "@/lib/interview/logic";
+import { deliveryMetrics } from "@/lib/speech/metrics";
 
 export const runtime = "nodejs";
 
-const schema = z.object({ questionIdx: z.number().int().min(0), answer: z.string().min(3).max(4000), source: z.enum(["voice", "text"]).default("text") });
+const schema = z.object({
+  questionIdx: z.number().int().min(0), answer: z.string().min(3).max(4000), source: z.enum(["voice", "text"]).default("text"),
+  /** Spoken answers: how long the person talked, and when words arrived (for pace and pauses). */
+  seconds: z.number().min(0).max(900).optional(), pauses: z.array(z.number()).max(400).optional(),
+});
 
 /**
  * Scores one answer and appends it. Answers must arrive in order, one per question, and one at a
@@ -43,7 +48,8 @@ export async function POST(request: Request, ctx: { params: Promise<{ sid: strin
         scoreAnswer({ question: questions[turns.length], answer, targetRole: gen.targetRole, background: backgroundFor(gen), lang }));
       if (!scored.ok) return scored.reply;
       const { result, costUsd } = scored.value;
-      const turn: Turn = { questionIdx: turns.length, answer, source, scores: result.scores, coaching: result.coaching, modelAnswer: result.modelAnswer, at: nowIso() };
+      const delivery = source === "voice" && parsed.data.seconds ? deliveryMetrics(answer, parsed.data.seconds, lang, parsed.data.pauses) : null;
+      const turn: Turn = { questionIdx: turns.length, answer, source, scores: result.scores, coaching: result.coaching, modelAnswer: result.modelAnswer, at: nowIso(), delivery };
       let updated = appendTurn(row.id, turn, costUsd);
       if (!updated) return bad("answer_current_first", 409);
       if (turns.length + 1 >= questions.length) {

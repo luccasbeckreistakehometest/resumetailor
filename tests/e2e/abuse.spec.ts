@@ -44,7 +44,7 @@ test.describe("abuse and cost limits", () => {
     await script.close();
     await other.request.get("http://localhost:3100/api/tour");   // what every page does first
     const hijack = await other.request.post("http://localhost:3100/api/voice/extract", { data: { transcript: "overwrite someone else's story", lang: "en", briefingId } });
-    expect(hijack.status()).toBe(404);
+    expect(hijack.status()).toBe(403);
     await other.close();
     const own = await page.request.post("/api/voice/extract", { data: { transcript: "I studied marketing and want an analyst role", lang: "en", briefingId } });
     expect((await own.json()).briefingId).toBe(briefingId);
