@@ -56,3 +56,34 @@ export async function buildKitByText(page: Page) {
   await page.getByTestId("next").click();
   await expect(page.getByTestId("result")).toBeVisible({ timeout: 30_000 });
 }
+
+export const SAMPLE_JOB = "Growth Marketing Manager at Contoso. Must have: lifecycle marketing, HubSpot, SQL, A/B testing, attribution, team leadership. Nice to have: Power BI.";
+export const SAMPLE_RESUME = "Alex Ribeiro — Growth Lead at Acme (2021–2026). Grew qualified pipeline 38% YoY through lifecycle campaigns. Led a team of 4 across paid, CRM and content. Skills: HubSpot, SQL, A/B testing.";
+
+/** Text flow through "tailor to a job" up to the (mocked) preview. Returns the kit id. */
+export async function tailorKitByText(page: Page, opts: { role?: string; job?: string; resume?: string | null } = {}) {
+  await page.goto("/");
+  await skipTour(page);
+  await page.goto("/start");
+  await page.getByTestId("via-text").click();
+  await page.getByTestId("mode-tailor").click();
+  await page.getByTestId("role").fill(opts.role ?? "Growth Marketing Manager");
+  await page.getByTestId("next").click();
+  await page.getByTestId("job").fill(opts.job ?? SAMPLE_JOB);
+  await page.getByTestId("next").click();
+  if (opts.resume !== null) {
+    await page.getByTestId("resume").fill(opts.resume ?? SAMPLE_RESUME);
+    await page.getByTestId("next").click();
+  }
+  await expect(page.getByTestId("result")).toBeVisible({ timeout: 30_000 });
+  return page.evaluate(() => localStorage.getItem("rt_last_gen") ?? "");
+}
+
+/** A tailored kit, unlocked with the signup credit of a brand-new account. */
+export async function unlockedTailorKit(page: Page, opts: { email?: string } = {}) {
+  const id = await tailorKitByText(page);
+  await page.getByTestId("unlock").click();
+  const account = await signUp(page, opts.email);
+  await expect(page.getByTestId("kit")).toBeVisible({ timeout: 15_000 });
+  return { id, ...account };
+}

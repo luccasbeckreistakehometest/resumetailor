@@ -25,7 +25,7 @@ type Via = "choose" | "voice" | "text";
 const FLOWS: Record<Mode, string[]> = { tailor: ["role", "job", "resume"], improve: ["role", "resume"], build: ["role", "build"] };
 
 function StartInner() {
-  const { d, x, l, lang } = useI18n();
+  const { d, x, l, r, lang } = useI18n();
   const { user, refresh, aiReady, features } = useAuth();
   const params = useSearchParams();
   const router = useRouter();
@@ -47,6 +47,36 @@ function StartInner() {
   const [authOpen, setAuthOpen] = useState(false); const [unlocking, setUnlocking] = useState(false);
   const [needCredits, setNeedCredits] = useState(false);
   const [carried, setCarried] = useState(false);
+  // The saved base résumé (or a kit's résumé) pre-fills the paste step, which is then skipped.
+  const [saved, setSaved] = useState<null | { from: "profile" | "kit"; date: string }>(null);
+  const [remember, setRemember] = useState(true);
+
+  useEffect(() => {
+    if (params.get("from") === "fit" || params.get("gen")) return;
+    const base = params.get("base");
+    const kitId = params.get("kit");
+    let cancelled = false;
+    const dateOf = (iso: string) => new Date(iso).toLocaleDateString(lang === "pt" ? "pt-BR" : lang, { day: "2-digit", month: "2-digit" });
+    const fromKit = base === "kit" && kitId
+      ? fetch(`/api/generations/${encodeURIComponent(kitId)}`).then((res) => (res.ok ? res.json() : null)).then((g: GenerationView | null) => g?.kit ? { resume: g.kit.resume, role: g.targetRole, date: g.createdAt, from: "kit" as const } : null)
+      : Promise.resolve(null);
+    void fromKit.then(async (k) => k ?? fetch("/api/profile", { cache: "no-store" }).then((res) => res.json()).then((j) => j.profile?.resume ? { resume: j.profile.resume as string, role: (j.profile.roles?.[0] as string) ?? "", date: j.profile.updatedAt as string, from: "profile" as const } : null).catch(() => null))
+      .then((found) => {
+        if (cancelled) return;
+        const fresh = params.get("new") === "tailor";
+        if (fresh) {
+          // "New job with this résumé": a clean tailor flow that starts at the posting.
+          setGen(null); setNeedCredits(false); setPasteNeeded(null); setJobDescription(""); setError("");
+          setVia("text"); setMode("tailor"); setStep(1);
+        }
+        if (!found) return;
+        setResume((cur) => (fresh || !cur ? found.resume : cur));
+        if (fresh) setTargetRole(found.role);
+        setSaved({ from: found.from, date: dateOf(found.date) });
+      });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
   // Arriving from the fit check: the posting and the résumé come along, so the kit is one click away.
   useEffect(() => {
@@ -68,7 +98,8 @@ function StartInner() {
     fetch(`/api/generations/${id}`).then((r) => r.ok ? r.json() : null).then((j) => { if (j) { setGen(j); setVia("text"); setMode(j.mode); } });
   }, [params]);
 
-  const flow = mode ? FLOWS[mode] : [];
+  const usingSaved = !!saved && resume.trim().length >= 30;
+  const flow = mode ? FLOWS[mode].filter((st) => !(st === "resume" && usingSaved && !pasteNeeded?.resume)) : [];
   const current = gen ? "result" : !mode ? "intent" : flow[step] ?? "result";
 
   const profile = () => [level && `Level: ${level}`, education && `Education:\n${education}`, experience && `Experience:\n${experience}`, skills && `Skills:\n${skills}`, achievements && `Achievements:\n${achievements}`].filter(Boolean).join("\n\n");
@@ -79,7 +110,7 @@ function StartInner() {
     setError(""); setLoading(true);
     try {
       const bid = override?.briefingId ?? briefingId;
-      const payload: Record<string, string> = { mode: m, targetRole: override?.targetRole ?? targetRole, lang, source: override?.source ?? source, ...(bid ? { briefingId: bid } : {}) };
+      const payload: Record<string, string | boolean> = { mode: m, targetRole: override?.targetRole ?? targetRole, lang, source: override?.source ?? source, remember, ...(bid ? { briefingId: bid } : {}) };
       if (m === "tailor") Object.assign(payload, { jobDescription, resume });
       else if (m === "improve") Object.assign(payload, { resume });
       else Object.assign(payload, { profile: override?.profile ?? profile() });
@@ -90,7 +121,7 @@ function StartInner() {
     } catch (e) { setError(e instanceof Error ? e.message : d.quiz.validation.generic); }
     finally { setLoading(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetRole, lang, source, briefingId, jobDescription, resume, level, education, experience, skills, achievements]);
+  }, [targetRole, lang, source, briefingId, jobDescription, resume, level, education, experience, skills, achievements, remember]);
 
   // Voice briefing confirmed: fill the form, then either paste what voice cannot carry or generate.
   function onBriefing(b: Briefing, id: string) {
@@ -177,6 +208,13 @@ function StartInner() {
               {mode && <button onClick={back} className="text-sm text-muted hover:text-ink">← {d.quiz.back}</button>}
             </div>
 
+            {usingSaved && current !== "intent" && current !== "resume" && (
+              <p className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-moss-2 px-4 py-2.5 text-sm text-ink" data-testid="saved-resume-chip">
+                <span>📄 {saved!.from === "kit" ? r.profile.fromKit : r.profile.usingSaved(saved!.date)}</span>
+                <button type="button" onClick={() => setSaved(null)} className="font-semibold text-oxblood underline-offset-4 hover:underline" data-testid="saved-resume-change">· {r.profile.change}</button>
+              </p>
+            )}
+
             {current === "intent" && (
               <>
                 <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.intent.title}</h1>
@@ -223,6 +261,10 @@ function StartInner() {
                 <p className="mt-1 text-sm text-muted">{pasteNeeded?.resume ? x.voice.resumeNeeded : d.quiz.resume.subtitle}</p>
                 {carried && <p className="mt-3 rounded-xl bg-gold-2 px-4 py-2.5 text-sm text-ink" data-testid="fit-carried">{x.fit.carried}</p>}
                 <div className="mt-6"><ImportableTextarea id="rt-resume" label={d.quiz.resume.title} value={resume} onChange={setResume} rows={11} placeholder={d.quiz.resume.placeholder} testId="resume" importTestId="import" /></div>
+                <label className="mt-3 flex items-center gap-2 text-sm text-ink-2">
+                  <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-[var(--color-oxblood)]" data-testid="remember-resume" />
+                  {r.profile.remember}
+                </label>
               </>
             )}
 
@@ -276,6 +318,7 @@ function StartInner() {
                   <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
                   <Link href={`/linkedin/${gen.id}`} className="btn btn-ghost" data-testid="linkedin-link">in · {x.linkedin.cta}</Link>
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>
+                  <Link href={`/start?new=tailor&base=kit&kit=${gen.id}`} className="btn btn-ghost" title={r.profile.newJobHint} data-testid="new-job">{r.profile.newJob}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
                 <div className="mt-6"><PublishPanel key={gen.id} gen={gen} /></div>

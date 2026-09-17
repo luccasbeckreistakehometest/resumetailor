@@ -10,9 +10,10 @@ import type { GenerationView } from "@/lib/server/generations";
 import type { SessionView } from "@/lib/server/interviews";
 import { TrendChart } from "@/components/TrendChart";
 import { buildTrend, toPoint } from "@/lib/interview/trend";
+import { BaseResumeCard } from "@/components/BaseResumeCard";
 
 export default function LibraryPage() {
-  const { d, x, lang } = useI18n();
+  const { d, x, r, lang } = useI18n();
   const { user } = useAuth();
   const [items, setItems] = useState<GenerationView[] | null>(null);
   const [sessions, setSessions] = useState<SessionView[]>([]);
@@ -41,6 +42,8 @@ export default function LibraryPage() {
         <h1 className="font-display mt-2 text-4xl text-ink" data-tour="nav-library">{d.library.title}</h1>
         <p className="mt-2 text-ink-2">{user ? x.auth.title : x.credits.firstFree}</p>
 
+        <BaseResumeCard key={user?.id ?? "anon"} />
+
         {items && items.length === 0 && (
           <div className="card mt-10 p-10 text-center"><p className="text-ink-2">{x.library.empty}</p><Link href="/start" className="btn btn-primary mt-6">{d.library.emptyCta}</Link></div>
         )}
@@ -61,11 +64,12 @@ export default function LibraryPage() {
                   {new Date(g.createdAt).toLocaleDateString(lang === "pt" ? "pt-BR" : lang)} · {d.quiz.intent[g.mode as "tailor"].t}{g.source === "voice" ? ` · 🎙 ${x.library.voice}` : ""} · <span className="text-moss">{g.matchAfter}% {d.library.matchLabel}</span> · {g.unlocked ? <span className="text-moss">{x.library.unlocked}</span> : <span>{x.library.locked}</span>}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Link href={`/start?gen=${g.id}`} className="btn btn-ghost !py-1.5 !text-sm">{x.library.open}</Link>
                 <Link href={`/interview/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-practice">🎙 {x.interview.practice}</Link>
                 {g.unlocked && <Link href={`/linkedin/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-linkedin">in</Link>}
                 {g.unlocked && <Link href={`/print?id=${g.id}`} target="_blank" className="btn btn-ink !py-1.5 !text-sm">{x.library.print}</Link>}
+                {g.unlocked && <Link href={`/start?new=tailor&base=kit&kit=${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" title={r.profile.newJobHint} data-testid="library-new-job">{r.profile.newJob}</Link>}
                 <button onClick={() => { setEditId(g.id); setDraft(g.title); }} className="text-sm text-muted hover:text-ink">{d.library.rename}</button>
                 <button onClick={() => remove(g.id)} className="text-sm text-muted hover:text-oxblood">{d.library.delete}</button>
               </div>

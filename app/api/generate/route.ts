@@ -6,6 +6,7 @@ import { saveGeneration, serialise } from "@/lib/server/generations";
 import { recordEvent } from "@/lib/server/onboarding";
 import { envNumber } from "@/lib/server/env";
 import { reserveSpecs, takeAll } from "@/lib/server/ratelimit";
+import { saveProfile } from "@/lib/server/profiles";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,8 @@ const schema = z.object({
   lang: z.enum(["en", "pt", "es"]).default("en"),
   source: z.enum(["text", "voice"]).default("text"),
   briefingId: z.string().max(64).optional(),
+  /** Keep this résumé as the base for the next kits (on by default). */
+  remember: z.boolean().default(true),
 });
 
 /**
@@ -50,6 +53,7 @@ export async function POST(request: Request) {
       userId: owner.userId, anonId: owner.anonId, mode: b.mode, source: b.source, lang: b.lang, targetRole: b.targetRole,
       input: { jobDescription: b.jobDescription, resume: b.resume, profile: b.profile, briefingId: b.briefingId }, kit, model, costUsd,
     });
+    if (b.remember && b.mode !== "build" && b.resume) saveProfile(owner.key, { resume: b.resume, role: b.targetRole });
     recordEvent(owner.key, "generate", { mode: b.mode, source: b.source, matchAfter: kit.matchAfter });
     return { body: serialise(row) };
   });

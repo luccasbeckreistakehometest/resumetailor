@@ -206,6 +206,7 @@ function migrate(d: Database.Database): void {
     );
   `);
   d.exec(LAUNCH_TABLES);
+  d.exec(ROUND3_TABLES);
   addColumnIfMissing(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
   // Accounts: session revocation, disabling, consent, and where the signup came from (bonus cap).
   addColumnIfMissing(d, "users", "sessionVersion", "INTEGER NOT NULL DEFAULT 0");
@@ -225,6 +226,19 @@ function migrate(d: Database.Database): void {
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }
+
+/** Round 3: saved profile, résumé versions, analytics, pitch takes, job imports, vouchers, referrals. */
+const ROUND3_TABLES = `
+  -- The candidate's base résumé and the facts they told us (voice, number answers), reused for
+  -- every new kit. Owned by the account, or by the visitor cookie until signup.
+  CREATE TABLE IF NOT EXISTS career_profiles (
+    ownerKey TEXT PRIMARY KEY,
+    resume TEXT NOT NULL DEFAULT '',
+    facts TEXT NOT NULL DEFAULT '{}',
+    roles TEXT NOT NULL DEFAULT '[]',
+    updatedAt TEXT NOT NULL
+  );
+`;
 
 const LAUNCH_TABLES = `
   -- Small key/value store for operational state (admin password fingerprint, AI health).
