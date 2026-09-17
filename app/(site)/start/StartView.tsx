@@ -9,6 +9,8 @@ import { CompanyInsights } from "@/components/CompanyInsights";
 import { PersonalisationMeter } from "@/components/PersonalisationMeter";
 import { PublishPanel } from "@/components/PublishPanel";
 import { LetterStudio } from "@/components/LetterStudio";
+import { TruthCards } from "@/components/editor/KitChecks";
+import { QuantifyCard } from "@/components/QuantifyCard";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { apiErrorText } from "@/app/i18n/launch";
@@ -322,6 +324,9 @@ function StartInner() {
                   <Link href={`/start?new=tailor&base=kit&kit=${gen.id}`} className="btn btn-ghost" title={r.profile.newJobHint} data-testid="new-job">{r.profile.newJob}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
+                <div className="mt-6"><QuantifyCard key={`q-${gen.id}`} gen={gen} onUpdate={setGen} /></div>
+                <div className="mt-6"><TruthCards gen={gen} compact onGen={setGen} /></div>
+                <Link href={`/edit/${gen.id}#changes`} className="mt-2 inline-block text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="open-changes">{r.checks.seeAll} →</Link>
                 <div className="mt-6"><PublishPanel key={gen.id} gen={gen} /></div>
                 <LetterStudio key={`letters-${gen.id}-${gen.deepened}`} gen={gen} />
                 <Section title="LinkedIn" body={gen.kit.linkedinAbout} />
@@ -341,6 +346,8 @@ function StartInner() {
                 <div className="mt-5 rounded-xl border border-dashed border-edge-2 bg-paper p-5">
                   <p className="font-display text-xl text-ink">🔒 {d.quiz.result.lockedTitle}</p>
                   <p className="mt-1 text-sm text-muted">{d.quiz.result.kitNote} · {d.prep.lockedTeaser}</p>
+                  <div className="mt-2"><QuantifyCard gen={gen} onUpdate={setGen} /></div>
+                  {gen.checks && <p className="mt-2 text-sm text-ink-2" data-testid="truth-teaser">🔎 {r.checks.lockedTeaser(gen.checks.truth.checked, gen.checks.truth.pending)}</p>}
                   <p className="mt-3 text-sm text-ink-2">{user ? x.credits.badge(user.credits) : x.credits.firstFree}</p>
                   {needCredits ? (
                     <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -122,7 +122,7 @@ export default function EditPage() {
           </div>
 
           <aside className="min-w-0 space-y-4">
-            <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="truth" onEdit={() => setTab("edit")} />
+            <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="truth" onEdit={() => setTab("edit")} onGen={setGen} />
             <div className="card p-4" data-testid="downloads">
               <p className="font-semibold text-ink">⬇ {E.download}</p>
               <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2">

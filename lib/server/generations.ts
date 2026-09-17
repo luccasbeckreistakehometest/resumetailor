@@ -5,13 +5,59 @@ import type { Kit } from "@/lib/ai/kit";
 import { personalisation } from "@/lib/ats/personalisation";
 import { getPublicByGeneration, serialisePublic } from "@/lib/server/publicResumes";
 import { clearVariants } from "@/lib/server/variants";
-import { ensureOriginal, recordVersion } from "@/lib/server/versions";
+import { ensureOriginal, listVersions, recordVersion } from "@/lib/server/versions";
+import { truthCheck, userAddedLines } from "@/lib/ats/truth";
+import { clicheCheck, type ClicheLang } from "@/lib/ats/cliche";
 
 export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
   targetRole: string; input: string; result: string; matchBefore: number; matchAfter: number; unlocked: number;
   unlockedAt: string | null; model: string; costUsd: number; deepened: number; createdAt: string;
-  publishBlockedAt: string | null;
+  publishBlockedAt: string | null; truthAck: string; quantified: number;
+}
+
+/** "Missing numbers" rounds per kit (one patch call each). */
+export const QUANTIFY_MAX = envNumber("KIT_QUANTIFY_MAX", 1);
+export const reserveQuantify = (id: string) =>
+  getDb().prepare("UPDATE generations SET quantified = quantified + 1 WHERE id = ? AND quantified < ?").run(id, QUANTIFY_MAX).changes === 1;
+export const releaseQuantify = (id: string) => { getDb().prepare("UPDATE generations SET quantified = quantified - 1 WHERE id = ? AND quantified > 0").run(id); };
+
+/** What the kit's input stored about the candidate (never the posting). */
+export interface KitInputRecord { jobDescription?: string; resume?: string; profile?: string; briefingId?: string; spoken?: string; answers?: string }
+export const kitInput = (row: GenerationRow) => { try { return JSON.parse(row.input) as KitInputRecord; } catch { return {} as KitInputRecord; } };
+
+/** Everything the candidate gave us for this kit: the truth check's sources. */
+export function kitSources(row: GenerationRow): string[] {
+  const i = kitInput(row);
+  return [i.resume ?? "", i.profile ?? "", i.spoken ?? "", i.answers ?? "", userAddedLines(listVersions(row.id))];
+}
+
+const ackedKeys = (row: GenerationRow): Set<string> => { try { return new Set(JSON.parse(row.truthAck || "[]") as string[]); } catch { return new Set(); } };
+
+/**
+ * The truth check and the "sounds human" check. A locked kit gets counts only — no flagged text.
+ */
+export function kitChecks(row: GenerationRow, kit: Kit, open: boolean) {
+  const added = kit.keywords.filter((k) => k.after && !k.before).map((k) => k.term);
+  const truth = truthCheck({ kitText: `${kit.resume}\n\n## ✉\n${kit.coverLetter}`, sources: kitSources(row), addedSkills: added });
+  const acked = ackedKeys(row);
+  const pending = truth.unverified.filter((u) => !acked.has(u.key));
+  const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as ClicheLang;
+  const human = clicheCheck(`${kit.resume}\n${kit.coverLetter}`, lang);
+  return {
+    truth: {
+      checked: truth.checked, pending: pending.length, confirmed: truth.unverified.length - pending.length,
+      items: open ? truth.unverified.map((u) => ({ ...u, acked: acked.has(u.key) })) : null,
+    },
+    human: { score: human.score, flagged: human.hits.length + human.patterns.length, hits: open ? human.hits : null, patterns: open ? human.patterns : null },
+  };
+}
+
+/** "That's right, it's mine" (or undo). Keys come from the current report only. */
+export function setTruthAck(row: GenerationRow, key: string, ack: boolean): void {
+  const keys = ackedKeys(row);
+  if (ack) keys.add(key); else keys.delete(key);
+  getDb().prepare("UPDATE generations SET truthAck = ? WHERE id = ?").run(JSON.stringify([...keys].slice(-200)), row.id);
 }
 
 /** "Go deeper" passes per kit. Each is a full generation, so the count is bounded; override per deployment. */
@@ -104,7 +150,7 @@ export function deleteGeneration(id: string): void {
 }
 
 /** What the browser is allowed to see: the full kit only once unlocked; a preview otherwise. */
-export function serialise(row: GenerationRow, forAdmin = false) {
+export function serialise(row: GenerationRow, forAdmin = false, opts: { light?: boolean } = {}) {
   const kit = JSON.parse(row.result) as Kit;
   const open = row.unlocked === 1 || forAdmin;
   // The meter is computed here, from the stored résumé and posting, so a locked kit can show it without exposing the text.
@@ -116,6 +162,9 @@ export function serialise(row: GenerationRow, forAdmin = false) {
     coverLetterPreview: kit.coverLetter.split("\n").slice(0, 4).join("\n"),
     personalisation: input ? personalisation(kit.resume, input.jobDescription ?? "") : null,
     deepened: row.deepened ?? 0, deepenLeft: Math.max(0, DEEPEN_MAX - (row.deepened ?? 0)),
+    checks: opts.light ? null : kitChecks(row, kit, open),
+    quantify: { count: (kit.quantifyAsks ?? []).length, asks: open ? kit.quantifyAsks ?? [] : null, used: row.quantified ?? 0, left: Math.max(0, QUANTIFY_MAX - (row.quantified ?? 0)) },
+    original: open && row.mode !== "build" ? kitInput(row).resume ?? null : null,
     publicResume: open ? (() => { const p = getPublicByGeneration(row.id); return p ? serialisePublic(p) : null; })() : null,
     kit: open ? kit : null,
   };

@@ -45,6 +45,8 @@ export function classifyAiError(error: unknown): { kind: AiErrorKind; detail: st
 const PRICING: Record<string, { input: number; output: number }> = {
   "claude-opus-5": { input: 5, output: 25 },
   "claude-sonnet-5": { input: 2, output: 10 },
+  // The cheaper tier an operator may pick for AI_MODEL_EXTRACT (short structured extractions).
+  "claude-haiku-4-5": { input: 1, output: 5 },
 };
 export function costOf(usage: Anthropic.Usage | undefined, model: string): number {
   const p = PRICING[model] ?? PRICING["claude-sonnet-5"];

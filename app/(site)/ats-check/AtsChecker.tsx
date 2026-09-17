@@ -71,7 +71,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
   function run() {
     if (wordCount(resume) < 20) { setError(A.tooShort); setResult(null); return; }
     setError(""); setCopied(false);
-    const r = atsCheck(resume, posting);
+    const r = atsCheck(resume, posting, lang);
     setResult(r);
     setShare(`${window.location.origin}${window.location.pathname}?r=${encodeShare(r, L)}`);
     setTimeout(() => document.getElementById("ats-result")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -192,7 +192,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
           <details className="mt-8">
             <summary className="eyebrow cursor-pointer">{A.checksTitle} ({result.checks.filter((c) => c.ok).length}/{result.checks.length})</summary>
             <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
-              {result.checks.map((c) => <li key={c.id} className="flex items-center gap-2 text-sm"><span className={c.ok ? "text-moss" : "text-oxblood"}>{c.ok ? "✓" : "✕"}</span><span className="text-ink-2">{A.checks[c.id].t}</span><span className="ml-auto text-xs text-muted">{c.earned}/{c.max}</span></li>)}
+              {result.checks.map((c) => <li key={c.id} className="flex items-center gap-2 text-sm" data-testid="ats-check-row" data-check={c.id} data-ok={c.ok ? "1" : "0"}><span className={c.ok ? "text-moss" : "text-oxblood"}>{c.ok ? "✓" : "✕"}</span><span className="text-ink-2">{A.checks[c.id].t}</span><span className="ml-auto text-xs text-muted">{c.earned}/{c.max}</span></li>)}
             </ul>
           </details>
 
