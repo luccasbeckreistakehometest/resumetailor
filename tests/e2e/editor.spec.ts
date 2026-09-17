@@ -4,6 +4,8 @@ import { tailorKitByText, unlockedTailorKit } from "./helpers";
 test.describe("résumé editor", () => {
   test("edit a bullet → it survives a reload and shows in print; versions list AI + you; back to the AI's version", async ({ page }) => {
     const { id } = await unlockedTailorKit(page);
+    // A letter written from the AI version, before any edit.
+    expect((await page.request.post(`/api/generations/${id}/variants`, { data: { kind: "cover:formal" } })).status()).toBe(200);
     await page.getByTestId("edit-kit").click();
     await expect(page).toHaveURL(new RegExp(`/edit/${id}$`));
     const bullet = page.getByTestId("ed-bullet").first();
@@ -29,9 +31,11 @@ test.describe("résumé editor", () => {
     await expect(print.getByTestId("document")).toContainText("through lifecycle campaigns");
     await expect(page.getByTestId("version-item")).toHaveCount(3);
 
-    // After an edit, the letters can be refreshed on request.
+    // After an edit, the letters can be refreshed on request; a second click finds nothing stale.
     await page.getByTestId("refresh-letters").click();
     await expect(page.getByRole("status").filter({ hasText: /next time/i })).toBeVisible();
+    await page.getByTestId("refresh-letters").click();
+    await expect(page.getByRole("status").filter({ hasText: /already match/i })).toBeVisible();
   });
 
   test("Word and text downloads, named after the candidate", async ({ page }) => {
