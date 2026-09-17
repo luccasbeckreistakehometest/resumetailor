@@ -2,7 +2,7 @@
  * A calendar invite (RFC 5545) for an interview or a follow-up reminder, with alarms one day and
  * one hour before. CRLF line ends, lines folded at 75 octets, text escaped.
  */
-export const escapeIcs = (s: string) => s.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+export const escapeIcs = (s: string) => s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 
 /** Folds a content line at 75 octets (UTF-8), continuation lines start with a space. */
 export function foldLine(line: string): string {

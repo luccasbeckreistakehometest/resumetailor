@@ -79,8 +79,16 @@ test.describe("localized public pages", () => {
       await expect(page).toHaveURL(/\/$/);
       const pill = page.getByTestId("lang-pill");
       await expect(pill).toContainText("Ver esta página em português");
+      // The English page stays English (no in-place rewrite under the pill offering Portuguese).
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      await expect(page.locator("h1").first()).not.toContainText("Passe pelos filtros");
       await pill.getByRole("link").click();
       await expect(page).toHaveURL(/\/pt$/);
+      await expect(page.getByTestId("lang-pill")).toHaveCount(0);
+    });
+    test("an app page without its own Portuguese URL still follows the browser", async ({ page }) => {
+      await page.goto("/legal/privacy");
+      await expect(page.getByTestId("legal-doc").locator("h1")).toHaveText("Política de Privacidade");
       await expect(page.getByTestId("lang-pill")).toHaveCount(0);
     });
   });

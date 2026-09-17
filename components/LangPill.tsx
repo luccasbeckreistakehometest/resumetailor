@@ -15,7 +15,7 @@ const KEY = "rt_lang_pill_off";
  * English keep the page they asked for.
  */
 export function LangPill() {
-  const { locked } = useI18n();
+  const { locked, lang } = useI18n();
   const pathname = usePathname();
   const [offer, setOffer] = useState<{ lang: RouteLang; url: string } | null>(null);
 
@@ -26,11 +26,12 @@ export function LangPill() {
       try { off = localStorage.getItem(KEY) === "1" || !!localStorage.getItem("rt_lang"); } catch {}
       const nav = (navigator.language || "").toLowerCase();
       const want: RouteLang | null = nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : null;
-      if (locked || off || !match || match.lang !== "en" || !want || !hasLang(match.key, want)) return setOffer(null);
+      // Never offer the language the page is already showing.
+      if (locked || off || lang !== "en" || !match || match.lang !== "en" || !want || !hasLang(match.key, want)) return setOffer(null);
       setOffer({ lang: want, url: href(match.key, want) });
     });
     return () => cancelAnimationFrame(id);
-  }, [pathname, locked]);
+  }, [pathname, locked, lang]);
 
   if (!offer) return null;
   const c = seoCopy[offer.lang];

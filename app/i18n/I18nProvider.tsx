@@ -1,11 +1,12 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { dictionaries, Dict, Lang } from "./dictionaries";
 import { extra, type Extra } from "./extra";
 import { launch, type Launch } from "./launch";
 import { round3, type Round3 } from "./round3";
-import { href, type RouteKey } from "@/lib/i18n/routes";
+import { hasLang, href, routeKeyFor, type RouteKey } from "@/lib/i18n/routes";
 
 type Ctx = {
   lang: Lang; d: Dict; x: Extra; l: Launch; r: Round3; setLang: (l: Lang) => void;
@@ -22,10 +23,13 @@ const isLang = (v: unknown): v is Lang => v === "en" || v === "pt" || v === "es"
 /**
  * `initialLang` is what the server renders. A locked provider (the /pt and /es pages) keeps it
  * and remembers it for the app pages; an unlocked one (everything else) starts in English and
- * then follows `?lang=`, the saved choice or the browser, after mount.
+ * then follows `?lang=`, the saved choice or the browser, after mount — except that an English
+ * public page with its own Portuguese/Spanish version stays English for a visitor who has not
+ * chosen yet (the LangPill offers that version instead of rewriting the page in place).
  */
 export function I18nProvider({ children, initialLang = "en", locked = false }: { children: React.ReactNode; initialLang?: Lang; locked?: boolean }) {
   const [lang, setLangState] = useState<Lang>(initialLang);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (locked) { try { localStorage.setItem("rt_lang", initialLang); } catch {} return; }
@@ -38,10 +42,13 @@ export function I18nProvider({ children, initialLang = "en", locked = false }: {
       try { saved = localStorage.getItem("rt_lang"); } catch {}
       if (isLang(saved)) return setLangState(saved);
       const nav = (navigator.language || "").toLowerCase();
-      setLangState(nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en");
+      const want: Lang = nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en";
+      const page = routeKeyFor(pathname ?? "");
+      if (want !== "en" && page?.lang === "en" && hasLang(page.key, want)) return setLangState("en");
+      setLangState(want);
     });
     return () => cancelAnimationFrame(id);
-  }, [locked, initialLang]);
+  }, [locked, initialLang, pathname]);
 
   useEffect(() => { document.documentElement.lang = lang === "pt" ? "pt-BR" : lang; }, [lang]);
 

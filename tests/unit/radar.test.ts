@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { radar, radarFor, type RadarApp } from "@/lib/applications/radar";
-import { buildIcs, foldLine } from "@/lib/applications/ics";
+import { buildIcs, escapeIcs, foldLine } from "@/lib/applications/ics";
 
 const NOW = Date.parse("2026-09-17T12:00:00Z");
 const base: RadarApp = { id: "a", stage: "applied", appliedAt: null, interviewAt: null, interviewAtTime: null, rejectedAt: null, lastContactAt: null, followUps: 0, createdAt: "2026-09-01T00:00:00Z" };
@@ -34,7 +34,9 @@ describe("calendar file", () => {
     expect(ics.split("\r\n").every((l) => Buffer.byteLength(l, "utf8") <= 75)).toBe(true);
     expect(ics).not.toMatch(/[^\r]\n/);
     expect(ics).toContain("DTSTART:20260920T133000Z");
-    expect(ics).toContain("SUMMARY:Entrevista: Acme\\, Inc\; vaga de Analista");
+    expect(ics).toContain("SUMMARY:Entrevista: Acme\\, Inc\\; vaga de Analista");
+    // RFC 5545 TEXT: backslash, semicolon and comma are escaped; newlines become \n.
+    expect(escapeIcs("Acme; Inc, Ltd\\x\ny")).toBe("Acme\\; Inc\\, Ltd\\\\x\\ny");
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
     expect(ics.match(/BEGIN:VALARM/g)).toHaveLength(2);
     expect(ics).toContain("TRIGGER:-P1D");
