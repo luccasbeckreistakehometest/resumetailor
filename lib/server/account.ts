@@ -54,8 +54,9 @@ export function deleteAccount(userId: string): boolean {
     db.prepare("DELETE FROM voice_briefings WHERE ownerId = ?").run(userId);
     db.prepare("DELETE FROM onboarding WHERE id = ?").run(userId);
     db.prepare("DELETE FROM fit_checks WHERE ownerKey = ?").run(userId);
-    db.prepare("DELETE FROM contact_messages WHERE userId = ?").run(userId);
-    db.prepare("UPDATE ai_usage SET ownerKey = NULL WHERE ownerKey = ?").run(userId);
+    db.prepare("DELETE FROM contact_messages WHERE userId = ? OR lower(email) = lower(?)").run(userId, u.email);
+    // Cost records stay for the spend totals, with nothing that points to the person.
+    db.prepare("UPDATE ai_usage SET ownerKey = 'deleted', ip = NULL WHERE ownerKey = ?").run(userId);
     db.prepare("UPDATE payments SET userId = NULL WHERE userId = ?").run(userId);
     db.prepare("DELETE FROM users WHERE id = ?").run(userId);                      // credit_ledger cascades
     return true;

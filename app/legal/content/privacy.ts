@@ -42,7 +42,7 @@ const en: LegalDoc = {
       "Several of these providers process data outside Brazil, mainly in the United States. These transfers follow LGPD art. 33, relying on the contractual guarantees in each provider's terms, and we choose providers that commit to security and confidentiality.",
     ] },
     { h: "6. How long we keep it", body: [{ list: [
-      "Account, kits, interviews, tracker and voice transcripts: while your account exists. When you delete your account they are erased from the live database right away; backup copies, where they exist, are overwritten as backups rotate.",
+      "Account, kits, interviews, tracker and voice transcripts: while your account exists. When you delete your account they are erased from the live database right away, together with the messages you sent us from that e-mail; AI cost records stay, with nothing that points to you; backup copies, where they exist, are overwritten as backups rotate.",
       "Payment records: kept for as long as tax and accounting law requires, without your name or e-mail once your account is deleted.",
       "Previews made without an account are tied to a random cookie in your browser; ask us through the contact form to delete them.",
       "Security records such as rate-limit counters expire within hours or days; records of AI usage and errors are kept only as long as needed for security and cost control.",
@@ -105,7 +105,7 @@ const pt: LegalDoc = {
       "Vários desses fornecedores tratam dados fora do Brasil, principalmente nos Estados Unidos. Essas transferências seguem o art. 33 da LGPD, com base nas garantias contratuais dos termos de cada fornecedor, e a gente escolhe fornecedores comprometidos com segurança e confidencialidade.",
     ] },
     { h: "6. Por quanto tempo a gente guarda", body: [{ list: [
-      "Conta, kits, entrevistas, candidaturas e transcrições de voz: enquanto sua conta existir. Quando você exclui a conta, tudo sai do banco de dados na hora; cópias de backup, quando existem, são sobrescritas conforme os backups giram.",
+      "Conta, kits, entrevistas, candidaturas e transcrições de voz: enquanto sua conta existir. Quando você exclui a conta, esses dados saem do banco na hora, junto com as mensagens que você mandou pra gente com esse e-mail; os registros de custo da IA ficam, mas sem nada que aponte pra você; cópias de backup, quando existem, são sobrescritas conforme os backups giram.",
       "Registros de pagamento: pelo prazo que a legislação fiscal e contábil exige, sem seu nome nem e-mail depois que a conta é excluída.",
       "Prévias feitas sem conta ficam ligadas a um cookie aleatório no seu navegador; peça pelo formulário de contato se quiser que sejam apagadas.",
       "Registros de segurança, como contadores de limite de uso, expiram em horas ou dias; registros de uso e de erros da IA ficam só pelo tempo necessário pra segurança e controle de custos.",
@@ -168,7 +168,7 @@ const es: LegalDoc = {
       "Varios de estos proveedores tratan datos fuera de Brasil, sobre todo en Estados Unidos. Estas transferencias siguen el art. 33 de la LGPD, con base en las garantías contractuales de los términos de cada proveedor, y elegimos proveedores comprometidos con la seguridad y la confidencialidad.",
     ] },
     { h: "6. Cuánto tiempo lo guardamos", body: [{ list: [
-      "Cuenta, kits, entrevistas, postulaciones y transcripciones de voz: mientras exista tu cuenta. Al eliminarla, se borran de inmediato de la base de datos; las copias de seguridad, si existen, se sobrescriben a medida que rotan.",
+      "Cuenta, kits, entrevistas, postulaciones y transcripciones de voz: mientras exista tu cuenta. Al eliminarla, se borran de inmediato de la base de datos, junto con los mensajes que nos enviaste desde ese correo; los registros de costo de la IA se conservan sin nada que te identifique; las copias de seguridad, si existen, se sobrescriben a medida que rotan.",
       "Registros de pago: durante el plazo que exige la normativa fiscal y contable, sin tu nombre ni tu correo una vez eliminada la cuenta.",
       "Las vistas previas creadas sin cuenta quedan asociadas a una cookie aleatoria de tu navegador; pídenos por el formulario de contacto que las borremos.",
       "Los registros de seguridad, como los contadores de límites de uso, caducan en horas o días; los registros de uso y errores de la IA se guardan solo el tiempo necesario para la seguridad y el control de costos.",

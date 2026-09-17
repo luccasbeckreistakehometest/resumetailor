@@ -366,6 +366,17 @@ describe("LGPD: export and delete", () => {
     const db = getDb();
     db.prepare("INSERT INTO voice_briefings (id,ownerId,lang,transcript,extracted,createdAt) VALUES (?,?,?,?,?,?)").run(`vb-${u.id}`, u.id, "en", "my story", "{}", new Date().toISOString());
     saveContact({ name: "", email: u.email, topic: "privacy", message: "please export my data", lang: "en", userId: u.id, ip: "1.2.3.4" });
+    // Written before signing in, from the same address.
+    saveContact({ name: "", email: u.email.toUpperCase(), topic: "payment", message: "my pix did not show up", lang: "en", userId: null, ip: "1.2.3.4" });
+    const { recordUsage } = await import("@/lib/server/spend");
+    recordUsage({ feature: "generate", ownerKey: u.id, ip: "1.2.3.4", costUsd: 0.01 });
+    // An anonymous first session, claimed at signup: the anonymous timeline and fit checks move over.
+    const anon = `anon_del_${Date.now()}`;
+    const { recordEvent } = await import("@/lib/server/onboarding");
+    recordEvent(anon, "visit", { path: "/" });
+    db.prepare("INSERT INTO fit_checks (id,ownerKey,hash,lang,role,result,model,costUsd,createdAt) VALUES (?,?,?,?,?,?,?,?,?)").run(`fit-${anon}`, anon, `h-${anon}`, "en", "Analyst", "{}", "mock", 0, new Date().toISOString());
+    users.claimAnonymous(u.id, anon);
+    expect(db.prepare("SELECT COUNT(*) n FROM onboarding WHERE id = ?").get(anon)).toEqual({ n: 0 });
 
     const data = exportAccount(u.id)!;
     expect(data.account.email).toBe(u.email);
@@ -379,6 +390,11 @@ describe("LGPD: export and delete", () => {
     expect(db.prepare("SELECT COUNT(*) n FROM generations WHERE id = ?").get(g.id)).toEqual({ n: 0 });
     expect(db.prepare("SELECT COUNT(*) n FROM voice_briefings WHERE ownerId = ?").get(u.id)).toEqual({ n: 0 });
     expect(db.prepare("SELECT COUNT(*) n FROM credit_ledger WHERE userId = ?").get(u.id)).toEqual({ n: 0 });
+    expect(db.prepare("SELECT COUNT(*) n FROM onboarding WHERE id IN (?, ?)").get(u.id, anon)).toEqual({ n: 0 });
+    expect(db.prepare("SELECT COUNT(*) n FROM fit_checks WHERE ownerKey IN (?, ?)").get(u.id, anon)).toEqual({ n: 0 });
+    expect(db.prepare("SELECT COUNT(*) n FROM contact_messages WHERE lower(email) = lower(?)").get(u.email)).toEqual({ n: 0 });
+    expect(db.prepare("SELECT COUNT(*) n FROM ai_usage WHERE ownerKey = ? OR ip = '1.2.3.4'").get(u.id)).toEqual({ n: 0 });
+    expect((db.prepare("SELECT COUNT(*) n FROM ai_usage WHERE ownerKey = 'deleted'").get() as { n: number }).n).toBeGreaterThan(0);
     const pay = getPayment("mercadopago", "mp-del")!;
     expect(pay.userId).toBeNull();
     expect(pay.amount).toBe(39);

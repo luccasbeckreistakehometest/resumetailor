@@ -121,12 +121,15 @@ export function claimAnonymous(userId: string, anonId: string | undefined): void
   db.prepare("UPDATE interview_sessions SET userId = ?, anonId = NULL WHERE anonId = ? AND userId IS NULL").run(userId, anonId);
   db.prepare("UPDATE applications SET userId = ?, anonId = NULL WHERE anonId = ? AND userId IS NULL").run(userId, anonId);
   db.prepare("UPDATE voice_briefings SET ownerId = ? WHERE ownerId = ?").run(userId, anonId);
+  db.prepare("UPDATE fit_checks SET ownerKey = ? WHERE ownerKey = ?").run(userId, anonId);
   type Onb = { events: string; tourCompleted: number; tourStep: number; firstSeenAt: string; completedAt: string | null };
   const onb = db.prepare("SELECT * FROM onboarding WHERE id = ?").get(anonId) as Onb | undefined;
   if (onb && !db.prepare("SELECT 1 FROM onboarding WHERE id = ?").get(userId)) {
     db.prepare("INSERT INTO onboarding (id,tourCompleted,tourStep,firstSeenAt,completedAt,events) VALUES (?,?,?,?,?,?)")
       .run(userId, onb.tourCompleted, onb.tourStep, onb.firstSeenAt, onb.completedAt, onb.events);
   }
+  // The anonymous timeline now belongs to the account (and goes with it if the account is deleted).
+  db.prepare("DELETE FROM onboarding WHERE id = ?").run(anonId);
 }
 
 const adminFingerprint = (email: string, password: string) =>
