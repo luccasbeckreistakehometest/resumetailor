@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SAMPLE_JOB, SAMPLE_RESUME, skipTour, unlockedTailorKit } from "./helpers";
+import { SAMPLE_JOB, SAMPLE_RESUME, buildKitByText, signUp, skipTour, unlockedTailorKit } from "./helpers";
 
 test.describe("saved base résumé", () => {
   test("the second kit needs only the role and the posting; 'new job' starts at the posting; deleting clears the pre-fill", async ({ page }) => {
@@ -59,7 +59,6 @@ test.describe("saved base résumé", () => {
     const put = await page.request.put("/api/profile", { data: { resume: SAMPLE_RESUME, facts: { tools: ["Power BI"] } } });
     expect(put.status()).toBe(200);
     await page.goto("/signup");
-    const { signUp } = await import("./helpers");
     await signUp(page);
     const mine = await (await page.request.get("/api/profile")).json();
     expect(mine.profile.resume).toBe(SAMPLE_RESUME);
@@ -76,6 +75,24 @@ test.describe("saved base résumé", () => {
     const fresh = await browser.newContext();
     expect((await fresh.request.put("http://localhost:3100/api/profile", { data: { resume: SAMPLE_RESUME } })).status()).toBe(403);
     await fresh.close();
+  });
+
+  test("a résumé built from scratch is saved once unlocked — never while it is a locked preview", async ({ page }) => {
+    await buildKitByText(page);
+    expect((await (await page.request.get("/api/profile")).json()).profile?.resume ?? "").toBe("");
+    await page.getByTestId("unlock").click();
+    await signUp(page);
+    await expect(page.getByTestId("kit")).toBeVisible({ timeout: 15_000 });
+    const saved = (await (await page.request.get("/api/profile")).json()).profile;
+    expect(saved.resume.length).toBeGreaterThan(100);
+    expect(saved.roles).toContain("Marketing Analyst");
+    // The next kit starts from it: the résumé step is skipped.
+    await page.goto("/start");
+    await page.getByTestId("via-text").click();
+    await page.getByTestId("mode-tailor").click();
+    await page.getByTestId("role").fill("Growth Lead");
+    await page.getByTestId("next").click();
+    await expect(page.getByTestId("saved-resume-chip")).toBeVisible();
   });
 
   test("profile writes are capped per IP (30 an hour), however many cookies are used", async ({ browser }) => {

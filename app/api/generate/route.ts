@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     const { kit, model, costUsd } = ran.value;
     const row = saveGeneration({
       userId: owner.userId, anonId: owner.anonId, mode: b.mode, source: b.source, lang: b.lang, targetRole: b.targetRole,
-      input: { jobDescription: b.jobDescription, resume: b.resume, profile: b.profile, briefingId: b.briefingId, ...(spokenText ? { spoken: spokenText } : {}) }, kit, model, costUsd,
+      input: { jobDescription: b.jobDescription, resume: b.resume, profile: b.profile, briefingId: b.briefingId, ...(spokenText ? { spoken: spokenText } : {}), ...(b.mode === "build" && b.remember ? { remember: true } : {}) }, kit, model, costUsd,
     });
     if (b.remember && b.mode !== "build" && b.resume) saveProfile(owner.key, { resume: b.resume, role: b.targetRole, facts: spoken?.facts });
     serverEvent(owner, "preview_ready", { mode: b.mode, source: b.source });

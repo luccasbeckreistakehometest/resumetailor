@@ -23,7 +23,7 @@ export const reserveQuantify = (id: string) =>
 export const releaseQuantify = (id: string) => { getDb().prepare("UPDATE generations SET quantified = quantified - 1 WHERE id = ? AND quantified > 0").run(id); };
 
 /** What the kit's input stored about the candidate (never the posting). */
-export interface KitInputRecord { jobDescription?: string; resume?: string; profile?: string; briefingId?: string; spoken?: string; answers?: string }
+export interface KitInputRecord { jobDescription?: string; resume?: string; profile?: string; briefingId?: string; spoken?: string; answers?: string; remember?: boolean }
 export const kitInput = (row: GenerationRow) => { try { return JSON.parse(row.input) as KitInputRecord; } catch { return {} as KitInputRecord; } };
 
 /** Everything the candidate gave us for this kit: the truth check's sources. */
