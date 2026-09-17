@@ -8,6 +8,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { Container, Eyebrow } from "@/components/ui";
 import type { GenerationView } from "@/lib/server/generations";
 import type { SessionView } from "@/lib/server/interviews";
+import { TrendChart } from "@/components/TrendChart";
+import { buildTrend, toPoint } from "@/lib/interview/trend";
 
 export default function LibraryPage() {
   const { d, x, lang } = useI18n();
@@ -23,6 +25,7 @@ export default function LibraryPage() {
   useEffect(() => { void load(); }, [user?.id]);
   const dateOf = (iso: string) => new Date(iso).toLocaleDateString(lang === "pt" ? "pt-BR" : lang);
   const published = (items ?? []).filter((g) => g.publicResume);
+  const trend = buildTrend(sessions.map(toPoint));
 
   async function rename(id: string) {
     if (draft.trim()) await fetch(`/api/generations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: draft.trim() }) });
@@ -103,6 +106,17 @@ export default function LibraryPage() {
           <Eyebrow>{x.interview.eyebrow}</Eyebrow>
           <h2 className="font-display mt-1 text-3xl text-ink">{x.interview.sessionsTitle}</h2>
           <p className="mt-2 text-sm text-ink-2">{x.interview.sessionsIntro}</p>
+          {trend.sessions > 0 && trend.latest && (
+            <Link href="/interview" className="card mt-5 flex flex-wrap items-center gap-5 p-4 transition hover:-translate-y-0.5" data-testid="library-trend">
+              <div className="min-w-0 flex-1">
+                <p className="eyebrow">{x.progress.libraryTitle}</p>
+                <p className="mt-1 text-sm text-ink-2">{x.progress.runs(trend.sessions)}{trend.sessions > 1 ? <span className={"ml-2 font-semibold " + (trend.delta > 0 ? "text-moss" : trend.delta < 0 ? "text-oxblood" : "text-muted")} data-testid="library-trend-delta">{trend.delta > 0 ? "▲ +" : trend.delta < 0 ? "▼ " : "– "}{trend.delta}</span> : null}{trend.weakest ? <span className="ml-2 text-muted">· {x.progress.tiles.weakest}: {x.interview.scores[trend.weakest]}</span> : null}</p>
+              </div>
+              <TrendChart values={trend.points.map((p) => p.overall)} />
+              <p className="font-display text-3xl text-ink">{trend.latest.overall}<span className="text-sm text-muted">/10</span></p>
+              <span className="text-sm font-medium text-oxblood">{x.progress.seeAll}</span>
+            </Link>
+          )}
           {sessions.length === 0 ? (
             <p className="card mt-5 p-6 text-sm text-muted">{x.interview.sessionsEmpty}</p>
           ) : (
