@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { currentUser } from "@/lib/server/session";
 import { packByKey } from "@/lib/packs";
-import { baseUrl, secretEnv, testFixturesAllowed } from "@/lib/server/env";
+import { baseUrl, canSell, secretEnv, testFixturesAllowed } from "@/lib/server/env";
 import { jsonError } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ export const runtime = "nodejs";
  */
 export async function POST(request: Request) {
   const token = secretEnv("MP_ACCESS_TOKEN");
-  if (!token) return jsonError("payments_off", 503);
+  if (!token || !canSell()) return jsonError("payments_off", 503);
   const user = await currentUser();
   if (!user) return jsonError("sign_in_required", 401);
   const { pack: packKey } = await request.json().catch(() => ({}));

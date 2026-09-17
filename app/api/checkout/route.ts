@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { currentUser } from "@/lib/server/session";
 import { packByKey } from "@/lib/packs";
-import { baseUrl, secretEnv } from "@/lib/server/env";
+import { baseUrl, canSell, secretEnv } from "@/lib/server/env";
 import { jsonError } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 /** Global card checkout in USD. The user id travels in metadata so the webhook knows whom to credit. */
 export async function POST(request: Request) {
   const key = secretEnv("STRIPE_SECRET_KEY");
-  if (!key) return jsonError("payments_off", 503);
+  if (!key || !canSell()) return jsonError("payments_off", 503);
   const user = await currentUser();
   if (!user) return jsonError("sign_in_required", 401);
   const { pack: packKey } = await request.json().catch(() => ({}));

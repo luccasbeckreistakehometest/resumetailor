@@ -10,7 +10,8 @@ PORT=3100
 # win. No real key reaches the tests.
 export ANTHROPIC_API_KEY="" STRIPE_SECRET_KEY="" STRIPE_WEBHOOK_SECRET="" TAVILY_API_KEY="" ELEVENLABS_API_KEY="" ELEVENLABS_VOICE_ID="" OPENAI_API_KEY=""
 export SUPPORT_EMAIL="" SUPPORT_WHATSAPP="" NEXT_PUBLIC_SUPPORT_EMAIL="" NEXT_PUBLIC_SUPPORT_WHATSAPP=""
-export LEGAL_NAME="" LEGAL_DOCUMENT="" LEGAL_ADDRESS="" LEGAL_EMAIL=""
+# A production server offers checkout only with the seller identified: fictional test values.
+export LEGAL_NAME="Operador de Teste E2E" LEGAL_DOCUMENT="000.000.000-00" LEGAL_ADDRESS="Rua de Teste, 1 — São Paulo, SP" LEGAL_EMAIL="legal@example.com"
 export AUTH_SECRET="e2e-only-secret-not-used-anywhere-else-0000"
 export NEXT_PUBLIC_BASE_URL="http://localhost:$PORT"
 if [ "${E2E_SKIP_BUILD:-0}" != "1" ]; then

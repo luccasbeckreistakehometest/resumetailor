@@ -74,6 +74,29 @@ describe("env parsing", () => {
     expect(testFixturesAllowed()).toBe(true);
   });
 
+  it("a production server sells only once the seller is identified on the legal pages", async () => {
+    const { canSell, missingSellerIdentity, legalIdentity } = await import("@/lib/server/env");
+    const { paymentsConfig } = await import("@/lib/server/payments");
+    for (const k of ["LEGAL_NAME", "LEGAL_DOCUMENT", "LEGAL_ADDRESS", "LEGAL_EMAIL", "SUPPORT_EMAIL", "NEXT_PUBLIC_SUPPORT_EMAIL"]) setEnv(k, undefined);
+    setEnv("MP_ACCESS_TOKEN", "APP_USR-1234567890"); setEnv("STRIPE_SECRET_KEY", undefined);
+    setEnv("NODE_ENV", "production");
+    expect(missingSellerIdentity()).toEqual(["LEGAL_NAME", "LEGAL_DOCUMENT", "LEGAL_ADDRESS", "LEGAL_EMAIL"]);
+    expect(canSell()).toBe(false);
+    expect(paymentsConfig()).toEqual({ stripe: false, mercadopago: false });
+    setEnv("LEGAL_NAME", "Maria Souza"); setEnv("LEGAL_DOCUMENT", "12.345.678/0001-90"); setEnv("LEGAL_ADDRESS", "Rua A, 1 — Recife, PE");
+    expect(missingSellerIdentity()).toEqual(["LEGAL_EMAIL"]);
+    setEnv("SUPPORT_EMAIL", "ajuda@example.com");                     // the support address stands in for the e-mail
+    expect(legalIdentity().email).toBe("ajuda@example.com");
+    expect(canSell()).toBe(true);
+    expect(paymentsConfig()).toEqual({ stripe: false, mercadopago: true });
+    setEnv("LEGAL_EMAIL", "# comment left by docker");
+    expect(legalIdentity().email).toBe("ajuda@example.com");
+    setEnv("SUPPORT_EMAIL", undefined); setEnv("LEGAL_NAME", undefined);
+    setEnv("NODE_ENV", "test");                                        // dev and tests are never blocked
+    expect(canSell()).toBe(true);
+    expect(paymentsConfig().mercadopago).toBe(true);
+  });
+
   it("builds checkout URLs from configuration, never a trailing slash", () => {
     setEnv("NEXT_PUBLIC_BASE_URL", "https://resumetailor.example/");
     expect(baseUrl()).toBe("https://resumetailor.example");

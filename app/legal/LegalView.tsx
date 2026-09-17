@@ -12,9 +12,9 @@ import { LEGAL_UPDATED, type Block } from "./content/types";
 type Identity = { name: string | null; document: string | null; address: string | null; email: string | null };
 
 const LABELS = {
-  en: { updated: "Last updated", who: "Who runs ResumeTailor", name: "Operator", document: "Tax ID (CPF/CNPJ)", address: "Address", email: "E-mail", contact: "Contact form", noIdentity: "Questions about this document? Use the in-app contact form.", other: "Also see" },
-  pt: { updated: "Atualizado em", who: "Quem opera o ResumeTailor", name: "Responsável", document: "CPF/CNPJ", address: "Endereço", email: "E-mail", contact: "Formulário de contato", noIdentity: "Dúvidas sobre este documento? Use o formulário de contato do app.", other: "Veja também" },
-  es: { updated: "Última actualización", who: "Quién opera ResumeTailor", name: "Responsable", document: "Identificación fiscal (CPF/CNPJ)", address: "Dirección", email: "Correo", contact: "Formulario de contacto", noIdentity: "¿Dudas sobre este documento? Usa el formulario de contacto de la app.", other: "Ver también" },
+  en: { updated: "Last updated", who: "Who runs ResumeTailor", name: "Operator", document: "Tax ID (CPF/CNPJ)", address: "Address", email: "E-mail", contact: "Contact form", noIdentity: "The operator's registration details are being added. Until then, questions about this document go through the contact form.", other: "Also see" },
+  pt: { updated: "Atualizado em", who: "Quem opera o ResumeTailor", name: "Responsável", document: "CPF/CNPJ", address: "Endereço", email: "E-mail", contact: "Formulário de contato", noIdentity: "Os dados de cadastro do responsável estão sendo incluídos. Enquanto isso, dúvidas sobre este documento vão pelo formulário de contato.", other: "Veja também" },
+  es: { updated: "Última actualización", who: "Quién opera ResumeTailor", name: "Responsable", document: "Identificación fiscal (CPF/CNPJ)", address: "Dirección", email: "Correo", contact: "Formulario de contacto", noIdentity: "Los datos de registro del responsable se están agregando. Mientras tanto, las dudas sobre este documento van por el formulario de contacto.", other: "Ver también" },
 };
 
 function Blocks({ body }: { body: Block[] }) {

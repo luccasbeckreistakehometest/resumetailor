@@ -12,7 +12,7 @@ type Overview = {
   totals: Record<string, number>; revenue: { currency: string; total: number; count: number }[];
   byDay: { day: string; generations: number; unlocks: number }[]; users: Row[]; recent: Row[]; payments: Row[];
   onboarding: (Row & { events: string })[]; voiceBriefings: Row[]; interviews: Row[];
-  ai: AiInfo; config: { payments: { stripe: boolean; mercadopago: boolean }; insights: boolean; voice: string | null };
+  ai: AiInfo; config: { payments: { stripe: boolean; mercadopago: boolean }; insights: boolean; voice: string | null; sellerMissing: string[] };
 };
 
 export default function AdminPage() {

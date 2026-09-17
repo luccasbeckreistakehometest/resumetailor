@@ -16,9 +16,14 @@ test.describe("legal pages, errors and share metadata", () => {
     await expect(doc).toContainText("Anthropic");
     await expect(doc).toContainText("Mercado Pago");
     await expect(doc).toContainText("Hostinger");
-    // No company data is configured on this server: nothing invented, the contact form instead.
-    await expect(page.getByTestId("legal-identity")).toContainText(/contact form/i);
-    await expect(page.getByTestId("legal-identity")).not.toContainText(/CNPJ|CPF/);
+    // The seller is identified from the server's LEGAL_* values (fictional ones on the e2e server).
+    const identity = page.getByTestId("legal-identity");
+    await expect(identity).toContainText("Operador de Teste E2E");
+    await expect(identity).toContainText("000.000.000-00");
+    await expect(identity).toContainText("Rua de Teste, 1");
+    await expect(identity.getByRole("link", { name: "legal@example.com" })).toHaveAttribute("href", "mailto:legal@example.com");
+    await expect(identity).toContainText(/contact form/i);
+    await expect(doc).toContainText("“Who runs ResumeTailor” box");
 
     await page.getByRole("button", { name: "PT" }).click();
     await expect(doc.locator("h1")).toHaveText("Política de Privacidade");

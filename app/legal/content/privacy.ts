@@ -5,7 +5,7 @@ const en: LegalDoc = {
   summary: "What ResumeTailor collects, why, who helps us process it, how long we keep it, and how you exercise your rights under Brazil's LGPD (Lei 13.709/2018) and similar laws.",
   sections: [
     { h: "1. Who is responsible", body: [
-      "The controller of your personal data is the operator of ResumeTailor identified at the top of this page. For anything about your data, write to us through the contact form (topic “My data”) or the e-mail shown above, if any.",
+      "The controller of your personal data is the operator of ResumeTailor named in the “Who runs ResumeTailor” box on this page (name, tax ID, address and e-mail). For anything about your data, write to us through the contact form (topic “My data”) or to the e-mail in that box.",
     ] },
     { h: "2. What we collect", body: [{ list: [
       "Account: e-mail, name (optional), password (stored only as a salted scrypt hash), preferred language, and the date you accepted these terms.",
@@ -68,7 +68,7 @@ const pt: LegalDoc = {
   summary: "O que o ResumeTailor coleta, pra quê, quem ajuda a gente a tratar esses dados, por quanto tempo eles ficam guardados e como você exerce seus direitos pela LGPD (Lei 13.709/2018).",
   sections: [
     { h: "1. Quem é o responsável", body: [
-      "O controlador dos seus dados pessoais é o responsável pelo ResumeTailor identificado no topo desta página. Pra qualquer assunto sobre seus dados, fala com a gente pelo formulário de contato (assunto “Meus dados”) ou pelo e-mail indicado acima, se houver.",
+      "O controlador dos seus dados pessoais é o responsável pelo ResumeTailor indicado no quadro “Quem opera o ResumeTailor”, nesta página (nome, CPF/CNPJ, endereço e e-mail). Pra qualquer assunto sobre seus dados, fala com a gente pelo formulário de contato (assunto “Meus dados”) ou pelo e-mail desse quadro.",
     ] },
     { h: "2. O que a gente coleta", body: [{ list: [
       "Conta: e-mail, nome (opcional), senha (guardada só como hash scrypt com sal), idioma preferido e a data em que você aceitou estes termos.",
@@ -131,7 +131,7 @@ const es: LegalDoc = {
   summary: "Qué recoge ResumeTailor, para qué, quién nos ayuda a tratarlo, cuánto tiempo lo guardamos y cómo ejerces tus derechos según la LGPD de Brasil (Ley 13.709/2018) y normas similares de tu país.",
   sections: [
     { h: "1. Quién es el responsable", body: [
-      "El responsable del tratamiento de tus datos personales es el operador de ResumeTailor identificado al inicio de esta página. Para cualquier asunto sobre tus datos, escríbenos por el formulario de contacto (tema “Mis datos”) o al correo indicado arriba, si lo hay.",
+      "El responsable del tratamiento de tus datos personales es el operador de ResumeTailor indicado en el recuadro “Quién opera ResumeTailor” de esta página (nombre, identificación fiscal, dirección y correo). Para cualquier asunto sobre tus datos, escríbenos por el formulario de contacto (tema “Mis datos”) o al correo de ese recuadro.",
     ] },
     { h: "2. Qué recogemos", body: [{ list: [
       "Cuenta: correo, nombre (opcional), contraseña (guardada solo como hash scrypt con sal), idioma preferido y la fecha en que aceptaste estos términos.",

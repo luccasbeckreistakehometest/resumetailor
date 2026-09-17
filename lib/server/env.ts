@@ -65,12 +65,33 @@ export function supportContacts(): { email: string | null; whatsapp: string | nu
   return { email: email && /.+@.+\..+/.test(email) && !PLACEHOLDER.test(email) ? email : null, whatsapp };
 }
 
-/** The seller's identity for the legal pages. Only what is set is shown; nothing is invented. */
+/**
+ * The seller's identity for the legal pages. Only what is set is shown; nothing is invented.
+ * The e-mail falls back to the support address.
+ */
 export function legalIdentity(): { name: string | null; document: string | null; address: string | null; email: string | null } {
+  const email = env("LEGAL_EMAIL");
   return {
     name: env("LEGAL_NAME") ?? null,
     document: env("LEGAL_DOCUMENT") ?? null,
     address: env("LEGAL_ADDRESS") ?? null,
-    email: env("LEGAL_EMAIL") ?? null,
+    email: (email && /.+@.+\..+/.test(email) ? email : null) ?? supportContacts().email,
   };
 }
+
+/**
+ * Brazilian law requires an online seller to show its name, CPF/CNPJ, address and an e-mail
+ * (Decreto 7.962/2013 art. 2) and the LGPD controller to be identified (art. 9). Until all four are
+ * configured, a production server offers no checkout. Returns the missing env names.
+ */
+export function missingSellerIdentity(): string[] {
+  const id = legalIdentity();
+  const missing: string[] = [];
+  if (!id.name) missing.push("LEGAL_NAME");
+  if (!id.document) missing.push("LEGAL_DOCUMENT");
+  if (!id.address) missing.push("LEGAL_ADDRESS");
+  if (!id.email) missing.push("LEGAL_EMAIL");
+  return missing;
+}
+
+export const canSell = () => !isProduction() || missingSellerIdentity().length === 0;

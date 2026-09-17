@@ -101,7 +101,7 @@ const en = {
     canceled: "Payment not completed — nothing was charged. You can try again whenever you like.",
     prepaid: "Prepaid packs · no subscription · no automatic renewal · credits never expire.",
     refundLink: "Refund policy",
-    freeWithInsights: "Your match score and company insights — unlimited previews. And your first full kit is on us when you create an account.",
+    freeWithInsights: "Your match score and company insights — previews included. And your first full kit is on us when you create an account.",
     freeNoInsights: "Your match score and the free ATS and fit checks — previews included. And your first full kit is on us when you create an account.",
   },
   success: {
@@ -117,6 +117,7 @@ const en = {
   },
   tourWelcome: "Welcome — want a quick tour?",
   admin: {
+    sellerMissing: "Checkout is off: the legal pages must identify the seller first. Set in the server .env:",
     ai: "AI", aiReady: "AI working", aiDown: "AI unavailable", spentToday: "Spent today", budget: "Daily ceiling", recentErrors: "Recent AI errors", noErrors: "No AI errors recorded.",
     probe: "Key check", lastFailure: "Last failure", byFeature: "Today by feature", configured: "Configured",
     lookup: "Find a user", lookupPh: "email or name", search: "Search", open: "Open", close: "Close",
@@ -228,7 +229,7 @@ const pt: Launch = {
     canceled: "O pagamento não foi concluído — nada foi cobrado. Pode tentar de novo quando quiser.",
     prepaid: "Pacotes pré-pagos · sem assinatura · sem renovação automática · os créditos não vencem.",
     refundLink: "Política de reembolso",
-    freeWithInsights: "Sua nota de compatibilidade e os insights da empresa — prévias ilimitadas. E o primeiro kit completo é por nossa conta quando você cria a conta.",
+    freeWithInsights: "Sua nota de compatibilidade e os insights da empresa — prévias incluídas. E o primeiro kit completo é por nossa conta quando você cria a conta.",
     freeNoInsights: "Sua nota de compatibilidade e os testes grátis de ATS e de fit — prévias incluídas. E o primeiro kit completo é por nossa conta quando você cria a conta.",
   },
   success: {
@@ -244,6 +245,7 @@ const pt: Launch = {
   },
   tourWelcome: "Oi! Quer um tour rapidinho?",
   admin: {
+    sellerMissing: "Pagamentos desligados: as páginas legais precisam identificar o vendedor antes. Preencha no .env do servidor:",
     ai: "IA", aiReady: "IA funcionando", aiDown: "IA fora do ar", spentToday: "Gasto hoje", budget: "Teto diário", recentErrors: "Erros recentes de IA", noErrors: "Nenhum erro de IA registrado.",
     probe: "Checagem da chave", lastFailure: "Última falha", byFeature: "Hoje por recurso", configured: "Configurado",
     lookup: "Buscar usuário", lookupPh: "e-mail ou nome", search: "Buscar", open: "Abrir", close: "Fechar",
@@ -353,7 +355,7 @@ const es: Launch = {
     canceled: "El pago no se completó — no se cobró nada. Puedes intentarlo de nuevo cuando quieras.",
     prepaid: "Paquetes prepagados · sin suscripción · sin renovación automática · los créditos no caducan.",
     refundLink: "Política de reembolsos",
-    freeWithInsights: "Tu puntaje y la información de la empresa — vistas previas ilimitadas. Y tu primer kit completo es gratis al crear la cuenta.",
+    freeWithInsights: "Tu puntaje y la información de la empresa — vistas previas incluidas. Y tu primer kit completo es gratis al crear la cuenta.",
     freeNoInsights: "Tu puntaje y las revisiones gratis de ATS y de encaje — vistas previas incluidas. Y tu primer kit completo es gratis al crear la cuenta.",
   },
   success: {
@@ -369,6 +371,7 @@ const es: Launch = {
   },
   tourWelcome: "Hola — ¿un recorrido rápido?",
   admin: {
+    sellerMissing: "Pagos desactivados: las páginas legales deben identificar al vendedor primero. Completa en el .env del servidor:",
     ai: "IA", aiReady: "IA funcionando", aiDown: "IA no disponible", spentToday: "Gasto de hoy", budget: "Tope diario", recentErrors: "Errores recientes de IA", noErrors: "Sin errores de IA registrados.",
     probe: "Comprobación de la clave", lastFailure: "Último fallo", byFeature: "Hoy por función", configured: "Configurado",
     lookup: "Buscar usuario", lookupPh: "correo o nombre", search: "Buscar", open: "Abrir", close: "Cerrar",

@@ -31,10 +31,12 @@ também trata qualquer valor começando com `#` como vazio, mas não conte com i
 | `MP_ACCESS_TOKEN` | pagamentos | Mercado Pago → credenciais de **produção**. Com o Stripe desligado, todo idioma paga por aqui (em BRL, rotulado). |
 | `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | opcional | Stripe → API keys / Webhooks (cartão em USD) |
 | `AI_DAILY_BUDGET_USD` | recomendado | teto diário de gasto de IA (padrão 25). Atingiu → IA e voz pausam até 00:00 UTC; aparece no /admin |
+| `AI_ANON_DAILY_BUDGET_USD` | opcional | fatia do teto que visitantes sem conta podem gastar (padrão 20% do teto; negativo = sem fatia). Esgotou → só quem está logado segue usando IA até 00:00 UTC |
+| `TAVILY_COST_PER_SEARCH_USD` | opcional | custo estimado por busca do Tavily, somado ao gasto dos insights (padrão 0.008) |
 | `ELEVENLABS_API_KEY` / `OPENAI_API_KEY` | opcional | voz da IA; vazio = só texto |
 | `TAVILY_API_KEY` | opcional | insights da empresa; vazio = recurso e textos somem |
 | `SUPPORT_EMAIL` / `SUPPORT_WHATSAPP` | opcional | só aparecem se preenchidos (lidos em tempo de execução, sem rebuild). O formulário de contato sempre funciona. |
-| `LEGAL_NAME` / `LEGAL_DOCUMENT` / `LEGAL_ADDRESS` / `LEGAL_EMAIL` | recomendado | identificação do responsável nas páginas legais; vazio = a linha some e aponta pro formulário |
+| `LEGAL_NAME` / `LEGAL_DOCUMENT` / `LEGAL_ADDRESS` / `LEGAL_EMAIL` | **sim, pra vender** | nome, CPF/CNPJ, endereço e e-mail do responsável nas páginas legais (Decreto 7.962/2013 art. 2; LGPD art. 9). `LEGAL_EMAIL` vazio usa `SUPPORT_EMAIL`. **Sem os quatro, produção não oferece checkout** (botões somem, /admin avisa, log `[boot] checkout is OFF`). Webhooks e /success continuam processando pagamentos já feitos. |
 | `ANON_PREVIEWS_PER_IP_PER_DAY`, `SIGNUP_BONUS_PER_IP_30D`, `RL_*` | opcional | limites de abuso (ver `lib/server/ratelimit.ts`) |
 
 O Dockerfile não copia o `.env` pra imagem: ele monta o contexto só no passo de build e extrai as
@@ -60,7 +62,7 @@ systemctl reload caddy
 Caddy emite e renova o certificado sozinho.
 
 ## 6. Webhooks (créditos entram sozinhos)
-- **Mercado Pago**: Suas integrações → Webhooks → URL `https://seu-dominio.com/api/webhooks/mercadopago`, evento *Pagamentos*. Falha ao consultar o pagamento → resposta 5xx (o MP tenta de novo). `refunded`/`charged_back` tiram os créditos.
+- **Mercado Pago**: Suas integrações → Webhooks → URL `https://seu-dominio.com/api/webhooks/mercadopago`, evento *Pagamentos*. Falha ao consultar o pagamento → resposta 5xx (o MP tenta de novo). `refunded`/`charged_back` tiram os créditos; reembolso parcial (pagamento `approved` com `transaction_amount_refunded`) tira a parte proporcional e marca `partially_refunded`.
 - **Stripe**: Webhooks → endpoint `https://seu-dominio.com/api/webhooks/stripe`, eventos `checkout.session.completed`, `charge.refunded` e `charge.dispute.created`. Copie o *signing secret* para `STRIPE_WEBHOOK_SECRET`.
 - Fallback: a página `/success` confirma direto no provedor (sessão do Stripe ou `payment_id` do MP) e só mostra "pago" quando os créditos já estão na conta.
 

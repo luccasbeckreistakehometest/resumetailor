@@ -4,7 +4,7 @@ const en: LegalDoc = {
   title: "Terms of Use",
   summary: "The rules for using ResumeTailor: what the service does, how credits and payments work, what you may and may not do, and the limits of our responsibility.",
   sections: [
-    { h: "1. Agreement", body: ["By creating an account or using ResumeTailor you agree to these Terms and to the Privacy Policy. If you don't agree, please don't use the service. The operator is identified at the top of this page."] },
+    { h: "1. Agreement", body: ["By creating an account or using ResumeTailor you agree to these Terms and to the Privacy Policy. If you don't agree, please don't use the service. The operator is named in the “Who runs ResumeTailor” box on this page."] },
     { h: "2. What the service does", body: [
       "ResumeTailor uses artificial intelligence to help you write job-application material: a résumé tailored to a posting, cover letters, recruiter e-mails, LinkedIn texts, interview preparation and practice, plus free tools (ATS check, fit check, application tracker).",
       "Everything the AI writes is a draft. Read it, correct it and decide what to send. The service does not guarantee interviews, offers or any hiring result, and scores (match, ATS, fit, interview) are guides, not predictions.",
@@ -48,7 +48,7 @@ const pt: LegalDoc = {
   title: "Termos de Uso",
   summary: "As regras pra usar o ResumeTailor: o que o serviço faz, como funcionam créditos e pagamentos, o que pode e o que não pode, e os limites da nossa responsabilidade.",
   sections: [
-    { h: "1. Aceite", body: ["Ao criar uma conta ou usar o ResumeTailor, você concorda com estes Termos e com a Política de Privacidade. Se não concordar, não use o serviço. O responsável pelo serviço está identificado no topo desta página."] },
+    { h: "1. Aceite", body: ["Ao criar uma conta ou usar o ResumeTailor, você concorda com estes Termos e com a Política de Privacidade. Se não concordar, não use o serviço. O responsável pelo serviço está indicado no quadro “Quem opera o ResumeTailor”, nesta página."] },
     { h: "2. O que o serviço faz", body: [
       "O ResumeTailor usa inteligência artificial pra te ajudar a escrever o material de uma candidatura: currículo ajustado a uma vaga, cartas de apresentação, e-mails pra recrutadores, textos de LinkedIn, preparação e treino de entrevista, além de ferramentas grátis (teste de ATS, teste de fit, controle de candidaturas).",
       "Tudo o que a IA escreve é um rascunho. Leia, corrija e decida o que enviar. O serviço não garante entrevista, proposta nem qualquer resultado de contratação, e as notas (compatibilidade, ATS, fit, entrevista) são orientações, não previsões.",
@@ -92,7 +92,7 @@ const es: LegalDoc = {
   title: "Términos de uso",
   summary: "Las reglas para usar ResumeTailor: qué hace el servicio, cómo funcionan los créditos y los pagos, qué puedes y qué no puedes hacer, y los límites de nuestra responsabilidad.",
   sections: [
-    { h: "1. Aceptación", body: ["Al crear una cuenta o usar ResumeTailor aceptas estos Términos y la Política de privacidad. Si no estás de acuerdo, no uses el servicio. El responsable del servicio está identificado al inicio de esta página."] },
+    { h: "1. Aceptación", body: ["Al crear una cuenta o usar ResumeTailor aceptas estos Términos y la Política de privacidad. Si no estás de acuerdo, no uses el servicio. El responsable del servicio está indicado en el recuadro “Quién opera ResumeTailor” de esta página."] },
     { h: "2. Qué hace el servicio", body: [
       "ResumeTailor usa inteligencia artificial para ayudarte a redactar el material de una postulación: un CV adaptado a una oferta, cartas de presentación, correos para reclutadores, textos de LinkedIn, preparación y práctica de entrevistas, además de herramientas gratuitas (test ATS, revisión de encaje, seguimiento de postulaciones).",
       "Todo lo que escribe la IA es un borrador. Léelo, corrígelo y decide qué enviar. El servicio no garantiza entrevistas, ofertas ni ningún resultado de contratación, y los puntajes (coincidencia, ATS, encaje, entrevista) son orientaciones, no predicciones.",

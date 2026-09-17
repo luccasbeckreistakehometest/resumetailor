@@ -1,6 +1,6 @@
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { findById, moveCredits } from "@/lib/server/users";
-import { secretEnv, testFixturesAllowed } from "@/lib/server/env";
+import { canSell, secretEnv, testFixturesAllowed } from "@/lib/server/env";
 
 export type Provider = "stripe" | "mercadopago";
 export type SettleStatus = "approved" | "rejected" | "pending";
@@ -78,9 +78,14 @@ export function paymentsFor(userId: string): PaymentRow[] {
   return getDb().prepare("SELECT * FROM payments WHERE userId = ? ORDER BY createdAt DESC LIMIT 100").all(userId) as PaymentRow[];
 }
 
-/** Which checkouts can actually take money on this server. */
+/**
+ * Which checkouts this server offers: a provider needs its key, and a production server also
+ * needs the seller identified (canSell). Webhooks and payment verification do not look at this —
+ * a payment already made is always settled or reversed.
+ */
 export function paymentsConfig(): { stripe: boolean; mercadopago: boolean } {
-  return { stripe: !!secretEnv("STRIPE_SECRET_KEY"), mercadopago: !!secretEnv("MP_ACCESS_TOKEN") };
+  const sell = canSell();
+  return { stripe: sell && !!secretEnv("STRIPE_SECRET_KEY"), mercadopago: sell && !!secretEnv("MP_ACCESS_TOKEN") };
 }
 
 /** Mercado Pago's payment object, only the fields this app reads. */

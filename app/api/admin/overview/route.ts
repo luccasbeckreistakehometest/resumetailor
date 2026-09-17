@@ -6,6 +6,7 @@ import { dailyBudget, recentAiErrors, spendByFeatureToday, spentToday } from "@/
 import { paymentsConfig } from "@/lib/server/payments";
 import { insightsEnabled } from "@/lib/ai/insights";
 import { ttsProvider } from "@/lib/server/tts";
+import { canSell, missingSellerIdentity } from "@/lib/server/env";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function GET() {
       applicationsInterview: one<{ n: number }>("SELECT COUNT(*) n FROM applications WHERE interviewAt IS NOT NULL").n,
     },
     ai: { ...aiHealthSnapshot(), spentToday: spentToday(), budget: dailyBudget(), byFeature: spendByFeatureToday(), recentErrors: recentAiErrors() },
-    config: { payments: paymentsConfig(), insights: insightsEnabled(), voice: ttsProvider() },
+    config: { payments: paymentsConfig(), insights: insightsEnabled(), voice: ttsProvider(), sellerMissing: canSell() ? [] : missingSellerIdentity() },
     revenue: all<{ currency: string; total: number; count: number }>("SELECT currency, SUM(amount) total, COUNT(*) count FROM payments WHERE status='approved' GROUP BY currency"),
     byDay: all<{ day: string; generations: number; unlocks: number }>("SELECT substr(createdAt,1,10) day, COUNT(*) generations, SUM(unlocked) unlocks FROM generations GROUP BY day ORDER BY day DESC LIMIT 30"),
     users: all("SELECT id,email,name,credits,lang,createdAt,lastSeenAt,disabledAt FROM users WHERE role='user' ORDER BY createdAt DESC LIMIT 200"),

@@ -15,7 +15,7 @@ const en: LegalDoc = {
       "Credits don't expire, so there is no need to rush. After the 7 days we still refund or return credits when something went wrong on our side — for example, a charge without credits, a duplicate charge, or a kit the service could not deliver.",
     ] },
     { h: "3. How to ask", body: [{ list: [
-      "Use the contact form with the topic “A payment or credits” (or the e-mail at the top of this page, if shown).",
+      "Use the contact form with the topic “A payment or credits” (or the e-mail in the “Who runs ResumeTailor” box on this page).",
       "Tell us the e-mail of your account and the date and amount of the payment.",
       "The refund goes back through the same payment method, via Mercado Pago or Stripe. Pix refunds are usually quick; card refunds appear on your statement according to your bank's schedule (often one or two billing cycles).",
     ] }] },
@@ -39,7 +39,7 @@ const pt: LegalDoc = {
       "Os créditos não vencem, então não precisa ter pressa. Depois dos 7 dias a gente continua devolvendo o dinheiro ou os créditos quando o problema foi do nosso lado — por exemplo, cobrança sem crédito, cobrança em dobro ou um kit que o serviço não conseguiu entregar.",
     ] },
     { h: "3. Como pedir", body: [{ list: [
-      "Use o formulário de contato com o assunto “Pagamento ou créditos” (ou o e-mail no topo desta página, se aparecer).",
+      "Use o formulário de contato com o assunto “Pagamento ou créditos” (ou o e-mail do quadro “Quem opera o ResumeTailor”, nesta página).",
       "Informe o e-mail da sua conta e a data e o valor do pagamento.",
       "O reembolso volta pelo mesmo meio de pagamento, via Mercado Pago ou Stripe. Estorno de Pix costuma ser rápido; no cartão, aparece na fatura conforme o calendário do seu banco (muitas vezes em uma ou duas faturas).",
     ] }] },
@@ -63,7 +63,7 @@ const es: LegalDoc = {
       "Los créditos no caducan, así que no hay prisa. Pasados los 7 días seguimos devolviendo el dinero o los créditos cuando el problema fue nuestro — por ejemplo, un cobro sin créditos, un cobro duplicado o un kit que el servicio no pudo entregar.",
     ] },
     { h: "3. Cómo pedirlo", body: [{ list: [
-      "Usa el formulario de contacto con el tema “Un pago o créditos” (o el correo al inicio de esta página, si aparece).",
+      "Usa el formulario de contacto con el tema “Un pago o créditos” (o el correo del recuadro “Quién opera ResumeTailor” de esta página).",
       "Indica el correo de tu cuenta y la fecha y el importe del pago.",
       "El reembolso vuelve por el mismo medio de pago, vía Mercado Pago o Stripe. Los reembolsos por Pix suelen ser rápidos; en tarjeta aparecen en tu resumen según los plazos de tu banco (a menudo uno o dos ciclos de facturación).",
     ] }] },

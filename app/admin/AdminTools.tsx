@@ -21,7 +21,7 @@ const send = (url: string, method: string, body?: unknown) =>
   fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) }).then(async (r) => ({ ok: r.ok, j: await r.json().catch(() => ({})) }));
 
 /** AI health, today's spend against the ceiling, and the last failures (operator detail lives here, not in the UI). */
-export function AiPanel({ ai, config }: { ai: AiInfo; config: { payments: { stripe: boolean; mercadopago: boolean }; insights: boolean; voice: string | null } }) {
+export function AiPanel({ ai, config }: { ai: AiInfo; config: { payments: { stripe: boolean; mercadopago: boolean }; insights: boolean; voice: string | null; sellerMissing: string[] } }) {
   const { l } = useI18n();
   const A = l.admin;
   const pct = ai.budget > 0 ? Math.min(100, (ai.spentToday / ai.budget) * 100) : 100;
@@ -36,6 +36,7 @@ export function AiPanel({ ai, config }: { ai: AiInfo; config: { payments: { stri
         <div><p className="text-xs text-muted">{A.budget} (AI_DAILY_BUDGET_USD)</p><p className="font-display text-2xl text-ink">${ai.budget.toFixed(2)}</p></div>
         <div><p className="text-xs text-muted">{A.configured}</p><p className="text-sm text-ink-2">Stripe {config.payments.stripe ? A.yes : A.no} · Mercado Pago {config.payments.mercadopago ? A.yes : A.no} · Tavily {config.insights ? A.yes : A.no} · TTS {config.voice ?? A.no}</p></div>
       </div>
+      {config.sellerMissing.length > 0 && <p className="mt-3 rounded-lg bg-gold-2 px-3 py-2 text-sm text-oxblood" data-testid="admin-seller-missing">{A.sellerMissing} {config.sellerMissing.join(", ")}</p>}
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper-2"><div className="h-full bg-oxblood" style={{ width: `${pct}%` }} /></div>
       {ai.probe && <p className="mt-3 text-xs text-muted">{A.probe}: {ai.probe.ok ? "OK" : ai.probe.reason} · {new Date(ai.probe.checkedAt).toLocaleString()}</p>}
       {ai.lastFailure && <p className="mt-1 text-xs text-oxblood">{A.lastFailure}: {ai.lastFailure.kind} — {ai.lastFailure.detail} · {new Date(ai.lastFailure.at).toLocaleString()}</p>}
