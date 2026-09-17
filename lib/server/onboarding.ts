@@ -3,6 +3,12 @@ import { getDb, nowIso } from "@/lib/server/db";
 export interface OnboardingRow { id: string; tourCompleted: number; tourStep: number; firstSeenAt: string; completedAt: string | null; events: string }
 export interface OnboardingEvent { at: string; type: string; meta?: Record<string, unknown> }
 
+/** Read-only: what a GET may use. A visitor with no row yet simply has no progress. */
+export function peekOnboarding(ownerId: string): Pick<OnboardingRow, "tourCompleted" | "tourStep"> & { firstSeenAt: string | null } {
+  const row = getDb().prepare("SELECT tourCompleted, tourStep, firstSeenAt FROM onboarding WHERE id = ?").get(ownerId) as OnboardingRow | undefined;
+  return row ? { tourCompleted: row.tourCompleted, tourStep: row.tourStep, firstSeenAt: row.firstSeenAt } : { tourCompleted: 0, tourStep: 0, firstSeenAt: null };
+}
+
 export function getOnboarding(ownerId: string): OnboardingRow {
   const db = getDb();
   let row = db.prepare("SELECT * FROM onboarding WHERE id = ?").get(ownerId) as OnboardingRow | undefined;

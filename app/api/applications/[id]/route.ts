@@ -10,9 +10,9 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const parsed = applicationSchema.safeParse(await request.json().catch(() => ({})));
   return withOwner(async (owner) => {
-    if (!parsed.success) return bad("Check the fields.");
+    if (!parsed.success) return bad("check_fields");
     const row = getApplication(id);
-    if (!row || !ownsApplication(row, owner.userId, owner.anonId)) return bad("Not found.", 404);
+    if (!row || !ownsApplication(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     const b = { ...parsed.data };
     if (b.nextStepAt === "") b.nextStepAt = null;
     if (b.generationId !== undefined && b.generationId !== null) {
@@ -29,7 +29,7 @@ export async function DELETE(_: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   return withOwner(async (owner) => {
     const row = getApplication(id);
-    if (!row || !ownsApplication(row, owner.userId, owner.anonId)) return bad("Not found.", 404);
+    if (!row || !ownsApplication(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     deleteApplication(id);
     return { body: { ok: true, funnel: funnel(listApplications(owner.userId, owner.anonId)) } };
   });

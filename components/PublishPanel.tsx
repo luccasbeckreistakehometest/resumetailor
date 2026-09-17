@@ -20,7 +20,7 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
   const [saved, setSaved] = useState<PublicResumeView | null>(gen.publicResume ?? null);
   // The switches flip the moment they are clicked; the server's answer replaces the guess (or reverts it on error).
   const [optimistic, setOptimistic] = useState<Partial<PublicResumeView> | null>(null);
-  const pub: PublicResumeView | null = saved || optimistic ? { slug: "", template: "modern", hideContact: false, indexable: false, hasPin: false, views: 0, lastViewedAt: null, createdAt: "", enabled: false, ...saved, ...optimistic } : null;
+  const pub: PublicResumeView | null = saved || optimistic ? { slug: "", template: "modern", hideContact: false, indexable: false, hasPin: false, takenDown: false, views: 0, lastViewedAt: null, createdAt: "", enabled: false, ...saved, ...optimistic } : null;
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

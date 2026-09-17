@@ -1,3 +1,4 @@
+import { envNumber } from "@/lib/server/env";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import type { GenerationRow } from "@/lib/server/generations";
 import type { Kit, Lang } from "@/lib/ai/kit";
@@ -11,7 +12,7 @@ export interface SessionRow {
 }
 
 /** Every answer is an AI call, so practice on one kit is bounded. Override per deployment. */
-export const MAX_SESSIONS_PER_KIT = Number(process.env.INTERVIEW_MAX_SESSIONS_PER_KIT ?? 5);
+export const MAX_SESSIONS_PER_KIT = envNumber("INTERVIEW_MAX_SESSIONS_PER_KIT", 5);
 
 export function createSession(input: { userId: string | null; anonId: string | null; generation: GenerationRow; model: string }): SessionRow {
   const kit = JSON.parse(input.generation.result) as Kit;

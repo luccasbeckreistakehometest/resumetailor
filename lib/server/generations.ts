@@ -1,3 +1,4 @@
+import { envNumber } from "@/lib/server/env";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { moveCredits } from "@/lib/server/users";
 import type { Kit } from "@/lib/ai/kit";
@@ -12,7 +13,7 @@ export interface GenerationRow {
 }
 
 /** "Go deeper" passes per kit. Each is a full generation, so the count is bounded; override per deployment. */
-export const DEEPEN_MAX = Number(process.env.KIT_DEEPEN_MAX ?? 2);
+export const DEEPEN_MAX = envNumber("KIT_DEEPEN_MAX", 2);
 
 /** The candidate's name is usually the first line of the resume; that makes a better title than "Resume". */
 export function titleFrom(kit: Kit): string {

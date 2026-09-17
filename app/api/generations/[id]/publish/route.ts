@@ -17,7 +17,7 @@ export async function GET(_: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   return withOwner(async (owner) => {
     const row = getGeneration(id);
-    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("Not found.", 404);
+    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     const p = getPublicByGeneration(id);
     return { body: { publicResume: p ? serialisePublic(p) : null } };
   });
@@ -28,17 +28,19 @@ export async function PUT(request: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
   return withOwner(async (owner) => {
-    if (!parsed.success) return bad("Check the fields.");
+    if (!parsed.success) return bad("check_fields");
     const row = getGeneration(id);
-    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("Not found.", 404);
-    if (!owner.userId) return bad("Create an account to publish.", 401);
-    if (row.unlocked !== 1) return bad("Unlock the kit to publish it.", 409);
+    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
+    if (!owner.userId) return bad("account_required", 401);
+    if (row.unlocked !== 1) return bad("unlock_first", 409);
+    const current = getPublicByGeneration(id);
+    if (current?.takenDownAt && parsed.data.enabled) return bad("taken_down", 409);
     try {
-      const p = upsertPublic(id, owner.userId, row.title, parsed.data);
+      const p = await upsertPublic(id, owner.userId, row.title, parsed.data);
       if (parsed.data.enabled !== undefined) recordEvent(owner.userId, parsed.data.enabled ? "cv_publish" : "cv_unpublish", { generationId: id });
       return { body: { publicResume: serialisePublic(p) } };
     } catch (e) {
-      if (e instanceof Error && e.message === "pin") return bad("The PIN must be 4 to 12 letters or digits.");
+      if (e instanceof Error && e.message === "pin") return bad("pin_invalid");
       throw e;
     }
   });
@@ -48,7 +50,7 @@ export async function DELETE(_: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   return withOwner(async (owner) => {
     const row = getGeneration(id);
-    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("Not found.", 404);
+    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     deletePublic(id);
     return { body: { ok: true } };
   });

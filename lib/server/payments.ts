@@ -1,5 +1,6 @@
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { moveCredits } from "@/lib/server/users";
+import { secretEnv } from "@/lib/server/env";
 
 /**
  * Records a payment and grants its credits exactly once. Both webhooks and the success-page
@@ -24,4 +25,9 @@ export function settlePayment(input: {
     moveCredits(input.userId, input.credits, "purchase", id);
     return { granted: true };
   })();
+}
+
+/** Which checkouts can actually take money on this server. */
+export function paymentsConfig(): { stripe: boolean; mercadopago: boolean } {
+  return { stripe: !!secretEnv("STRIPE_SECRET_KEY"), mercadopago: !!secretEnv("MP_ACCESS_TOKEN") };
 }
