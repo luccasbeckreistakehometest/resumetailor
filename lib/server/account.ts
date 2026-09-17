@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { getDb, nowIso } from "@/lib/server/db";
 import { findById } from "@/lib/server/users";
 
@@ -60,6 +61,11 @@ export function deleteAccount(userId: string): boolean {
     db.prepare("DELETE FROM career_profiles WHERE ownerKey = ?").run(userId);
     db.prepare("DELETE FROM referrals WHERE referrerId = ? OR referredId = ?").run(userId, userId);
     db.prepare("DELETE FROM contact_messages WHERE userId = ? OR lower(email) = lower(?)").run(userId, u.email);
+    // Analytics: the first-touch row goes; events stay for the totals under a fresh random visitor
+    // id with no account, so nothing links them to the person or to their browser cookie.
+    const visitor = (db.prepare("SELECT attributionVisitorId v FROM users WHERE id = ?").get(userId) as { v: string | null }).v;
+    db.prepare("DELETE FROM attribution WHERE userId = ? OR visitorId = ?").run(userId, visitor ?? "");
+    db.prepare("UPDATE events SET userId = NULL, visitorId = ? WHERE userId = ? OR visitorId = ?").run(`deleted_${randomBytes(8).toString("hex")}`, userId, visitor ?? "");
     // Cost records stay for the spend totals, with nothing that points to the person.
     db.prepare("UPDATE ai_usage SET ownerKey = 'deleted', ip = NULL WHERE ownerKey = ?").run(userId);
     db.prepare("UPDATE payments SET userId = NULL WHERE userId = ?").run(userId);

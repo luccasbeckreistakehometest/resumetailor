@@ -9,7 +9,7 @@ process.env.RL_ANALYTICS_IP_HOUR = "12";
 process.env.RL_ANALYTICS_NEW_VISITOR_IP_DAY = "3";
 fs.rmSync(DIR, { recursive: true, force: true });
 
-const { parseUtm, isBot, cleanProps, refHost, isEventName, isClientEventName } = await import("@/lib/analytics/events");
+const { parseUtm, isBot, cleanProps, refHost, isEventName, isClientEventName, optedOut } = await import("@/lib/analytics/events");
 const { recordAnalytics, acquisitionReport, purgeOld, linkVisitor, admitBeacon } = await import("@/lib/server/analytics");
 const { getDb } = await import("@/lib/server/db");
 const { createUser } = await import("@/lib/server/users");
@@ -33,6 +33,9 @@ describe("analytics helpers", () => {
     expect(refHost("https://www.google.com/search?q=cv", "resumetailor.test")).toBe("google.com");
     expect(refHost("https://resumetailor.test/pricing", "resumetailor.test")).toBe("");
     expect(isEventName("hack")).toBe(false);
+    expect(optedOut(new Headers({ "sec-gpc": "1" }))).toBe(true);
+    expect(optedOut(new Headers({ dnt: "1" }))).toBe(true);
+    expect(optedOut(new Headers({ dnt: "0" }))).toBe(false);
   });
   it("lets the browser report only what happens in the browser; conversions are server-only", () => {
     for (const n of ["page_view", "cta_click", "lang_switch", "ats_check_run", "compare_run"]) expect(isClientEventName(n), n).toBe(true);
@@ -75,9 +78,12 @@ describe("funnel", () => {
     expect(n).toBe(8);
     const db = getDb();
     db.prepare("INSERT INTO events (at, day, visitorId, name) VALUES (?,?,?,?)").run("2020-01-01T00:00:00Z", "2020-01-01", "anon_old", "page_view");
+    db.prepare("INSERT INTO attribution (visitorId, firstAt) VALUES (?,?)").run("anon_old", "2020-01-01T00:00:00Z");
+    db.prepare("INSERT INTO attribution (visitorId, firstAt, userId) VALUES (?,?,?)").run("anon_old_account", "2020-01-01T00:00:00Z", "usr_kept");
     const before = (db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n;
     expect(purgeOld(new Date(), true)).toBe(1);
     expect((db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n).toBe(before - 1);
+    expect(db.prepare("SELECT visitorId FROM attribution WHERE visitorId LIKE 'anon_old%'").all()).toEqual([{ visitorId: "anon_old_account" }]);
   });
 });
 

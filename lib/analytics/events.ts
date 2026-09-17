@@ -66,4 +66,7 @@ export function isBot(ua: string, allowHeadless = false): boolean {
   return BOTS.test(probe);
 }
 
+/** Global Privacy Control or Do Not Track on the request: nothing is counted for this visitor. */
+export const optedOut = (h: Pick<Headers, "get">) => h.get("sec-gpc") === "1" || h.get("dnt") === "1";
+
 export const deviceOf = (ua: string) => (/mobi|android|iphone|ipad/i.test(ua) ? "mobile" : "desktop");

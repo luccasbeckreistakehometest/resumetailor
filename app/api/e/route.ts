@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { ANON_COOKIE } from "@/lib/server/auth";
 import { ANON_COOKIE_OPTIONS, ownerKey } from "@/lib/server/session";
-import { deviceOf, isBot, isClientEventName } from "@/lib/analytics/events";
+import { deviceOf, isBot, isClientEventName, optedOut } from "@/lib/analytics/events";
 import { admitBeacon, recordAnalytics, visitorFor } from "@/lib/server/analytics";
 import { clientIp } from "@/lib/server/ratelimit";
 
@@ -22,7 +22,7 @@ const schema = z.object({
 
 /**
  * The beacon collector. Unknown names, and conversion names only the server may record, are a
- * 400. Crawlers, cross-site calls, calls without a visitor cookie and anything over the per-IP or
+ * 400. Crawlers, cross-site calls, GPC/DNT requests, calls without a visitor cookie and anything over the per-IP or
  * per-visitor caps are accepted silently (204) and stored nowhere. No IP is kept (it only keys
  * the rate limits, which expire with their window).
  */
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const h = await headers();
   const ua = h.get("user-agent") ?? "";
   const site = h.get("sec-fetch-site");
-  const ignored = isBot(ua, process.env.ANALYTICS_ALLOW_HEADLESS === "1") || (site !== null && site !== "same-origin");
+  const ignored = isBot(ua, process.env.ANALYTICS_ALLOW_HEADLESS === "1") || (site !== null && site !== "same-origin") || optedOut(h);
   const owner = await ownerKey();
   const res = new NextResponse(null, { status: 204 });
   if (owner.isNewAnon) res.cookies.set(ANON_COOKIE, owner.anonId, ANON_COOKIE_OPTIONS);

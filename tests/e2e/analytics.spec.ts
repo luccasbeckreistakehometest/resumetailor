@@ -40,6 +40,11 @@ test.describe("first-party analytics", () => {
     const bare = await browser.newContext();
     expect((await bare.request.post("http://localhost:3100/api/e", { data: { name: "page_view", path: "/probe-nocookie" } })).status()).toBe(204);
     await bare.close();
+    // A browser that sends Global Privacy Control is never counted, even with a cookie.
+    const gpc = await browser.newContext({ extraHTTPHeaders: { "sec-gpc": "1" } });
+    await gpc.request.get("http://localhost:3100/pricing");
+    expect((await gpc.request.post("http://localhost:3100/api/e", { data: { name: "page_view", path: "/probe-gpc" } })).status()).toBe(204);
+    await gpc.close();
     await page.goto("/");
     await skipTour(page);
     expect((await page.request.post("/api/e", { data: { name: "hack" } })).status()).toBe(400);
@@ -63,6 +68,7 @@ test.describe("first-party analytics", () => {
     const landings = full.byLanding.map((r: { landing: string }) => r.landing);
     expect(landings).not.toContain("/probe-googlebot");
     expect(landings).not.toContain("/probe-nocookie");
+    expect(landings).not.toContain("/probe-gpc");
     await admin.close();
 
     for (const path of ["/", "/pt", "/pt/precos", "/start"]) {

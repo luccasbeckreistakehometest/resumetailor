@@ -377,6 +377,12 @@ describe("LGPD: export and delete", () => {
     db.prepare("INSERT INTO fit_checks (id,ownerKey,hash,lang,role,result,model,costUsd,createdAt) VALUES (?,?,?,?,?,?,?,?,?)").run(`fit-${anon}`, anon, `h-${anon}`, "en", "Analyst", "{}", "mock", 0, new Date().toISOString());
     users.claimAnonymous(u.id, anon);
     expect(db.prepare("SELECT COUNT(*) n FROM onboarding WHERE id = ?").get(anon)).toEqual({ n: 0 });
+    // First-party analytics from that visitor, joined to the account.
+    const { recordAnalytics, linkVisitor } = await import("@/lib/server/analytics");
+    recordAnalytics({ name: "page_view", visitorId: anon, path: "/pt/lp/x", utm: { source: "meta" } });
+    linkVisitor(u.id, anon);
+    recordAnalytics({ name: "unlock", visitorId: anon, userId: u.id });
+    const eventsBefore = (db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n;
 
     const data = exportAccount(u.id)!;
     expect(data.account.email).toBe(u.email);
@@ -395,6 +401,10 @@ describe("LGPD: export and delete", () => {
     expect(db.prepare("SELECT COUNT(*) n FROM contact_messages WHERE lower(email) = lower(?)").get(u.email)).toEqual({ n: 0 });
     expect(db.prepare("SELECT COUNT(*) n FROM ai_usage WHERE ownerKey = ? OR ip = '1.2.3.4'").get(u.id)).toEqual({ n: 0 });
     expect((db.prepare("SELECT COUNT(*) n FROM ai_usage WHERE ownerKey = 'deleted'").get() as { n: number }).n).toBeGreaterThan(0);
+    // Analytics: no first touch and no event points to the person or the cookie; the totals stay.
+    expect(db.prepare("SELECT COUNT(*) n FROM attribution WHERE userId = ? OR visitorId = ?").get(u.id, anon)).toEqual({ n: 0 });
+    expect(db.prepare("SELECT COUNT(*) n FROM events WHERE userId = ? OR visitorId IN (?, ?)").get(u.id, anon, `u:${u.id}`)).toEqual({ n: 0 });
+    expect((db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n).toBe(eventsBefore);
     const pay = getPayment("mercadopago", "mp-del")!;
     expect(pay.userId).toBeNull();
     expect(pay.amount).toBe(39);

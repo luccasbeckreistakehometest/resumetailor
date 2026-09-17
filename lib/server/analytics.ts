@@ -1,6 +1,7 @@
 import { getDb, getSetting, nowIso, setSetting } from "@/lib/server/db";
 import { envNumber } from "@/lib/server/env";
-import { cleanProps, type EventName, type Utm } from "@/lib/analytics/events";
+import { headers } from "next/headers";
+import { cleanProps, optedOut, type EventName, type Utm } from "@/lib/analytics/events";
 import { take } from "@/lib/server/ratelimit";
 
 /**
@@ -65,6 +66,9 @@ export function purgeOld(now = new Date(), force = false): number {
   if (!force && getSetting("analytics_purged_day") === today) return 0;
   setSetting("analytics_purged_day", today);
   const cutoff = day(new Date(now.getTime() - retentionDays() * 86_400_000).toISOString());
+  // First touch of visitors who never created an account goes with the same window; an account's
+  // stays while the account exists (deleting the account removes it).
+  getDb().prepare("DELETE FROM attribution WHERE userId IS NULL AND firstAt < ?").run(cutoff);
   return getDb().prepare("DELETE FROM events WHERE day < ?").run(cutoff).changes;
 }
 
@@ -80,9 +84,17 @@ export function visitorFor(owner: { anonId?: string | null; userId?: string | nu
   return owner.anonId || null;
 }
 
-/** Server-side conversions (ad-blockers cannot hide them). */
+/**
+ * Server-side conversions (ad-blockers cannot hide them). Inside a request from a browser that
+ * sends Global Privacy Control or Do Not Track, nothing is recorded; outside a request (scripts,
+ * tests) the event is recorded right away.
+ */
 export function serverEvent(owner: { anonId?: string | null; userId?: string | null }, name: EventName, props?: Record<string, string | number | boolean>): void {
-  recordAnalytics({ name, visitorId: visitorFor(owner), userId: owner.userId ?? null, props });
+  const record = () => { recordAnalytics({ name, visitorId: visitorFor(owner), userId: owner.userId ?? null, props }); };
+  let pending: Promise<Headers> | null = null;
+  try { pending = headers() as unknown as Promise<Headers>; } catch { pending = null; }
+  if (!pending) { record(); return; }
+  void pending.then((h) => { if (!optedOut(h)) record(); }, record);
 }
 
 export function linkVisitor(userId: string, visitorId: string | undefined | null): void {
