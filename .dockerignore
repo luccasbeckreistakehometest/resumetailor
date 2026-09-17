@@ -1,0 +1,24 @@
+# Keep the build context small and secret-free.
+# The server's .env is the one exception: the Dockerfile bind-mounts the context for a single
+# RUN step and copies ONLY its NEXT_PUBLIC_* lines (public by definition) into the build. It is
+# never COPY'd, so no secret lands in an image layer or in the build cache.
+.env*
+!.env
+node_modules
+.next
+.git
+.gitignore
+data
+test-results
+playwright-report
+tests
+marketing
+docs
+coverage
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+npm-debug.log*
+Dockerfile
+docker-compose.yml
+*.md

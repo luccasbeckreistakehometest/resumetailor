@@ -8,9 +8,19 @@ RUN npm ci
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+# Only what the build needs — never `COPY . .`, which would bake the server's .env into a layer.
+COPY package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs ./
+COPY app ./app
+COPY components ./components
+COPY lib ./lib
+COPY public ./public
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+# NEXT_PUBLIC_* values are inlined at build time and they live in the server's .env (compose
+# `build: ../resumetailor`). The context is bind-mounted for this step only; just the public
+# lines are copied into .env.production, so secrets never reach a layer.
+RUN --mount=type=bind,target=/ctx \
+    if [ -f /ctx/.env ]; then grep -E '^NEXT_PUBLIC_[A-Z0-9_]+=' /ctx/.env > .env.production || true; fi && \
+    npm run build
 
 FROM node:22-bookworm-slim AS run
 WORKDIR /app

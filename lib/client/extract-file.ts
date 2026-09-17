@@ -20,7 +20,11 @@ async function pdfText(buf: ArrayBuffer): Promise<{ text: string; pages: number 
     worker = new Worker(new URL("pdfjs-dist/legacy/build/pdf.worker.min.mjs", import.meta.url), { type: "module" });
     pdfjs.GlobalWorkerOptions.workerPort = worker;
   }
-  const task = pdfjs.getDocument({ data: new Uint8Array(buf) });
+  // Hardened for untrusted files. GHSA-hq66-cqwq-w95j (pdfjs-dist < 6.2.108) needs the viewer's
+  // scripting sandbox (enableScripting), which this text-only path never loads; `isEvalSupported`
+  // no longer exists in 5.x (fonts are not compiled with eval any more). We never render, so no
+  // font faces or XFA either. The move to pdfjs-dist 6 is a separate, breaking upgrade.
+  const task = pdfjs.getDocument({ data: new Uint8Array(buf), enableXfa: false, disableFontFace: true, useSystemFonts: false });
   const doc = await task.promise;
   const pages: PdfTextItem[][] = [];
   try {
