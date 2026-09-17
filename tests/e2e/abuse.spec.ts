@@ -78,10 +78,28 @@ test.describe("abuse and cost limits", () => {
     await p.getByTestId("cv-pin-submit").click();
     await expect(p.getByTestId("cv-pin-wrong")).toContainText(/Too many wrong tries/);
     await guesser.close();
+    // A parallel burst from one address gets no more wrong PINs checked than the limit.
+    const burster = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.206.0.7" } });
+    const burst = await Promise.all(Array.from({ length: 30 }, (_, i) =>
+      burster.request.post(`http://localhost:3100/api/cv/${slug}/pin`, { data: { pin: String(1000 + i) } }).then((r) => r.status())));
+    expect(burst.filter((c) => c === 403).length).toBeLessThanOrEqual(5);
+    expect(burst.filter((c) => c === 429).length).toBeGreaterThanOrEqual(25);
+    await burster.close();
     // Someone else, from another address, is not locked out.
     const friend = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.205.0.6" } });
     expect((await friend.request.post(`http://localhost:3100/api/cv/${slug}/pin`, { data: { pin: "2468" } })).status()).toBe(200);
     await friend.close();
+  });
+
+  test("a parallel burst of logins gets no more passwords checked than the lockout allows", async ({ request }) => {
+    const mail = `burst${Date.now()}@example.com`;
+    expect((await request.post("/api/auth/register", { data: { email: mail, password: "password123", acceptTerms: true } })).ok()).toBe(true);
+    const codes = await Promise.all(Array.from({ length: 30 }, (_, i) =>
+      request.post("/api/auth/login", { data: { email: mail, password: `wrong-${i}` } }).then((r) => r.status())));
+    expect(codes.filter((c) => c === 401).length).toBeLessThanOrEqual(5);
+    expect(codes.filter((c) => c === 429).length).toBeGreaterThanOrEqual(25);
+    // Locked: even the right password is refused until the window passes.
+    expect((await request.post("/api/auth/login", { data: { email: mail, password: "password123" } })).status()).toBe(429);
   });
 
   test("when the AI fails, visitors get a neutral localized message and /start admits it until it recovers", async ({ page }) => {

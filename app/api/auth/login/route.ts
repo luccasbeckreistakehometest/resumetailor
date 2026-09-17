@@ -4,13 +4,14 @@ import { ANON_COOKIE, SESSION_COOKIE } from "@/lib/server/auth";
 import { SESSION_COOKIE_OPTIONS, anonId, sessionTokenFor } from "@/lib/server/session";
 import { authenticate, claimAnonymous, ensureAdmin, toPublic } from "@/lib/server/users";
 import { jsonError, requestIp } from "@/lib/server/http";
-import { allowed, clearLimit, take } from "@/lib/server/ratelimit";
+import { clearLimit, reserve } from "@/lib/server/ratelimit";
 
 const schema = z.object({ email: z.string().trim().max(200), password: z.string().max(200) });
 
 /**
- * Failed attempts are counted per IP and per account; past either limit the endpoint refuses
- * without checking the password until the window passes (backoff against credential stuffing).
+ * Attempts are counted per IP and per account before the password is checked, and given back when
+ * it was right, so a parallel burst cannot get more than the limit checked. Past either limit the
+ * endpoint refuses without checking the password until the window passes (credential stuffing).
  */
 export async function POST(request: Request) {
   await ensureAdmin();
@@ -18,15 +19,11 @@ export async function POST(request: Request) {
   if (!parsed.success || !parsed.data.email || !parsed.data.password) return jsonError("email_password_required", 400);
   const ip = await requestIp();
   const account = parsed.data.email.toLowerCase();
-  const byIp = allowed("LOGIN_FAIL_IP_15M", ip);
-  const byAccount = allowed("LOGIN_FAIL_ACCOUNT_15M", account);
-  if (!byIp.ok || !byAccount.ok) return jsonError("account_locked", 429, { retryAfter: Math.max(byIp.ok ? 0 : byIp.retryAfter, byAccount.ok ? 0 : byAccount.retryAfter) });
+  const slot = reserve([["LOGIN_FAIL_ACCOUNT_15M", account], ["LOGIN_FAIL_IP_15M", ip]]);
+  if (!slot.ok) return jsonError("account_locked", 429, { retryAfter: slot.failed.retryAfter });
   const user = await authenticate(parsed.data.email, parsed.data.password);
-  if (!user) {
-    take("LOGIN_FAIL_IP_15M", ip);
-    take("LOGIN_FAIL_ACCOUNT_15M", account);
-    return jsonError("wrong_credentials", 401);
-  }
+  if (!user) return jsonError("wrong_credentials", 401);   // the reserved slots stay counted
+  slot.release();
   clearLimit("LOGIN_FAIL_ACCOUNT_15M", account);
   claimAnonymous(user.id, await anonId());
   const res = NextResponse.json({ ok: true, user: toPublic(user) });

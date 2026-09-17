@@ -8,7 +8,7 @@ process.env.DATA_DIR = DIR;
 fs.rmSync(DIR, { recursive: true, force: true });
 
 const { env, secretEnv, supportContacts, envNumber, baseUrl } = await import("@/lib/server/env");
-const { hit, peek, take, clearLimit, rule } = await import("@/lib/server/ratelimit");
+const { hit, peek, take, clearLimit, rule, reserve, reserveSpecs } = await import("@/lib/server/ratelimit");
 const users = await import("@/lib/server/users");
 const { signSession, verifySession, oneTimePassword, safeEqual, authSecret } = await import("@/lib/server/auth");
 const { isDisposableEmail } = await import("@/lib/server/disposable");
@@ -99,6 +99,31 @@ describe("rate limits", () => {
     expect(peek("LOGIN_FAIL_ACCOUNT_15M", "victim@example.com", r.max, r.windowSec).ok).toBe(false);
     clearLimit("LOGIN_FAIL_ACCOUNT_15M", "victim@example.com");
     expect(peek("LOGIN_FAIL_ACCOUNT_15M", "victim@example.com", r.max, r.windowSec).ok).toBe(true);
+  });
+
+  it("reservations count before the slow check, so a parallel burst gets at most the limit through", () => {
+    const key = `burst-${Date.now()}`;
+    // Every request of a burst reserves before any of them finishes its scrypt / AI call.
+    const burst = Array.from({ length: 50 }, () => reserve([["PIN_FAIL_SLUG_IP_15M", key], ["PIN_FAIL_IP_HOUR", key]]));
+    expect(burst.filter((r) => r.ok)).toHaveLength(rule("PIN_FAIL_SLUG_IP_15M").max);
+    // Refused tries leave nothing counted beyond the limit, on any of the rules.
+    expect(peek("PIN_FAIL_SLUG_IP_15M", key, 999, 900).count).toBe(5);
+    expect(peek("PIN_FAIL_IP_HOUR", key, 999, 3600).count).toBe(5);
+    const refused = burst.find((r) => !r.ok);
+    expect(refused && !refused.ok && refused.failed.retryAfter).toBeGreaterThan(0);
+  });
+
+  it("a released reservation gives its slots back, once", () => {
+    const now = 2_000_000_000_000;
+    const spec = { bucket: "t-reserve", key: `r-${Date.now()}`, max: 2, windowSec: 60 };
+    const a = reserveSpecs([spec], now);
+    const b = reserveSpecs([spec], now);
+    expect(reserveSpecs([spec], now).ok).toBe(false);
+    if (!a.ok || !b.ok) throw new Error("expected two slots");
+    a.release(); a.release();                      // idempotent
+    expect(peek(spec.bucket, spec.key, 99, 60, now).count).toBe(1);
+    expect(reserveSpecs([spec], now).ok).toBe(true);
+    expect(reserveSpecs([spec], now).ok).toBe(false);
   });
 
   it("limits are adjustable by env", () => {

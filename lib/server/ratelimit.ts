@@ -12,7 +12,7 @@ export function clientIp(headers: Headers): string {
   return headers.get("x-real-ip")?.trim().slice(0, 64) || "local";
 }
 
-export interface LimitResult { ok: boolean; count: number; limit: number; retryAfter: number }
+export interface LimitResult { ok: boolean; count: number; limit: number; retryAfter: number; bucket: string; key: string; windowStart: number }
 
 /**
  * Fixed-window counter. `hit` counts this attempt and says whether it is within `max` for the
@@ -25,7 +25,7 @@ export function hit(bucket: string, key: string, max: number, windowSec: number,
   const row = db.prepare(`INSERT INTO rate_limits (bucket, key, windowStart, count, expiresAt) VALUES (?, ?, ?, 1, ?)
     ON CONFLICT(bucket, key, windowStart) DO UPDATE SET count = count + 1 RETURNING count`).get(bucket, key, start, start + windowMs) as { count: number };
   if (Math.random() < 0.02) sweep(now);
-  return { ok: row.count <= max, count: row.count, limit: max, retryAfter: Math.ceil((start + windowMs - now) / 1000) };
+  return { ok: row.count <= max, count: row.count, limit: max, retryAfter: Math.ceil((start + windowMs - now) / 1000), bucket, key, windowStart: start };
 }
 
 export function peek(bucket: string, key: string, max: number, windowSec: number, now = Date.now()): LimitResult {
@@ -33,7 +33,35 @@ export function peek(bucket: string, key: string, max: number, windowSec: number
   const start = Math.floor(now / windowMs) * windowMs;
   const row = getDb().prepare("SELECT count FROM rate_limits WHERE bucket = ? AND key = ? AND windowStart = ?").get(bucket, key, start) as { count: number } | undefined;
   const count = row?.count ?? 0;
-  return { ok: count < max, count, limit: max, retryAfter: Math.ceil((start + windowMs - now) / 1000) };
+  return { ok: count < max, count, limit: max, retryAfter: Math.ceil((start + windowMs - now) / 1000), bucket, key, windowStart: start };
+}
+
+/** Gives back one counted attempt in the window it was counted in. Never goes below zero. */
+export function refund(res: Pick<LimitResult, "bucket" | "key" | "windowStart">): void {
+  getDb().prepare("UPDATE rate_limits SET count = count - 1 WHERE bucket = ? AND key = ? AND windowStart = ? AND count > 0").run(res.bucket, res.key, res.windowStart);
+}
+
+export interface LimitSpec { bucket: string; key: string; max: number; windowSec: number }
+export type Reservation = { ok: true; release: () => void } | { ok: false; failed: LimitResult };
+
+/**
+ * Counts one attempt against every limit BEFORE the slow step it guards (scrypt, an AI call).
+ * better-sqlite3 is synchronous, so the whole loop runs without yielding: of a burst of parallel
+ * requests, at most `max` get through, where a read-then-count-later check let them all pass.
+ * Past any limit nothing stays counted and the failing result comes back. `release()` gives the
+ * slots back when the attempt should not count after all (a right PIN or password, an AI call
+ * that failed); it only acts once.
+ */
+export function reserveSpecs(specs: LimitSpec[], now = Date.now()): Reservation {
+  const taken: LimitResult[] = [];
+  let released = false;
+  const release = () => { if (released) return; released = true; for (const r of taken) refund(r); };
+  for (const s of specs) {
+    const res = hit(s.bucket, s.key, s.max, s.windowSec, now);
+    taken.push(res);
+    if (!res.ok) { release(); return { ok: false, failed: res }; }
+  }
+  return { ok: true, release };
 }
 
 export function clearLimit(bucket: string, key: string): void {
@@ -86,10 +114,9 @@ export function take(name: LimitName, key: string): LimitResult {
   return hit(name, key, r.max, r.windowSec);
 }
 
-/** Reads a failure-counting rule without counting (true while still allowed). */
-export function allowed(name: LimitName, key: string): LimitResult {
-  const r = rule(name);
-  return peek(name, key, r.max, r.windowSec);
+/** Reserves one attempt against named rules (see reserveSpecs). */
+export function reserve(pairs: [LimitName, string][]): Reservation {
+  return reserveSpecs(pairs.map(([name, key]) => ({ bucket: name, key, ...rule(name) })));
 }
 
 /** First failing result among several attempts, all of which are counted. */
