@@ -16,8 +16,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // NEXT_DEV_FS_CACHE=0 (used by the e2e server) skips Turbopack's on-disk dev cache: the Mac this
-  // runs on is short on space and the cache grows past a gigabyte.
+  // NEXT_DEV_FS_CACHE=0 skips Turbopack's on-disk dev cache (saves ~2 GB of disk) at the price of a
+  // much larger dev-server memory footprint — don't use it for the full e2e suite.
   experimental: { turbopackFileSystemCacheForDev: process.env.NEXT_DEV_FS_CACHE !== "0" },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
