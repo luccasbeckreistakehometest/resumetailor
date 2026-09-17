@@ -56,6 +56,7 @@ const en = {
       { t: "Your résumé as a web page", b: "Any unlocked kit can be published at its own link — mobile-first, parser-friendly, PIN if you want — and shared on WhatsApp or LinkedIn. You see how many people opened it." },
       { t: "Letters by tone, emails that get replies", b: "On an unlocked kit, rewrite the cover letter formal, warm, direct or confident, and get the three recruiter emails — after applying, thank-you, polite nudge — written from your kit and the posting." },
       { t: "Watch your interviews improve", b: "Every practice session lands on one trend line: score over time, your strongest and weakest dimension, and what to rehearse next. Your numbers, no AI." },
+      { t: "Your whole LinkedIn, for the role", b: "On an unlocked kit: three headlines, the About, every experience bullet rewritten, the skills to pin — and how much of the role's search vocabulary your profile now covers." },
     ],
   },
   library: { open: "Open", print: "Print / PDF", locked: "Preview", unlocked: "Unlocked", voice: "by voice", empty: "Nothing here yet — your kits will appear the moment you make one." },
@@ -241,6 +242,7 @@ const en = {
     items: {
       publish: { t: "A web résumé", d: "Publish the résumé at its own link — mobile-first, parser-friendly, with a PIN if you want — and share it on WhatsApp or LinkedIn." },
       letters: { t: "Letters by tone + recruiter emails", d: "The cover letter rewritten formal, warm, direct or confident, and the three emails that matter: after applying, thank-you after the interview, a polite nudge after silence." },
+      linkedin: { t: "The full LinkedIn pass", d: "Three headlines, the About, every experience bullet rewritten, the skills to pin — and a keyword-coverage check against the role." },
     },
   },
   letters: {
@@ -269,6 +271,18 @@ const en = {
     },
     perKit: "Per kit", runs: (n: number) => `${n} session${n === 1 ? "" : "s"}`,
     libraryTitle: "Your trend", seeAll: "See my progress →",
+  },
+  linkedin: {
+    eyebrow: "LinkedIn", title: "Your whole LinkedIn, rewritten for the role",
+    intro: "Recruiters search LinkedIn by words. This pass puts the role's vocabulary where it's true of you — headline, About, experience, pinned skills — and shows how much of it you now cover.",
+    locked: "Unlock the kit to get the full LinkedIn pass.", generating: "Rewriting your profile…", generatingHint: "One pass, then it stays with the kit.",
+    cached: "Saved with the kit", copy: "Copy", copied: "Copied ✓", forRole: (r: string) => `For: ${r}`,
+    coverage: "Keyword coverage for the role", coverageHint: "Share of the role's search terms that now appear in your headline, About, experience or skills.",
+    headline: "Headline — three options", headlineHint: "220 characters max. The headline is what shows in every search result; pick the one that sounds like you.",
+    about: "About", experience: "Experience — bullets rewritten", experienceHint: "Paste each block into the role's description on LinkedIn.",
+    skills: "Skills to add", skillsHint: "Pin the first five: pinned skills weigh more in recruiter filters.",
+    honest: "Only what your résumé supports made it in. If a missing term is genuinely true of you, add it yourself — never claim what isn't.",
+    cta: "Full LinkedIn pass",
   },
   footer: "Secure payments by Stripe · No subscription",
 };
@@ -326,6 +340,7 @@ const pt: typeof en = {
       { t: "Seu currículo como página na web", b: "Qualquer kit liberado vira uma página com link próprio — feita pro celular, amiga do robô, com PIN se quiser — pra mandar no WhatsApp ou no LinkedIn. Você vê quantas pessoas abriram." },
       { t: "Carta em quatro tons, e-mail que recebe resposta", b: "Num kit liberado, reescreve a carta formal, calorosa, direta ou confiante, e pega os três e-mails pro recrutador — depois de se candidatar, agradecimento, cobrança educada — escritos a partir do seu kit e da vaga." },
       { t: "Vê sua entrevista melhorar", b: "Cada treino entra numa linha de evolução: nota ao longo do tempo, seu ponto forte e o fraco, e o que ensaiar em seguida. Seus números, sem IA." },
+      { t: "Seu LinkedIn inteiro, pra vaga", b: "Num kit liberado: três títulos, o Sobre, cada tópico de experiência reescrito, as competências pra fixar — e quanto do vocabulário de busca da vaga o seu perfil cobre agora." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Prévia", unlocked: "Liberado", voice: "por voz", empty: "Nada aqui ainda — seus kits aparecem assim que você fizer o primeiro." },
@@ -513,6 +528,7 @@ const pt: typeof en = {
     items: {
       publish: { t: "Um currículo online", d: "Publica o currículo com link próprio — feito pro celular, amigo do robô, com PIN se quiser — e manda no WhatsApp ou no LinkedIn." },
       letters: { t: "Carta em quatro tons + e-mails pro recrutador", d: "A carta reescrita formal, calorosa, direta ou confiante, e os três e-mails que fazem diferença: depois de se candidatar, agradecimento pós-entrevista, cobrança educada depois do silêncio." },
+      linkedin: { t: "O LinkedIn completo", d: "Três títulos, o Sobre, cada tópico de experiência reescrito, as competências pra fixar — e a checagem de cobertura das palavras-chave da vaga." },
     },
   },
   letters: {
@@ -541,6 +557,18 @@ const pt: typeof en = {
     },
     perKit: "Por kit", runs: (n: number) => `${n} treino${n === 1 ? "" : "s"}`,
     libraryTitle: "Sua evolução", seeAll: "Ver minha evolução →",
+  },
+  linkedin: {
+    eyebrow: "LinkedIn", title: "Seu LinkedIn inteiro, reescrito pra vaga",
+    intro: "Recrutador busca no LinkedIn por palavra. Essa passada coloca o vocabulário da vaga onde ele é verdade sobre você — título, Sobre, experiência, competências fixadas — e mostra quanto disso você cobre agora.",
+    locked: "Libera o kit pra ter o LinkedIn completo.", generating: "Reescrevendo seu perfil…", generatingHint: "Uma passada só, e fica guardada com o kit.",
+    cached: "Guardado com o kit", copy: "Copiar", copied: "Copiado ✓", forRole: (r: string) => `Pra: ${r}`,
+    coverage: "Cobertura das palavras-chave da vaga", coverageHint: "Quanto dos termos que buscam essa vaga já aparece no seu título, Sobre, experiência ou competências.",
+    headline: "Título — três opções", headlineHint: "No máximo 220 caracteres. O título aparece em toda busca; escolhe o que soa como você.",
+    about: "Sobre", experience: "Experiência — tópicos reescritos", experienceHint: "Cola cada bloco na descrição do cargo no LinkedIn.",
+    skills: "Competências pra adicionar", skillsHint: "Fixa as cinco primeiras: competência fixada pesa mais no filtro do recrutador.",
+    honest: "Só entrou o que o seu currículo sustenta. Se um termo que falta é verdade sobre você, adiciona por conta — nunca afirma o que não tem.",
+    cta: "LinkedIn completo",
   },
   footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
@@ -598,6 +626,7 @@ const es: typeof en = {
       { t: "Tu CV como página web", b: "Cualquier kit desbloqueado se publica con su propio link — pensado para el celular, amigable con el parser, con PIN si quieres — para compartir por WhatsApp o LinkedIn. Ves cuántas personas lo abrieron." },
       { t: "Carta en cuatro registros, emails que reciben respuesta", b: "En un kit desbloqueado, reescribe la carta formal, cálida, directa o segura, y obtén los tres emails al reclutador — tras postular, agradecimiento, recordatorio amable — escritos desde tu kit y la oferta." },
       { t: "Mira cómo mejoran tus entrevistas", b: "Cada práctica entra en una línea de progreso: puntaje en el tiempo, tu punto fuerte y el débil, y qué ensayar después. Tus números, sin IA." },
+      { t: "Todo tu LinkedIn, para el puesto", b: "En un kit desbloqueado: tres titulares, el Acerca de, cada viñeta de experiencia reescrita, las aptitudes para fijar — y cuánto del vocabulario de búsqueda del puesto cubre ahora tu perfil." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Vista previa", unlocked: "Desbloqueado", voice: "por voz", empty: "Nada aún — tus kits aparecen en cuanto hagas el primero." },
@@ -783,6 +812,7 @@ const es: typeof en = {
     items: {
       publish: { t: "Un CV en la web", d: "Publica el CV con su propio link — pensado para el celular, amigable con el parser, con PIN si quieres — y compártelo por WhatsApp o LinkedIn." },
       letters: { t: "Carta en cuatro registros + emails al reclutador", d: "La carta reescrita formal, cálida, directa o segura, y los tres emails que importan: tras postular, agradecimiento tras la entrevista, un recordatorio amable tras el silencio." },
+      linkedin: { t: "El pase completo de LinkedIn", d: "Tres titulares, el Acerca de, cada viñeta de experiencia reescrita, las aptitudes para fijar — y el chequeo de cobertura de palabras clave del puesto." },
     },
   },
   letters: {
@@ -811,6 +841,18 @@ const es: typeof en = {
     },
     perKit: "Por kit", runs: (n: number) => `${n} práctica${n === 1 ? "" : "s"}`,
     libraryTitle: "Tu progreso", seeAll: "Ver mi progreso →",
+  },
+  linkedin: {
+    eyebrow: "LinkedIn", title: "Todo tu LinkedIn, reescrito para el puesto",
+    intro: "Los reclutadores buscan en LinkedIn por palabras. Este pase pone el vocabulario del puesto donde es cierto de ti — titular, Acerca de, experiencia, aptitudes fijadas — y muestra cuánto cubres ahora.",
+    locked: "Desbloquea el kit para el pase completo de LinkedIn.", generating: "Reescribiendo tu perfil…", generatingHint: "Un solo pase, y queda guardado con el kit.",
+    cached: "Guardado con el kit", copy: "Copiar", copied: "Copiado ✓", forRole: (r: string) => `Para: ${r}`,
+    coverage: "Cobertura de palabras clave del puesto", coverageHint: "Parte de los términos con los que se busca este puesto que ya aparecen en tu titular, Acerca de, experiencia o aptitudes.",
+    headline: "Titular — tres opciones", headlineHint: "220 caracteres máximo. El titular aparece en cada resultado de búsqueda; elige el que suena como tú.",
+    about: "Acerca de", experience: "Experiencia — viñetas reescritas", experienceHint: "Pega cada bloque en la descripción del cargo en LinkedIn.",
+    skills: "Aptitudes para agregar", skillsHint: "Fija las cinco primeras: las aptitudes fijadas pesan más en los filtros de los reclutadores.",
+    honest: "Solo entró lo que tu CV respalda. Si un término que falta es cierto de ti, agrégalo tú — nunca afirmes lo que no tienes.",
+    cta: "Pase completo de LinkedIn",
   },
   footer: "Pagos seguros con Stripe · Sin suscripción",
 };

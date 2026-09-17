@@ -270,6 +270,7 @@ function StartInner() {
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
                   <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
+                  <Link href={`/linkedin/${gen.id}`} className="btn btn-ghost" data-testid="linkedin-link">in · {x.linkedin.cta}</Link>
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>

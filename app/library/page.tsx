@@ -64,6 +64,7 @@ export default function LibraryPage() {
               <div className="flex gap-2">
                 <Link href={`/start?gen=${g.id}`} className="btn btn-ghost !py-1.5 !text-sm">{x.library.open}</Link>
                 <Link href={`/interview/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-practice">🎙 {x.interview.practice}</Link>
+                {g.unlocked && <Link href={`/linkedin/${g.id}`} className="btn btn-ghost !py-1.5 !text-sm" data-testid="library-linkedin">in</Link>}
                 {g.unlocked && <Link href={`/print?id=${g.id}`} target="_blank" className="btn btn-ink !py-1.5 !text-sm">{x.library.print}</Link>}
                 <button onClick={() => { setEditId(g.id); setDraft(g.title); }} className="text-sm text-muted hover:text-ink">{d.library.rename}</button>
                 <button onClick={() => remove(g.id)} className="text-sm text-muted hover:text-oxblood">{d.library.delete}</button>

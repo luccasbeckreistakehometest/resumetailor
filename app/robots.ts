@@ -4,7 +4,7 @@ const BASE = (process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000").repla
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/admin", "/library", "/applications", "/interview", "/print", "/success", "/login", "/signup"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/admin", "/library", "/applications", "/interview", "/linkedin/", "/print", "/success", "/login", "/signup"] },
     sitemap: `${BASE}/sitemap.xml`,
   };
 }
