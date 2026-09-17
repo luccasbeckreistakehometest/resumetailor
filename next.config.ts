@@ -18,7 +18,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // NEXT_DEV_FS_CACHE=0 skips Turbopack's on-disk dev cache (saves ~2 GB of disk) at the price of a
   // much larger dev-server memory footprint — don't use it for the full e2e suite.
-  experimental: { turbopackFileSystemCacheForDev: process.env.NEXT_DEV_FS_CACHE !== "0" },
+  // NEXT_DEV_MEMORY_EVICTION=full (set by the e2e server) makes Turbopack move cold data to that disk
+  // cache instead of holding it in RAM — a full e2e run otherwise pushed the dev server past 12 GB.
+  experimental: {
+    turbopackFileSystemCacheForDev: process.env.NEXT_DEV_FS_CACHE !== "0",
+    ...(process.env.NEXT_DEV_MEMORY_EVICTION === "full" ? { turbopackMemoryEviction: "full" as const } : {}),
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
