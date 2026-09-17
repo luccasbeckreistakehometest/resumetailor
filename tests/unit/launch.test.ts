@@ -57,6 +57,23 @@ describe("env parsing", () => {
     expect(supportContacts()).toEqual({ email: "help@example.com", whatsapp: "5521988887777" });
   });
 
+  it("cookies are Secure in production except on plain-http localhost, and test fixtures need an explicit flag", async () => {
+    const { secureCookies, testFixturesAllowed } = await import("@/lib/server/env");
+    setEnv("NODE_ENV", "production"); setEnv("E2E_TEST_MODE", undefined);
+    setEnv("NEXT_PUBLIC_BASE_URL", "https://resumetailor.marqa.online");
+    expect(secureCookies()).toBe(true);
+    expect(testFixturesAllowed()).toBe(false);
+    setEnv("NEXT_PUBLIC_BASE_URL", "http://localhost:3100");
+    expect(secureCookies()).toBe(false);
+    setEnv("NEXT_PUBLIC_BASE_URL", "http://example.com");
+    expect(secureCookies()).toBe(true);
+    setEnv("E2E_TEST_MODE", "1");
+    expect(testFixturesAllowed()).toBe(true);
+    setEnv("NODE_ENV", "test"); setEnv("E2E_TEST_MODE", undefined);
+    expect(secureCookies()).toBe(false);
+    expect(testFixturesAllowed()).toBe(true);
+  });
+
   it("builds checkout URLs from configuration, never a trailing slash", () => {
     setEnv("NEXT_PUBLIC_BASE_URL", "https://resumetailor.example/");
     expect(baseUrl()).toBe("https://resumetailor.example");

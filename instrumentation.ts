@@ -6,6 +6,9 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   if (process.env.NEXT_PHASE === "phase-production-build") return;
+  if (process.env.NODE_ENV === "production" && process.env.E2E_TEST_MODE === "1") {
+    console.warn("[boot] E2E_TEST_MODE=1: test fixtures (mocked payment lookups) are enabled — never set this on a real server.");
+  }
   try {
     const { ensureAdmin } = await import("@/lib/server/users");
     await ensureAdmin();

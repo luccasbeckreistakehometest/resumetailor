@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+
+/** The database is wiped by scripts/e2e-server.sh before the server starts; only the payment mocks' folder is ensured here. */
 export default async function globalSetup() {
-  // With E2E_REUSE=1 the server is already running on this database; the caller wiped it before starting it.
-  if (process.env.E2E_REUSE === "1") return;
-  fs.rmSync(path.join(process.cwd(), "data", "e2e"), { recursive: true, force: true });
+  fs.mkdirSync(path.join(process.cwd(), "data", "e2e", "mp"), { recursive: true });
 }

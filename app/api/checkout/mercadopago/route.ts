@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { currentUser } from "@/lib/server/session";
 import { packByKey } from "@/lib/packs";
-import { baseUrl, secretEnv } from "@/lib/server/env";
+import { baseUrl, secretEnv, testFixturesAllowed } from "@/lib/server/env";
 import { jsonError } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const { pack: packKey } = await request.json().catch(() => ({}));
   const pack = packByKey(String(packKey ?? "1"));
   const origin = baseUrl();
-  if (process.env.MP_API_MOCK_DIR && process.env.NODE_ENV !== "production") {
+  if (process.env.MP_API_MOCK_DIR && testFixturesAllowed()) {
     // e2e: no real preference; the test drives /success and the webhook with mocked payments.
     return NextResponse.json({ url: `${origin}/success?provider=mp&mock=1` });
   }

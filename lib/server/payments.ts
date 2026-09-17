@@ -1,6 +1,6 @@
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { findById, moveCredits } from "@/lib/server/users";
-import { secretEnv } from "@/lib/server/env";
+import { secretEnv, testFixturesAllowed } from "@/lib/server/env";
 
 export type Provider = "stripe" | "mercadopago";
 export type SettleStatus = "approved" | "rejected" | "pending";
@@ -123,7 +123,7 @@ export function applyMpAction(a: MpAction): { granted: boolean; reversed: number
 export async function fetchMpPayment(paymentId: string): Promise<{ ok: true; payment: MpPayment } | { ok: false; status: number }> {
   const token = secretEnv("MP_ACCESS_TOKEN");
   if (!token) return { ok: false, status: 503 };
-  if (process.env.MP_API_MOCK_DIR) return fetchMockPayment(paymentId);
+  if (process.env.MP_API_MOCK_DIR && testFixturesAllowed()) return fetchMockPayment(paymentId);
   const res = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(paymentId)}`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10_000) });
   if (!res.ok) return { ok: false, status: res.status };
   return { ok: true, payment: (await res.json()) as MpPayment };
@@ -131,7 +131,6 @@ export async function fetchMpPayment(paymentId: string): Promise<{ ok: true; pay
 
 /** e2e only: payments are JSON files in MP_API_MOCK_DIR, written by the test. */
 async function fetchMockPayment(paymentId: string): Promise<{ ok: true; payment: MpPayment } | { ok: false; status: number }> {
-  if (process.env.NODE_ENV === "production") return { ok: false, status: 503 };
   const fs = await import("node:fs");
   const path = await import("node:path");
   const file = path.join(process.env.MP_API_MOCK_DIR!, `${paymentId.replace(/[^\w-]/g, "")}.json`);

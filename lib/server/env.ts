@@ -31,6 +31,21 @@ export function envNumber(name: string, fallback: number): number {
 export const isProduction = () => process.env.NODE_ENV === "production";
 
 /**
+ * Test-only fixtures (mocked payment lookups) are refused by a production server unless the e2e
+ * script says otherwise with E2E_TEST_MODE=1 — never set that on a real server.
+ */
+export const testFixturesAllowed = () => !isProduction() || process.env.E2E_TEST_MODE === "1";
+
+/**
+ * Cookies are Secure in production. The one exception is a production build served over plain
+ * http://localhost (the e2e suite), where a Secure cookie could not be sent back.
+ */
+export function secureCookies(): boolean {
+  if (!isProduction()) return false;
+  return !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(baseUrl());
+}
+
+/**
  * The public origin (no trailing slash). Checkout return URLs and payment notifications are
  * built from this and never from the request's Origin header.
  */

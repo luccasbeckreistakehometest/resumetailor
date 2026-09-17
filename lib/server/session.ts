@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { ANON_COOKIE, SESSION_COOKIE, newAnonId, signSession, verifySession, type SessionPayload } from "@/lib/server/auth";
 import { ensureAdmin, findById, toPublic, type PublicUser, type UserRow } from "@/lib/server/users";
+import { secureCookies } from "@/lib/server/env";
 
 export async function getSession(): Promise<SessionPayload | null> {
   return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
@@ -45,7 +46,7 @@ export async function ownerKey(): Promise<{ userId: string | null; anonId: strin
 
 export const ANON_COOKIE_OPTIONS = {
   httpOnly: true, sameSite: "lax" as const, path: "/", maxAge: 60 * 60 * 24 * 365,
-  secure: process.env.NODE_ENV === "production",
+  secure: secureCookies(),
 };
 export const SESSION_COOKIE_OPTIONS = { ...ANON_COOKIE_OPTIONS, maxAge: 60 * 60 * 24 * 30 };
 

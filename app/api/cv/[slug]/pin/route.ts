@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getPublicBySlug, pinCookieName, pinToken, verifyPin } from "@/lib/server/publicResumes";
 import { requestIp, jsonError } from "@/lib/server/http";
 import { allowed, take } from "@/lib/server/ratelimit";
+import { secureCookies } from "@/lib/server/env";
 
 const schema = z.object({ pin: z.string().min(1).max(12) });
 
@@ -29,6 +30,6 @@ export async function POST(request: Request, ctx: { params: Promise<{ slug: stri
     return jsonError("pin_wrong", 403);
   }
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(pinCookieName(slug), pinToken(row), { httpOnly: true, sameSite: "lax", path: `/cv/${slug}`, maxAge: 60 * 60 * 24 * 30, secure: process.env.NODE_ENV === "production" });
+  res.cookies.set(pinCookieName(slug), pinToken(row), { httpOnly: true, sameSite: "lax", path: `/cv/${slug}`, maxAge: 60 * 60 * 24 * 30, secure: secureCookies() });
   return res;
 }
