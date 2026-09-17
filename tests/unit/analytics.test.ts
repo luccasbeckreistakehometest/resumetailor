@@ -5,10 +5,12 @@ import path from "node:path";
 const DIR = path.join(process.cwd(), "data", "unit-analytics");
 process.env.DATA_DIR = DIR;
 process.env.ANALYTICS_EVENTS_PER_VISITOR_DAY = "8";
+process.env.RL_ANALYTICS_IP_HOUR = "12";
+process.env.RL_ANALYTICS_NEW_VISITOR_IP_DAY = "3";
 fs.rmSync(DIR, { recursive: true, force: true });
 
-const { parseUtm, isBot, cleanProps, refHost, isEventName } = await import("@/lib/analytics/events");
-const { recordAnalytics, acquisitionReport, purgeOld, linkVisitor } = await import("@/lib/server/analytics");
+const { parseUtm, isBot, cleanProps, refHost, isEventName, isClientEventName } = await import("@/lib/analytics/events");
+const { recordAnalytics, acquisitionReport, purgeOld, linkVisitor, admitBeacon } = await import("@/lib/server/analytics");
 const { getDb } = await import("@/lib/server/db");
 const { createUser } = await import("@/lib/server/users");
 const { settlePayment } = await import("@/lib/server/payments");
@@ -31,6 +33,12 @@ describe("analytics helpers", () => {
     expect(refHost("https://www.google.com/search?q=cv", "resumetailor.test")).toBe("google.com");
     expect(refHost("https://resumetailor.test/pricing", "resumetailor.test")).toBe("");
     expect(isEventName("hack")).toBe(false);
+  });
+  it("lets the browser report only what happens in the browser; conversions are server-only", () => {
+    for (const n of ["page_view", "cta_click", "lang_switch", "ats_check_run", "compare_run"]) expect(isClientEventName(n), n).toBe(true);
+    for (const n of ["purchase", "signup", "unlock", "preview_ready", "checkout_start", "voucher_redeem", "export_docx", "tour_start", "hack"]) {
+      expect(isClientEventName(n), n).toBe(false);
+    }
   });
 });
 
@@ -70,5 +78,23 @@ describe("funnel", () => {
     const before = (db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n;
     expect(purgeOld(new Date(), true)).toBe(1);
     expect((db.prepare("SELECT COUNT(*) n FROM events").get() as { n: number }).n).toBe(before - 1);
+  });
+});
+
+describe("beacon admission", () => {
+  it("drops beacons without a cookie, caps new visitors per IP, and caps events per IP", () => {
+    expect(admitBeacon({ hasCookie: false, visitorId: "anon_nocookie", ip: "198.51.100.1" })).toBe(false);
+    // Made-up cookies from one IP: only 3 never-seen visitors a day get in.
+    const fresh = [0, 1, 2, 3, 4].map((i) => {
+      const ok = admitBeacon({ hasCookie: true, visitorId: `anon_forged_${i}`, ip: "198.51.100.2" });
+      if (ok) recordAnalytics({ name: "page_view", visitorId: `anon_forged_${i}`, path: "/x" });
+      return ok;
+    });
+    expect(fresh).toEqual([true, true, true, false, false]);
+    // A visitor we already know keeps counting from that IP, until the hourly IP budget (12) runs out.
+    const known = Array.from({ length: 10 }, () => admitBeacon({ hasCookie: true, visitorId: "anon_forged_0", ip: "198.51.100.2" }));
+    expect(known.filter(Boolean)).toHaveLength(7);
+    // Another IP is not affected.
+    expect(admitBeacon({ hasCookie: true, visitorId: "anon_other_ip", ip: "198.51.100.3" })).toBe(true);
   });
 });

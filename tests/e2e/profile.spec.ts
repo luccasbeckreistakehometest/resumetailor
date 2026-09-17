@@ -77,4 +77,17 @@ test.describe("saved base résumé", () => {
     expect((await fresh.request.put("http://localhost:3100/api/profile", { data: { resume: SAMPLE_RESUME } })).status()).toBe(403);
     await fresh.close();
   });
+
+  test("profile writes are capped per IP (30 an hour), however many cookies are used", async ({ browser }) => {
+    const ctx = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.204.0.31" } });
+    const statuses: number[] = [];
+    for (let i = 0; i < 31; i++) {
+      await ctx.clearCookies();
+      await ctx.request.get("http://localhost:3100/api/profile");
+      statuses.push((await ctx.request.put("http://localhost:3100/api/profile", { data: { resume: `Profile number ${i} — some résumé text here.` } })).status());
+    }
+    expect(statuses.slice(0, 30).every((s) => s === 200)).toBe(true);
+    expect(statuses[30]).toBe(429);
+    await ctx.close();
+  });
 });

@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { withOwner, bad } from "@/lib/server/http";
+import { withOwner, bad, limited } from "@/lib/server/http";
+import { take } from "@/lib/server/ratelimit";
 import { PROFILE_RESUME_MAX, deleteProfile, getProfile, saveProfile } from "@/lib/server/profiles";
 import { parseFacts } from "@/lib/profile/facts";
 
@@ -21,6 +22,8 @@ export async function PUT(request: Request) {
   return withOwner(async (owner) => {
     if (!parsed.success) return bad("check_fields");
     if (owner.isNewAnon) return bad("forbidden", 403);
+    const over = take("PROFILE_WRITE_IP_HOUR", owner.ip);
+    if (!over.ok) return limited(over);
     const { resume, facts, replaceFacts } = parsed.data;
     const profile = saveProfile(owner.key, { resume, facts: facts === undefined ? undefined : parseFacts(facts), replaceFacts });
     return { body: { profile } };

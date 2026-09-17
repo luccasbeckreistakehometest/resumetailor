@@ -1,6 +1,7 @@
 import { getDb, getSetting, nowIso, setSetting } from "@/lib/server/db";
 import { envNumber } from "@/lib/server/env";
 import { cleanProps, type EventName, type Utm } from "@/lib/analytics/events";
+import { take } from "@/lib/server/ratelimit";
 
 /**
  * The first-party event store. Visitors are the existing visitor cookie (or, once signed in, the
@@ -43,6 +44,19 @@ export function recordAnalytics(e: EventInput, now = new Date()): boolean {
     console.error("recordAnalytics", error);
     return false;
   }
+}
+
+/**
+ * Whether a browser beacon is stored. A visitor cookie can be made up, so the limits are per IP:
+ * a beacon without any cookie is dropped (every page of ours sets one first), each IP has an
+ * hourly event budget, and only so many never-seen visitors a day may start from one IP.
+ */
+export function admitBeacon(input: { hasCookie: boolean; visitorId: string | null; ip: string }): boolean {
+  if (!input.hasCookie || !input.visitorId) return false;
+  if (!take("ANALYTICS_IP_HOUR", input.ip).ok) return false;
+  const known = getDb().prepare("SELECT 1 FROM attribution WHERE visitorId = ?").get(input.visitorId);
+  if (!known && !take("ANALYTICS_NEW_VISITOR_IP_DAY", input.ip).ok) return false;
+  return true;
 }
 
 /** At most once a day: events older than the retention window go. */

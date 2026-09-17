@@ -1,6 +1,6 @@
 "use client";
 
-import type { EventName } from "@/lib/analytics/events";
+import type { ClientEventName } from "@/lib/analytics/events";
 
 /** Visitors who asked not to be tracked (Global Privacy Control / Do Not Track) send nothing. */
 export function trackingAllowed(): boolean {
@@ -25,7 +25,7 @@ export function sessionId(now = Date.now()): { id: string; fresh: boolean } {
 }
 
 /** Fire-and-forget, survives navigation (sendBeacon), same-origin only. */
-export function track(name: EventName, props?: Record<string, string | number | boolean>, extra: Record<string, unknown> = {}): void {
+export function track(name: ClientEventName, props?: Record<string, string | number | boolean>, extra: Record<string, unknown> = {}): void {
   if (!trackingAllowed()) return;
   const lang = document.documentElement.lang || "en";
   const body = JSON.stringify({ name, props, path: location.pathname, lang, sessionId: sessionId().id, ...extra });

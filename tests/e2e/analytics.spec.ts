@@ -35,10 +35,18 @@ test.describe("first-party analytics", () => {
     await admin.close();
   });
 
-  test("the collector refuses unknown names, ignores crawlers, and the pages load no third-party script", async ({ page, request, browser }) => {
+  test("the collector refuses unknown and server-only names, ignores crawlers and cookieless calls, and the pages load no third-party script", async ({ page, request, browser }) => {
+    // No page of ours was loaded, so no visitor cookie: accepted, stored nowhere.
+    const bare = await browser.newContext();
+    expect((await bare.request.post("http://localhost:3100/api/e", { data: { name: "page_view", path: "/probe-nocookie" } })).status()).toBe(204);
+    await bare.close();
     await page.goto("/");
     await skipTour(page);
     expect((await page.request.post("/api/e", { data: { name: "hack" } })).status()).toBe(400);
+    // Conversions are recorded by the server only: a browser cannot post a purchase or a signup.
+    for (const name of ["purchase", "signup", "unlock", "preview_ready"]) {
+      expect((await page.request.post("/api/e", { data: { name, path: "/probe-fake-purchase" } })).status(), name).toBe(400);
+    }
     expect((await page.request.post("/api/e", { data: { name: "cta_click", path: "/probe-valid", props: { angle: "x" } } })).status()).toBe(204);
 
     const bot = await browser.newContext({ userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
@@ -54,6 +62,7 @@ test.describe("first-party analytics", () => {
     const full = await (await ap.request.get("/api/admin/acquisition?days=7")).json();
     const landings = full.byLanding.map((r: { landing: string }) => r.landing);
     expect(landings).not.toContain("/probe-googlebot");
+    expect(landings).not.toContain("/probe-nocookie");
     await admin.close();
 
     for (const path of ["/", "/pt", "/pt/precos", "/start"]) {

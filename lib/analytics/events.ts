@@ -10,6 +10,17 @@ export const EVENT_NAMES = [
 export type EventName = (typeof EVENT_NAMES)[number];
 export const isEventName = (v: unknown): v is EventName => typeof v === "string" && (EVENT_NAMES as readonly string[]).includes(v);
 
+/**
+ * What the browser beacon may report. Conversions (preview, signup, unlock, checkout, purchase,
+ * codes, exports, tours…) are recorded only by the server, where they actually happen, so nobody
+ * can post a fake purchase into the funnel.
+ */
+export const CLIENT_EVENT_NAMES = [
+  "page_view", "cta_click", "lang_switch", "start_choose", "start_mode", "voice_start", "ats_check_run", "compare_run", "share_click",
+] as const satisfies readonly EventName[];
+export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number];
+export const isClientEventName = (v: unknown): v is ClientEventName => typeof v === "string" && (CLIENT_EVENT_NAMES as readonly string[]).includes(v);
+
 export interface Utm { source: string; medium: string; campaign: string; content: string; term: string }
 const MAX = 100;
 const clip = (v: string | null | undefined) => (v ?? "").trim().toLowerCase().replace(/\s+/g, "_").slice(0, MAX);
