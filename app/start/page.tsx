@@ -8,6 +8,7 @@ import { MatchScore } from "@/components/MatchScore";
 import { CompanyInsights } from "@/components/CompanyInsights";
 import { PersonalisationMeter } from "@/components/PersonalisationMeter";
 import { PublishPanel } from "@/components/PublishPanel";
+import { LetterStudio } from "@/components/LetterStudio";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
@@ -273,7 +274,7 @@ function StartInner() {
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
                 <div className="mt-6"><PublishPanel key={gen.id} gen={gen} /></div>
-                <Section title={d.quiz.result.coverPreview.replace(" preview", "")} body={gen.kit.coverLetter} />
+                <LetterStudio key={`letters-${gen.id}-${gen.deepened}`} gen={gen} />
                 <Section title="LinkedIn" body={gen.kit.linkedinAbout} />
                 <div className="mt-6">
                   <p className="eyebrow">{d.prep.title}</p>

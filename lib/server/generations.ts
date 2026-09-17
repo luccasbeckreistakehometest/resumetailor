@@ -3,6 +3,7 @@ import { moveCredits } from "@/lib/server/users";
 import type { Kit } from "@/lib/ai/kit";
 import { personalisation } from "@/lib/ats/personalisation";
 import { getPublicByGeneration, serialisePublic } from "@/lib/server/publicResumes";
+import { clearVariants } from "@/lib/server/variants";
 
 export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
@@ -64,8 +65,12 @@ export function unlockGeneration(id: string, userId: string): { ok: true; credit
 
 /** Replaces the kit in place after a deepening pass. Unlock state and ownership are untouched; no credit moves. */
 export function deepenGeneration(id: string, kit: Kit, model: string, costUsd: number): GenerationRow {
-  getDb().prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ?, deepened = deepened + 1 WHERE id = ?")
-    .run(JSON.stringify(kit), kit.matchBefore, kit.matchAfter, titleFrom(kit), model, costUsd, id);
+  const db = getDb();
+  db.transaction(() => {
+    db.prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ?, deepened = deepened + 1 WHERE id = ?")
+      .run(JSON.stringify(kit), kit.matchBefore, kit.matchAfter, titleFrom(kit), model, costUsd, id);
+    clearVariants(id);   // letters, emails and the LinkedIn pass were written from the old text
+  })();
   return getGeneration(id)!;
 }
 

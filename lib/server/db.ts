@@ -186,6 +186,20 @@ function migrate(d: Database.Database): void {
       updatedAt TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_public_user ON public_resumes(userId, updatedAt DESC);
+
+    -- Texts grown from an unlocked kit (cover letter in another tone, recruiter emails, the
+    -- LinkedIn pass): one cached row per kit + kind, cleared when the kit itself is rewritten.
+    CREATE TABLE IF NOT EXISTS kit_variants (
+      id TEXT PRIMARY KEY,
+      generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,                          -- cover:<tone> | email:<moment> | linkedin
+      subject TEXT NOT NULL DEFAULT '',
+      body TEXT NOT NULL,                          -- text, or JSON for structured kinds
+      model TEXT NOT NULL DEFAULT '',
+      costUsd REAL NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      UNIQUE(generationId, kind)
+    );
   `);
   addColumn(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
 }
