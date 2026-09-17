@@ -248,6 +248,7 @@ function StartInner() {
                 <p className="text-sm font-medium text-moss">✓ {x.credits.unlocked}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
+                  <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
                   <Link href="/library" className="btn btn-ghost">{d.nav.myCVs}</Link>
                 </div>
                 <Section title={d.quiz.result.coverPreview.replace(" preview", "")} body={gen.kit.coverLetter} />
@@ -279,6 +280,10 @@ function StartInner() {
                   )}
                 </div>
                 {error && <p className="mt-3 text-sm text-oxblood" role="alert">{error}</p>}
+                <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-edge pt-5">
+                  <Link href={`/interview/${gen.id}`} className="btn btn-ghost !py-2 !text-sm" data-testid="practice">🎙 {x.interview.practice}</Link>
+                  <span className="text-xs text-muted">{x.interview.previewBadge}</span>
+                </div>
               </div>
             )}
           </div>

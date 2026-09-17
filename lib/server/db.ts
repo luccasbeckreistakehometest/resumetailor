@@ -105,5 +105,27 @@ function migrate(d: Database.Database): void {
       generationId TEXT,
       createdAt TEXT NOT NULL
     );
+
+    -- A mock interview run against one kit: the questions asked, every answer with its scores,
+    -- and the closing summary. Anonymous visitors own rows through the cookie, like generations.
+    CREATE TABLE IF NOT EXISTS interview_sessions (
+      id TEXT PRIMARY KEY,
+      userId TEXT REFERENCES users(id) ON DELETE SET NULL,
+      anonId TEXT,
+      generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+      lang TEXT NOT NULL DEFAULT 'en',
+      mode TEXT NOT NULL DEFAULT 'full',           -- full | preview (locked kit: two questions)
+      status TEXT NOT NULL DEFAULT 'active',       -- active | done
+      questions TEXT NOT NULL,                     -- JSON [{ kind, text }]
+      turns TEXT NOT NULL DEFAULT '[]',            -- JSON [{ questionIdx, answer, source, scores, coaching, modelAnswer, at }]
+      summary TEXT,                                -- JSON { rehearse, overall } once finished
+      model TEXT NOT NULL DEFAULT '',
+      costUsd REAL NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      completedAt TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_interview_user ON interview_sessions(userId, createdAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_interview_anon ON interview_sessions(anonId, createdAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_interview_gen ON interview_sessions(generationId, createdAt DESC);
   `);
 }

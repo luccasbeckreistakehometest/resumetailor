@@ -66,6 +66,7 @@ export function claimAnonymous(userId: string, anonId: string | undefined): void
   if (!anonId) return;
   const db = getDb();
   db.prepare("UPDATE generations SET userId = ?, anonId = NULL WHERE anonId = ? AND userId IS NULL").run(userId, anonId);
+  db.prepare("UPDATE interview_sessions SET userId = ?, anonId = NULL WHERE anonId = ? AND userId IS NULL").run(userId, anonId);
   type Onb = { events: string; tourCompleted: number; tourStep: number; firstSeenAt: string; completedAt: string | null };
   const onb = db.prepare("SELECT * FROM onboarding WHERE id = ?").get(anonId) as Onb | undefined;
   if (onb && !db.prepare("SELECT 1 FROM onboarding WHERE id = ?").get(userId)) {

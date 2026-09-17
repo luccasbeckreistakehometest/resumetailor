@@ -16,6 +16,9 @@ export async function GET() {
       aiCostUsd: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM generations").c,
       toursStarted: one<{ n: number }>("SELECT COUNT(*) n FROM onboarding").n,
       toursCompleted: one<{ n: number }>("SELECT COUNT(*) n FROM onboarding WHERE tourCompleted=1").n,
+      interviews: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions").n,
+      interviewsDone: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions WHERE status='done'").n,
+      interviewCostUsd: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM interview_sessions").c,
     },
     revenue: all<{ currency: string; total: number; count: number }>("SELECT currency, SUM(amount) total, COUNT(*) count FROM payments WHERE status='approved' GROUP BY currency"),
     byDay: all<{ day: string; generations: number; unlocks: number }>("SELECT substr(createdAt,1,10) day, COUNT(*) generations, SUM(unlocked) unlocks FROM generations GROUP BY day ORDER BY day DESC LIMIT 30"),
@@ -24,5 +27,6 @@ export async function GET() {
     payments: all("SELECT p.id,p.provider,p.pack,p.credits,p.amount,p.currency,p.status,p.createdAt,u.email FROM payments p LEFT JOIN users u ON u.id=p.userId ORDER BY p.createdAt DESC LIMIT 100"),
     onboarding: all("SELECT id,tourCompleted,tourStep,firstSeenAt,completedAt,events FROM onboarding ORDER BY firstSeenAt DESC LIMIT 100"),
     voiceBriefings: all("SELECT id,ownerId,lang,substr(transcript,1,300) transcript,createdAt FROM voice_briefings ORDER BY createdAt DESC LIMIT 50"),
+    interviews: all("SELECT s.id,s.mode,s.status,s.lang,s.costUsd,s.createdAt,s.completedAt,json_array_length(s.questions) questions,json_array_length(s.turns) answered,g.title kitTitle,COALESCE(u.email,s.anonId) owner FROM interview_sessions s JOIN generations g ON g.id=s.generationId LEFT JOIN users u ON u.id=s.userId ORDER BY s.createdAt DESC LIMIT 100"),
   });
 }

@@ -10,8 +10,8 @@ import { useI18n } from "@/app/i18n/I18nProvider";
  * replays, and the first session's actions are logged with it.
  */
 type Rect = { top: number; left: number; width: number; height: number };
-const ANCHORS = ["nav-start", "choose", "credits", "nav-library"];
-const ROUTE_FOR: Record<string, string> = { "nav-start": "/", choose: "/start", credits: "/start", "nav-library": "/start" };
+const ANCHORS = ["nav-start", "choose", "credits", "nav-library", "interview"];
+const ROUTE_FOR: Record<string, string> = { "nav-start": "/", choose: "/start", credits: "/start", "nav-library": "/start", interview: "/library" };
 
 export function Tour() {
   const { x } = useI18n();
@@ -89,7 +89,7 @@ export function Tour() {
   return (
     <>
       <div className="tour-mask"><div className="tour-hole" style={rect ? { top: rect.top, left: rect.left, width: rect.width, height: rect.height } : { top: -9999, left: -9999, width: 0, height: 0 }} /></div>
-      <div className="tour-card card p-5" style={cardStyle} data-testid="tour-step" data-step={step}>
+      <div className="tour-card card p-5" style={cardStyle} data-testid="tour-step" data-step={step} data-total={ANCHORS.length}>
         <p className="eyebrow">{step + 1} / {ANCHORS.length}</p>
         <p className="font-display mt-1 text-xl text-ink">{s.t}</p>
         <p className="mt-2 text-sm text-ink-2">{s.b}</p>

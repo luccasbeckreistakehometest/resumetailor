@@ -5,13 +5,19 @@ test("first visit offers the tour, it walks across pages, and never comes back o
   await expect(page.getByTestId("tour-welcome")).toBeVisible();
   await page.getByTestId("tour-start").click();
   await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "0");
-  await page.getByTestId("tour-next").click();
-  // step 2 lives on /start — the tour navigates there itself
-  await expect(page).toHaveURL(/\/start/);
-  await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "1");
-  await page.getByTestId("tour-next").click();
-  await page.getByTestId("tour-next").click();
-  await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", "3");
+  const total = Number(await page.getByTestId("tour-step").getAttribute("data-total"));
+  expect(total).toBeGreaterThanOrEqual(5);
+
+  const visited: string[] = [];
+  for (let i = 1; i < total; i++) {
+    await page.getByTestId("tour-next").click();
+    await expect(page.getByTestId("tour-step")).toHaveAttribute("data-step", String(i));
+    await page.waitForTimeout(200);
+    visited.push(new URL(page.url()).pathname);
+  }
+  // step 2 lives on /start — the tour navigates there itself; the feature steps each open their own page
+  expect(visited[0]).toBe("/start");
+  expect(visited).toContain("/library");
   await page.getByTestId("tour-next").click();
   await expect(page.getByTestId("tour-step")).toBeHidden();
 

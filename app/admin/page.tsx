@@ -10,7 +10,7 @@ type Row = Record<string, string | number | null>;
 type Overview = {
   totals: Record<string, number>; revenue: { currency: string; total: number; count: number }[];
   byDay: { day: string; generations: number; unlocks: number }[]; users: Row[]; recent: Row[]; payments: Row[];
-  onboarding: (Row & { events: string })[]; voiceBriefings: Row[];
+  onboarding: (Row & { events: string })[]; voiceBriefings: Row[]; interviews: Row[];
 };
 
 export default function AdminPage() {
@@ -18,7 +18,7 @@ export default function AdminPage() {
   const { user, loading } = useAuth();
   const [data, setData] = useState<Overview | null>(null);
   const [grant, setGrant] = useState<{ userId: string; delta: string }>({ userId: "", delta: "1" });
-  const [tab, setTab] = useState<"recent" | "users" | "payments" | "onboarding" | "voice">("recent");
+  const [tab, setTab] = useState<"recent" | "users" | "payments" | "onboarding" | "voice" | "interviews">("recent");
 
   const load = () => fetch("/api/admin/overview", { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then(setData);
   useEffect(() => { if (user?.role === "admin") void load(); }, [user]);
@@ -40,9 +40,10 @@ export default function AdminPage() {
         <h1 className="font-display mt-2 text-4xl text-ink">{x.admin.title}</h1>
         {data && (
           <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-6" data-testid="admin-totals">
+            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-7" data-testid="admin-totals">
               {[[x.admin.users, data.totals.users], [x.admin.generations, data.totals.generations], [x.admin.unlocked, data.totals.unlocked], [x.admin.voice, data.totals.voice],
-                [x.admin.tours, `${data.totals.toursCompleted}/${data.totals.toursStarted}`], [x.admin.aiCost, `$${data.totals.aiCostUsd.toFixed(2)}`]].map(([k, v]) => (
+                [x.admin.interviews, `${data.totals.interviewsDone}/${data.totals.interviews}`],
+                [x.admin.tours, `${data.totals.toursCompleted}/${data.totals.toursStarted}`], [x.admin.aiCost, `$${(data.totals.aiCostUsd + data.totals.interviewCostUsd).toFixed(2)}`]].map(([k, v]) => (
                 <div key={String(k)} className="card p-4"><p className="eyebrow">{k}</p><p className="font-display mt-1 text-3xl text-ink">{v}</p></div>
               ))}
             </div>
@@ -63,9 +64,9 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-8 flex gap-2 border-b border-edge">
-              {(["recent", "users", "payments", "onboarding", "voice"] as const).map((t) => (
+              {(["recent", "users", "payments", "onboarding", "voice", "interviews"] as const).map((t) => (
                 <button key={t} onClick={() => setTab(t)} className={"px-3 py-2 text-sm font-medium " + (tab === t ? "border-b-2 border-ink text-ink" : "text-muted")}>
-                  {{ recent: x.admin.recent, users: x.admin.users, payments: x.admin.payments, onboarding: x.admin.onboarding, voice: x.admin.voice }[t]}
+                  {{ recent: x.admin.recent, users: x.admin.users, payments: x.admin.payments, onboarding: x.admin.onboarding, voice: x.admin.voice, interviews: x.admin.interviews }[t]}
                 </button>
               ))}
             </div>
@@ -75,6 +76,7 @@ export default function AdminPage() {
               {tab === "payments" && <Table cols={[x.admin.when, x.admin.email, x.admin.provider, "Pack", x.admin.credits, x.admin.amount, x.admin.status]} rows={data.payments.map((p) => [fmtDate(p.createdAt), p.email, p.provider, p.pack, p.credits, `${p.currency} ${Number(p.amount).toFixed(2)}`, p.status])} />}
               {tab === "onboarding" && <Table cols={["Owner", "Tour", "Step", "First seen", x.admin.events]} rows={data.onboarding.map((o) => [String(o.id).slice(0, 18), o.tourCompleted ? "✓" : "—", o.tourStep, fmtDate(o.firstSeenAt), (JSON.parse(o.events) as { type: string }[]).map((e) => e.type).join(" → ")])} />}
               {tab === "voice" && <Table cols={[x.admin.when, "Owner", "Lang", "Transcript"]} rows={data.voiceBriefings.map((v) => [fmtDate(v.createdAt), String(v.ownerId).slice(0, 18), v.lang, v.transcript])} />}
+              {tab === "interviews" && <Table cols={[x.admin.when, "Owner", "Kit", x.admin.mode, x.admin.status, "Q", "Lang", x.admin.aiCost]} rows={data.interviews.map((s) => [fmtDate(s.createdAt), s.owner, s.kitTitle, s.mode, s.status, `${s.answered}/${s.questions}`, s.lang, `$${Number(s.costUsd).toFixed(3)}`])} />}
             </div>
           </>
         )}
