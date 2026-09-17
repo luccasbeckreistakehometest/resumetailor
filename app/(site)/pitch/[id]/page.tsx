@@ -212,7 +212,7 @@ export default function PitchStudio() {
             {mediaNote && <p className="mt-2 text-sm text-muted">{mediaNote}</p>}
             {take && phase === "done" && (
               <div className="mt-3 rounded-xl bg-paper p-3 text-sm">
-                <a href={take.url} download={`pitch-${seconds}s.${ext}`} className="font-semibold text-oxblood" data-testid="pitch-download" data-size={take.size}>⬇ {P.download}</a>
+                <a href={take.url} download={`pitch-${seconds}s.${ext}`} className="font-semibold text-oxblood" data-testid="pitch-download" data-size={take.size} data-type={take.type}>⬇ {P.download}</a>
                 <p className="mt-1 text-xs text-muted">{P.localOnly}</p>
               </div>
             )}

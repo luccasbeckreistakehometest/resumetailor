@@ -29,12 +29,17 @@ test.describe("pitch studio", () => {
     await page.evaluate(() => (window as unknown as W).__rtVoiceHear("Hi, I'm Alex, um, and like, I grew qualified pipeline 38% at Acme with a team of four people."));
     await page.waitForTimeout(3000);
     await page.getByTestId("pitch-stop").click();
+    // A real video take: the camera is allowed by the site's own Permissions-Policy (an audio-only
+    // fallback would still download a non-empty file, so check the preview and the file type).
+    await expect(page.getByTestId("pitch-preview")).toBeVisible({ timeout: 10_000 });
+    expect(await page.evaluate(() => (document as Document & { featurePolicy?: { allowsFeature: (f: string) => boolean } }).featurePolicy?.allowsFeature("camera") ?? true)).toBe(true);
     const link = page.getByTestId("pitch-download");
     await expect(link).toBeVisible({ timeout: 10_000 });
     expect(Number(await link.getAttribute("data-size"))).toBeGreaterThan(0);
     const [download] = await Promise.all([page.waitForEvent("download"), link.click()]);
     expect(fs.statSync(await download.path()).size).toBeGreaterThan(0);
     expect(download.suggestedFilename()).toMatch(/^pitch-60s\.(webm|mp4)$/);
+    expect(await link.getAttribute("data-type")).toMatch(/^video\//);
     await expect(page.getByTestId("delivery-fillers")).toContainText("um ×1, like ×1");
 
     await page.getByTestId("pitch-rate").click();
