@@ -38,6 +38,7 @@ export default function Home() {
               <Link href="/start?via=voice" className="btn btn-ghost">🎙 {x.choose.talk.t}</Link>
             </div>
             <p className="mt-4 text-sm text-muted">{L.hero.fine}</p>
+            <p className="mt-2 text-sm"><Link href="/ats-check" className="font-medium text-oxblood underline-offset-4 hover:underline" data-testid="hero-ats">{x.ats.landingLink}</Link></p>
           </div>
           <div className="relative">
             <div className="absolute -inset-3 -rotate-1 rounded-2xl bg-surface shadow-[var(--shadow)]" aria-hidden />
