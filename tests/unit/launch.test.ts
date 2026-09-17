@@ -103,6 +103,31 @@ describe("env parsing", () => {
   });
 });
 
+describe("cross-site guard", () => {
+  it("accepts the app's own pages and refuses sibling sites, opaque origins and cross-site fetches", async () => {
+    const { isSameOriginRequest, isSafeMethod, ORIGIN_EXEMPT } = await import("@/lib/server/origin");
+    const base = "https://resumetailor.marqa.online";
+    const req = (origin: string | null, extra: Partial<{ secFetchSite: string; host: string; forwardedHost: string }> = {}) =>
+      ({ origin, secFetchSite: extra.secFetchSite ?? null, host: extra.host ?? "localhost:3000", forwardedHost: extra.forwardedHost ?? null });
+    expect(isSameOriginRequest(req("https://resumetailor.marqa.online"), base)).toBe(true);
+    // Behind Caddy the app sees Host localhost:3000 and X-Forwarded-Host with the public name.
+    expect(isSameOriginRequest(req("https://betmatic.marqa.online", { forwardedHost: "resumetailor.marqa.online" }), base)).toBe(false);
+    expect(isSameOriginRequest(req("https://marqa.online"), base)).toBe(false);
+    expect(isSameOriginRequest(req("null"), base)).toBe(false);
+    expect(isSameOriginRequest(req("not a url"), base)).toBe(false);
+    // A local server reached by another name (127.0.0.1 vs localhost) matches its own Host header.
+    expect(isSameOriginRequest(req("http://127.0.0.1:3100", { host: "127.0.0.1:3100" }), "http://localhost:3100")).toBe(true);
+    expect(isSameOriginRequest(req("http://evil.test", { host: "127.0.0.1:3100" }), "http://localhost:3100")).toBe(false);
+    // No Origin: fine for same-origin navigations and non-browser clients, not for cross-site fetches.
+    expect(isSameOriginRequest(req(null), base)).toBe(true);
+    expect(isSameOriginRequest(req(null, { secFetchSite: "same-origin" }), base)).toBe(true);
+    expect(isSameOriginRequest(req(null, { secFetchSite: "same-site" }), base)).toBe(false);
+    expect(isSameOriginRequest(req(null, { secFetchSite: "cross-site" }), base)).toBe(false);
+    expect(isSafeMethod("GET") && isSafeMethod("HEAD") && !isSafeMethod("POST") && !isSafeMethod("DELETE")).toBe(true);
+    expect(ORIGIN_EXEMPT).toEqual(["/api/webhooks/"]);
+  });
+});
+
 describe("rate limits", () => {
   it("counts per window and resets in the next one", () => {
     const now = 1_000_000_000_000;

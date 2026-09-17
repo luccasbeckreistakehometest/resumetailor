@@ -1,7 +1,8 @@
 # Keep the build context small and secret-free.
 # The server's .env is the one exception: the Dockerfile bind-mounts the context for a single
 # RUN step and copies ONLY its NEXT_PUBLIC_* lines (public by definition) into the build. It is
-# never COPY'd, so no secret lands in an image layer or in the build cache.
+# never COPY'd, so no secret lands in an image layer. It is still part of the build context, which
+# BuildKit can keep in the build host's cache: run `docker builder prune -f` after a build.
 .env*
 !.env
 node_modules
