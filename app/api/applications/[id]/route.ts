@@ -15,6 +15,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
     if (!row || !ownsApplication(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     const b = { ...parsed.data };
     if (b.nextStepAt === "") b.nextStepAt = null;
+    if (b.interviewAtTime !== undefined) b.interviewAtTime = b.interviewAtTime ? new Date(b.interviewAtTime).toISOString() : null;
     if (b.generationId !== undefined && b.generationId !== null) {
       const g = getGeneration(b.generationId);
       b.generationId = g && ownsGeneration(g, owner.userId, owner.anonId) ? g.id : null;

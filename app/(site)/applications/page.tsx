@@ -10,10 +10,16 @@ import { Container, Eyebrow } from "@/components/ui";
 import { STAGES, nextSteps, todayIso, type Funnel, type Stage } from "@/lib/applications/logic";
 import type { ApplicationView } from "@/lib/server/applications";
 import type { GenerationView } from "@/lib/server/generations";
+import { RadarStrip, type RadarItem } from "@/components/RadarStrip";
 
-type Draft = { company: string; role: string; link: string; stage: Stage; generationId: string; notes: string; nextStepAt: string };
-type Patch = Partial<Omit<Draft, "generationId" | "nextStepAt">> & { generationId?: string | null; nextStepAt?: string | null };
-const blank = (): Draft => ({ company: "", role: "", link: "", stage: "saved", generationId: "", notes: "", nextStepAt: "" });
+type Draft = {
+  company: string; role: string; link: string; stage: Stage; generationId: string; notes: string; nextStepAt: string;
+  appliedAt: string; interviewAtTime: string; contactName: string; contactChannel: string; contactValue: string; offerType: string; offerAmount: string;
+};
+type Patch = Record<string, unknown>;
+const blank = (): Draft => ({ company: "", role: "", link: "", stage: "saved", generationId: "", notes: "", nextStepAt: "", appliedAt: "", interviewAtTime: "", contactName: "", contactChannel: "", contactValue: "", offerType: "", offerAmount: "" });
+/** datetime-local wants "YYYY-MM-DDTHH:mm" in local time. */
+const toLocalInput = (iso: string | null) => { if (!iso) return ""; const d = new Date(iso); const p = (n: number) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
 const send = (url: string, method: string, body?: unknown) => fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
 
 /**
@@ -22,12 +28,14 @@ const send = (url: string, method: string, body?: unknown) => fetch(url, { metho
  * the numbers must be theirs.
  */
 function ApplicationsInner() {
-  const { x, lang } = useI18n();
+  const { x, r, lang, to } = useI18n();
+  const R = r.tracker;
   const { user } = useAuth();
   const params = useSearchParams();
   const A = x.applications;
   const [items, setItems] = useState<ApplicationView[] | null>(null);
   const [funnel, setFunnel] = useState<Funnel | null>(null);
+  const [alerts, setAlerts] = useState<RadarItem[]>([]);
   const [kits, setKits] = useState<GenerationView[]>([]);
   const [draft, setDraft] = useState<Draft>(blank());
   const [adding, setAdding] = useState(false);
@@ -38,7 +46,7 @@ function ApplicationsInner() {
   const [now] = useState(() => Date.now());
   const today = todayIso(new Date(now));
 
-  const load = useCallback(() => fetch("/api/applications", { cache: "no-store" }).then((r) => r.json()).then((j) => { setItems(j.items ?? []); setFunnel(j.funnel ?? null); }), []);
+  const load = useCallback(() => fetch("/api/applications", { cache: "no-store" }).then((r) => r.json()).then((j) => { setItems(j.items ?? []); setFunnel(j.funnel ?? null); setAlerts(j.radar ?? []); }), []);
   useEffect(() => { void load(); fetch("/api/generations", { cache: "no-store" }).then((r) => r.json()).then((j) => setKits(j.items ?? [])).catch(() => {}); }, [load, user?.id]);
 
   // Arriving from a kit result: the add row opens with that kit and role already filled.
@@ -51,7 +59,7 @@ function ApplicationsInner() {
   async function add() {
     if (!draft.company.trim() && !draft.role.trim()) return setError(A.needName);
     setError("");
-    const r = await send("/api/applications", "POST", { ...draft, generationId: draft.generationId || null, nextStepAt: draft.nextStepAt || null });
+    const r = await send("/api/applications", "POST", { company: draft.company, role: draft.role, link: draft.link, stage: draft.stage, notes: draft.notes, generationId: draft.generationId || null, nextStepAt: draft.nextStepAt || null });
     if (!r.ok) return setError(x.errors.generic);
     setDraft(blank()); setAdding(false); await load();
   }
@@ -62,8 +70,26 @@ function ApplicationsInner() {
   }
   async function remove(id: string) { await send(`/api/applications/${id}`, "DELETE"); setEditId(null); await load(); }
   const move = (a: ApplicationView, dir: 1 | -1) => { const i = STAGES.indexOf(a.stage) + dir; if (i >= 0 && i < STAGES.length) void patch(a.id, { stage: STAGES[i] }); };
-  const startEdit = (a: ApplicationView) => { setEditId(a.id); setEdit({ company: a.company, role: a.role, link: a.link, stage: a.stage, generationId: a.generationId ?? "", notes: a.notes, nextStepAt: a.nextStepAt ?? "" }); };
-  async function saveEdit() { if (!editId) return; await patch(editId, { ...edit, generationId: edit.generationId || null, nextStepAt: edit.nextStepAt || null }); setEditId(null); }
+  const startEdit = (a: ApplicationView) => {
+    setEditId(a.id);
+    setEdit({
+      company: a.company, role: a.role, link: a.link, stage: a.stage, generationId: a.generationId ?? "", notes: a.notes, nextStepAt: a.nextStepAt ?? "",
+      appliedAt: a.appliedAt ?? "", interviewAtTime: toLocalInput(a.interviewAtTime), contactName: a.contactName, contactChannel: a.contactChannel, contactValue: a.contactValue,
+      offerType: a.offerType ?? "", offerAmount: a.offerAmount === null ? "" : String(a.offerAmount),
+    });
+  };
+  async function saveEdit() {
+    if (!editId) return;
+    const amount = Number(edit.offerAmount.replace(/\./g, "").replace(",", "."));
+    await patch(editId, {
+      company: edit.company, role: edit.role, link: edit.link, notes: edit.notes, generationId: edit.generationId || null, nextStepAt: edit.nextStepAt || null,
+      appliedAt: edit.appliedAt || null, interviewAtTime: edit.interviewAtTime ? new Date(edit.interviewAtTime).toISOString() : null,
+      contactName: edit.contactName, contactChannel: edit.contactChannel, contactValue: edit.contactValue,
+      offerType: edit.offerType || null, offerAmount: edit.offerAmount.trim() && Number.isFinite(amount) ? amount : null,
+    });
+    setEditId(null);
+  }
+  const when = (iso: string) => new Date(iso).toLocaleString(lang === "pt" ? "pt-BR" : lang, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   const fmt = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString(lang === "pt" ? "pt-BR" : lang, { day: "numeric", month: "short" });
   const daysIn = (iso: string) => Math.max(0, Math.floor((now - new Date(iso).getTime()) / 86_400_000));
@@ -82,6 +108,8 @@ function ApplicationsInner() {
           </div>
           <button onClick={() => setAdding(!adding)} className="btn btn-primary" data-testid="app-open-add">+ {A.add}</button>
         </div>
+
+        {items && items.length > 0 && <RadarStrip alerts={alerts} items={items} onSent={() => void load()} />}
 
         {funnel && (
           <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="funnel">
@@ -156,6 +184,23 @@ function ApplicationsInner() {
                             <option value="">{A.noKit}</option>
                             {kits.map((k) => <option key={k.id} value={k.id}>{k.title}</option>)}
                           </select>
+                          {edit.stage !== "saved" && <label className="block text-xs text-muted">{R.fields.appliedAt}<input type="date" className="field mt-1 !py-1.5 !text-sm" value={edit.appliedAt} max={today} onChange={(e) => setEdit({ ...edit, appliedAt: e.target.value })} data-testid="edit-applied" /></label>}
+                          <label className="block text-xs text-muted">{R.fields.interviewAt}<input type="datetime-local" className="field mt-1 !py-1.5 !text-sm" value={edit.interviewAtTime} onChange={(e) => setEdit({ ...edit, interviewAtTime: e.target.value })} data-testid="edit-interview" /></label>
+                          <input className="field !py-1.5 !text-sm" placeholder={R.fields.contactName} value={edit.contactName} onChange={(e) => setEdit({ ...edit, contactName: e.target.value })} data-testid="edit-contact-name" />
+                          <div className="grid grid-cols-[6rem_1fr] gap-1.5">
+                            <select className="field !py-1.5 !text-sm" value={edit.contactChannel} onChange={(e) => setEdit({ ...edit, contactChannel: e.target.value })} aria-label={R.fields.channel}>
+                              {Object.entries(R.fields.channels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                            </select>
+                            <input className="field !py-1.5 !text-sm" placeholder={R.fields.contactValue} value={edit.contactValue} onChange={(e) => setEdit({ ...edit, contactValue: e.target.value })} />
+                          </div>
+                          {edit.stage === "offer" && (
+                            <div className="grid grid-cols-[5rem_1fr] gap-1.5">
+                              <select className="field !py-1.5 !text-sm" value={edit.offerType} onChange={(e) => setEdit({ ...edit, offerType: e.target.value })} aria-label={R.fields.offerType} data-testid="edit-offer-type">
+                                <option value="">—</option><option value="clt">{R.fields.clt}</option><option value="pj">{R.fields.pj}</option>
+                              </select>
+                              <input inputMode="decimal" className="field !py-1.5 !text-sm" placeholder={R.fields.offerAmount} value={edit.offerAmount} onChange={(e) => setEdit({ ...edit, offerAmount: e.target.value })} data-testid="edit-offer-amount" />
+                            </div>
+                          )}
                           <textarea className="field !py-1.5 !text-sm" rows={3} placeholder={A.notes} value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} data-testid="edit-notes" />
                           <div className="flex flex-wrap items-center gap-2">
                             <button onClick={saveEdit} className="btn btn-ink !py-1.5 !text-xs" data-testid="edit-save">{A.save}</button>
@@ -171,6 +216,7 @@ function ApplicationsInner() {
                             {a.kitTitle && <span className="rounded-full bg-gold-2 px-2 py-0.5 font-medium text-ink" data-testid="app-kit-chip">📄 {a.kitTitle}</span>}
                             {a.nextStepAt && <span className={"rounded-full px-2 py-0.5 font-medium ring-1 " + (a.nextStepAt < today && a.stage !== "rejected" ? "bg-oxblood/10 text-oxblood ring-oxblood/30" : "bg-surface text-ink-2 ring-edge")} data-testid="app-next">📅 {fmt(a.nextStepAt)}</span>}
                             <span className="rounded-full bg-surface px-2 py-0.5 text-muted ring-1 ring-edge">{A.daysIn(daysIn(a.stageChangedAt))}</span>
+                            {a.interviewAtTime && <span className="rounded-full bg-moss-2 px-2 py-0.5 font-medium text-ink" data-testid="app-interview">{R.interviewChip(when(a.interviewAtTime))}</span>}
                           </div>
                           {a.notes && <p className="mt-2 line-clamp-3 whitespace-pre-line text-xs text-ink-2" data-testid="app-notes">{a.notes}</p>}
                           <div className="mt-3 flex items-center gap-1 border-t border-edge pt-2.5">
@@ -180,9 +226,12 @@ function ApplicationsInner() {
                             </select>
                             <button onClick={() => move(a, 1)} disabled={a.stage === "rejected"} className="rounded-md px-2 py-1 text-sm text-ink-2 hover:bg-paper disabled:opacity-30" aria-label={A.moveNext} title={A.moveNext} data-testid="move-next">→</button>
                           </div>
-                          <div className="mt-2 flex items-center gap-3 text-xs">
+                          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
                             {a.link && <a href={a.link} target="_blank" rel="noopener noreferrer" className="text-oxblood underline-offset-2 hover:underline">{A.open} ↗</a>}
                             {a.generationId && <Link href={`/start?gen=${a.generationId}`} className="text-muted hover:text-ink">{x.library.open}</Link>}
+                            {(a.stage === "interview" || a.interviewAtTime) && <Link href={`/brief/${a.id}`} className="text-oxblood" data-testid="app-brief">{R.brief}</Link>}
+                            {a.interviewAtTime && <a href={`/api/applications/${a.id}/ics?kind=interview&lang=${lang}`} className="text-oxblood" data-testid="app-ics">📅</a>}
+                            {a.stage === "offer" && lang === "pt" && <Link href={`${to("calculator")}?${a.offerType === "pj" ? "pj" : "clt"}=${a.offerAmount ?? ""}`} className="text-oxblood" data-testid="app-compare">{R.compare}</Link>}
                             <button onClick={() => startEdit(a)} className="ml-auto text-muted hover:text-ink" data-testid="app-edit-btn">{A.edit}</button>
                           </div>
                         </>

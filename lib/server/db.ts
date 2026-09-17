@@ -229,6 +229,20 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "generations", "quantified", "INTEGER NOT NULL DEFAULT 0");
   // The visitor cookie an account was created from (first-touch attribution survives signup).
   addColumnIfMissing(d, "users", "attributionVisitorId", "TEXT");
+  // Tracker: interview time, the contact, follow-ups sent, and the offer (for the CLT × PJ comparison).
+  addColumnIfMissing(d, "applications", "interviewAtTime", "TEXT");
+  addColumnIfMissing(d, "applications", "contactName", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "contactChannel", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "contactValue", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(d, "applications", "lastContactAt", "TEXT");
+  addColumnIfMissing(d, "applications", "followUps", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(d, "applications", "offerType", "TEXT");
+  addColumnIfMissing(d, "applications", "offerAmount", "REAL");
+  // Languages of the international versions a kit used (KIT_INTL_MAX); never reset by a rewrite.
+  addColumnIfMissing(d, "generations", "intlLangs", "TEXT NOT NULL DEFAULT '[]'");
+  // The account's share code for referrals (created on first use).
+  addColumnIfMissing(d, "users", "refCode", "TEXT");
+  d.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_refcode ON users(refCode) WHERE refCode IS NOT NULL");
   // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
   addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
@@ -283,6 +297,60 @@ const ROUND3_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_events_day_name ON events(day, name);
   CREATE INDEX IF NOT EXISTS idx_events_visitor ON events(visitorId, day);
   CREATE INDEX IF NOT EXISTS idx_events_campaign ON events(campaign, day);
+  -- Feedback on a pitch-video take: the delivery numbers and the coaching only. The video and
+  -- the transcript are never stored.
+  CREATE TABLE IF NOT EXISTS pitch_takes (
+    id TEXT PRIMARY KEY,
+    generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+    ownerKey TEXT NOT NULL,
+    seconds INTEGER NOT NULL,
+    metrics TEXT NOT NULL,
+    feedback TEXT,
+    costUsd REAL NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_pitch_gen ON pitch_takes(generationId, createdAt);
+  -- Postings read from public job-board APIs (Greenhouse, Lever, Ashby), cached for a day.
+  CREATE TABLE IF NOT EXISTS job_imports (
+    urlHash TEXT PRIMARY KEY,
+    url TEXT NOT NULL,
+    host TEXT NOT NULL,
+    company TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
+    salary TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL,
+    postedAt TEXT,
+    fetchedAt TEXT NOT NULL
+  );
+  -- Promo / partner codes, who redeemed them, and referrals (paid on the first purchase only).
+  CREATE TABLE IF NOT EXISTS vouchers (
+    code TEXT PRIMARY KEY,
+    credits INTEGER NOT NULL,
+    maxRedemptions INTEGER NOT NULL DEFAULT 1,
+    redeemed INTEGER NOT NULL DEFAULT 0,
+    expiresAt TEXT,
+    campaign TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    disabled INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_vouchers_campaign ON vouchers(campaign, createdAt);
+  CREATE TABLE IF NOT EXISTS voucher_redemptions (
+    code TEXT NOT NULL REFERENCES vouchers(code) ON DELETE CASCADE,
+    userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    createdAt TEXT NOT NULL,
+    PRIMARY KEY (code, userId)
+  );
+  CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrerId TEXT NOT NULL,
+    referredId TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'pending',       -- pending | rewarded
+    createdAt TEXT NOT NULL,
+    rewardedAt TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrerId);
   CREATE TABLE IF NOT EXISTS attribution (
     visitorId TEXT PRIMARY KEY,
     firstAt TEXT NOT NULL,

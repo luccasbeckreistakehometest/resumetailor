@@ -13,7 +13,7 @@ export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
   targetRole: string; input: string; result: string; matchBefore: number; matchAfter: number; unlocked: number;
   unlockedAt: string | null; model: string; costUsd: number; deepened: number; createdAt: string;
-  publishBlockedAt: string | null; truthAck: string; quantified: number;
+  publishBlockedAt: string | null; truthAck: string; quantified: number; intlLangs: string;
 }
 
 /** "Missing numbers" rounds per kit (one patch call each). */

@@ -6,6 +6,10 @@ import { checksCopy } from "./r3/checks";
 import { quantifyCopy } from "./r3/quantify";
 import { voiceCopy } from "./r3/voice";
 import { acquisitionCopy } from "./r3/acquisition";
+import { trackerCopy } from "./r3/tracker";
+import { pitchCopy } from "./r3/pitch";
+import { compareCopy } from "./r3/compare";
+import { intlCopy } from "./r3/intl";
 
 /**
  * Round-3 copy, one file per feature under ./r3, exposed as `r` by useI18n(). Every feature
@@ -21,6 +25,10 @@ const build = (lang: L) => ({
   quantify: quantifyCopy[lang],
   voice: voiceCopy[lang],
   acquisition: acquisitionCopy[lang],
+  tracker: trackerCopy[lang],
+  pitch: pitchCopy[lang],
+  compare: compareCopy[lang],
+  intl: intlCopy[lang],
 });
 export type Round3 = ReturnType<typeof build>;
 export const round3: Record<L, Round3> = { en: build("en"), pt: build("pt"), es: build("es") };
