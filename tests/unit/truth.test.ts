@@ -36,6 +36,12 @@ describe("truth check", () => {
 
   it("counts what the person typed in the editor as theirs, and finds numbers a rewrite dropped", () => {
     expect(userAddedLines([{ text: "a\nb", source: "ai" }, { text: "a\nb\n- 25 clientes/dia", source: "user" }])).toBe("- 25 clientes/dia");
+    // A typo fix on a line with an AI number: only the new word is theirs, so the 40% stays flagged.
+    const ai = kit("- Aumentei as vendas em 40% com a equpe");
+    const edited = kit("- Aumentei as vendas em 40% com a equipe de 5 pessoas");
+    const typed = userAddedLines([{ text: ai, source: "ai" }, { text: edited, source: "user" }]);
+    expect(typed).toBe("equipe de 5 pessoas");
+    expect(truthCheck({ kitText: edited, sources: ["Analista na Acme de 2019 a 2023.", typed] }).unverified.map((u) => u.text)).toEqual(["40%"]);
     expect(missingNumbers("Grew pipeline 38% in 2024", "Grew pipeline in 2024")).toEqual(["38%"]);
   });
 });

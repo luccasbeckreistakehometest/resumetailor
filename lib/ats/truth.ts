@@ -150,15 +150,27 @@ export function truthCheck(input: { kitText: string; sources: string[]; addedSki
 }
 
 /**
- * Lines the person typed themselves (in the editor) count as their own words: every line that
- * a "user" version added relative to the version before it.
+ * What the person typed themselves (in the editor) counts as their own words — but only the words
+ * a "user" version added: runs of tokens that appear nowhere in the version before it. Fixing a
+ * typo on a line where the AI wrote "40%" does not make that "40%" theirs.
  */
+const tokenKey = (w: string) => w.toLowerCase().replace(/^[("'“‘\[]+|[)"'”’\].,;:!?]+$/g, "");
 export function userAddedLines(versions: { text: string; source: string }[]): string {
   const out: string[] = [];
   for (let i = 1; i < versions.length; i++) {
     if (versions[i].source !== "user") continue;
-    const before = new Set(versions[i - 1].text.split("\n").map((l) => l.trim()));
-    for (const l of versions[i].text.split("\n")) if (l.trim() && !before.has(l.trim())) out.push(l);
+    const beforeLines = new Set(versions[i - 1].text.split("\n").map((l) => l.trim()));
+    const beforeTokens = new Set(versions[i - 1].text.split(/\s+/).map(tokenKey).filter(Boolean));
+    for (const line of versions[i].text.split("\n")) {
+      if (!line.trim() || beforeLines.has(line.trim())) continue;
+      let run: string[] = [];
+      for (const w of line.trim().split(/\s+/)) {
+        if (!beforeTokens.has(tokenKey(w))) { run.push(w); continue; }
+        if (run.length) out.push(run.join(" "));
+        run = [];
+      }
+      if (run.length) out.push(run.join(" "));
+    }
   }
   return out.join("\n");
 }
