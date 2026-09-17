@@ -108,20 +108,41 @@ export function recordReferral(referrerId: string | null, referredId: string): b
 
 /**
  * Called inside settlePayment's transaction when a purchase is granted: on the referred account's
- * first approved payment, both sides get REFERRAL_CREDITS and the referral is closed.
+ * first approved payment, both sides get REFERRAL_CREDITS and the referral is closed. The payment
+ * is remembered, so refunding it takes the reward back (reverseReferralForPayment).
  */
-export function rewardReferralOnPurchase(referredId: string): boolean {
+export function rewardReferralOnPurchase(referredId: string, paymentId: string | null = null): boolean {
   const db = getDb();
   const ref = db.prepare("SELECT * FROM referrals WHERE referredId = ? AND status = 'pending'").get(referredId) as { id: number; referrerId: string } | undefined;
   if (!ref) return false;
   const paid = (db.prepare("SELECT COUNT(*) n FROM payments WHERE userId = ? AND status IN ('approved','partially_refunded','refunded','charged_back')").get(referredId) as { n: number }).n;
   if (paid !== 1) return false;
-  const closed = db.prepare("UPDATE referrals SET status = 'rewarded', rewardedAt = ? WHERE id = ? AND status = 'pending'").run(nowIso(), ref.id);
+  const closed = db.prepare("UPDATE referrals SET status = 'rewarded', rewardedAt = ?, paymentId = ? WHERE id = ? AND status = 'pending'").run(nowIso(), paymentId, ref.id);
   if (!closed.changes) return false;
   const credits = REFERRAL_CREDITS();
   moveCredits(referredId, credits, "referral_bonus", `ref:${ref.id}`);
   if (db.prepare("SELECT 1 FROM users WHERE id = ?").get(ref.referrerId)) moveCredits(ref.referrerId, credits, "referral_bonus", `ref:${ref.id}`);
   return true;
+}
+
+/**
+ * The qualifying purchase was refunded or charged back: both sides lose the reward, as far as
+ * their balances allow (credits already spent cannot come back), and the referral is closed as
+ * reversed. Runs inside reversePayment's transaction; a replayed notification does nothing.
+ */
+export function reverseReferralForPayment(paymentId: string): number {
+  const db = getDb();
+  const ref = db.prepare("SELECT id FROM referrals WHERE paymentId = ? AND status = 'rewarded'").get(paymentId) as { id: number } | undefined;
+  if (!ref) return 0;
+  if (!db.prepare("UPDATE referrals SET status = 'reversed', reversedAt = ? WHERE id = ? AND status = 'rewarded'").run(nowIso(), ref.id).changes) return 0;
+  const grants = db.prepare("SELECT userId, SUM(delta) n FROM credit_ledger WHERE reason = 'referral_bonus' AND ref = ? GROUP BY userId").all(`ref:${ref.id}`) as { userId: string; n: number }[];
+  let taken = 0;
+  for (const g of grants) {
+    const balance = (db.prepare("SELECT credits FROM users WHERE id = ?").get(g.userId) as { credits: number } | undefined)?.credits ?? 0;
+    const take = Math.min(g.n, balance);
+    if (take > 0) { moveCredits(g.userId, -take, "referral_reversed", `ref:${ref.id}`); taken += take; }
+  }
+  return taken;
 }
 
 export function referralStats(userId: string) {

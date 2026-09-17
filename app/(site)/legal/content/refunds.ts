@@ -20,7 +20,7 @@ const en: LegalDoc = {
       "The refund goes back through the same payment method, via Mercado Pago or Stripe. Pix refunds are usually quick; card refunds appear on your statement according to your bank's schedule (often one or two billing cycles).",
     ] }] },
     { h: "4. What happens to the credits", body: ["When a payment is refunded, the credits from it are removed from your balance. The same happens after a chargeback; accounts involved in abusive chargebacks may be suspended."] },
-    { h: "5. Free credits", body: ["The free credit you get when you create an account has no monetary value and is not refundable."] },
+    { h: "5. Free credits", body: ["The free credit you get when you create an account, and credits from promo codes or referrals, have no monetary value and are not refundable. If the purchase that earned referral credits is refunded or charged back, those credits are removed from both accounts (as far as they haven't been used)."] },
   ],
 };
 
@@ -44,7 +44,7 @@ const pt: LegalDoc = {
       "O reembolso volta pelo mesmo meio de pagamento, via Mercado Pago ou Stripe. Estorno de Pix costuma ser rápido; no cartão, aparece na fatura conforme o calendário do seu banco (muitas vezes em uma ou duas faturas).",
     ] }] },
     { h: "4. O que acontece com os créditos", body: ["Quando um pagamento é reembolsado, os créditos dele saem do seu saldo. O mesmo vale para contestações (chargeback); contas envolvidas em contestações abusivas podem ser suspensas."] },
-    { h: "5. Créditos grátis", body: ["O crédito grátis que você ganha ao criar a conta não tem valor em dinheiro e não é reembolsável."] },
+    { h: "5. Créditos grátis", body: ["O crédito grátis que você ganha ao criar a conta e os créditos de códigos promocionais ou de indicação não têm valor em dinheiro e não são reembolsáveis. Se a compra que gerou os créditos de indicação for reembolsada ou contestada, esses créditos saem das duas contas (até onde ainda não foram usados)."] },
   ],
 };
 
@@ -68,7 +68,7 @@ const es: LegalDoc = {
       "El reembolso vuelve por el mismo medio de pago, vía Mercado Pago o Stripe. Los reembolsos por Pix suelen ser rápidos; en tarjeta aparecen en tu resumen según los plazos de tu banco (a menudo uno o dos ciclos de facturación).",
     ] }] },
     { h: "4. Qué pasa con los créditos", body: ["Cuando se reembolsa un pago, sus créditos se retiran de tu saldo. Lo mismo ocurre tras un contracargo; las cuentas con contracargos abusivos pueden ser suspendidas."] },
-    { h: "5. Créditos gratuitos", body: ["El crédito gratuito que recibes al crear la cuenta no tiene valor monetario y no es reembolsable."] },
+    { h: "5. Créditos gratuitos", body: ["El crédito gratuito que recibes al crear la cuenta y los créditos de códigos promocionales o de referidos no tienen valor monetario y no son reembolsables. Si la compra que generó los créditos de referido se reembolsa o tiene un contracargo, esos créditos se retiran de ambas cuentas (en la medida en que no se hayan usado)."] },
   ],
 };
 

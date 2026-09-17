@@ -8,7 +8,7 @@ process.env.REFERRAL_CREDITS = "1";
 fs.rmSync(DIR, { recursive: true, force: true });
 
 const { createUser, findById } = await import("@/lib/server/users");
-const { settlePayment } = await import("@/lib/server/payments");
+const { settlePayment, reversePayment } = await import("@/lib/server/payments");
 const { createBatch, createVoucher, recordReferral, redeemVoucher, refCodeFor, userByRefCode, setVoucherDisabled } = await import("@/lib/server/vouchers");
 const { getDb } = await import("@/lib/server/db");
 
@@ -75,6 +75,32 @@ describe("referrals", () => {
     settlePayment({ ...pay, externalId: "ref-pay-2" });
     expect(findById(a.id)!.credits).toBe(1);
     expect(ledger(b.id, "referral_bonus")).toBe(1);
+  });
+
+  it("a refund or chargeback of the qualifying purchase takes the reward back from both sides, once", async () => {
+    const a = await user(), b = await user();
+    recordReferral(a.id, b.id);
+    const pay = { provider: "mercadopago" as const, externalId: "ref-refund-1", userId: b.id, pack: "1", credits: 1, amount: 39, currency: "BRL", status: "approved" as const };
+    settlePayment(pay);
+    expect([findById(a.id)!.credits, findById(b.id)!.credits]).toEqual([1, 2]);
+    expect(reversePayment({ provider: "mercadopago", externalId: "ref-refund-1", status: "refunded" }).taken).toBe(1);
+    expect([findById(a.id)!.credits, findById(b.id)!.credits]).toEqual([0, 0]);
+    expect((getDb().prepare("SELECT status FROM referrals WHERE referredId = ?").get(b.id) as { status: string }).status).toBe("reversed");
+    // A replayed refund notification takes nothing more.
+    reversePayment({ provider: "mercadopago", externalId: "ref-refund-1", status: "refunded" });
+    expect(ledger(a.id, "referral_reversed") + ledger(b.id, "referral_reversed")).toBe(2);
+    // A later purchase does not pay the referral again.
+    settlePayment({ ...pay, externalId: "ref-refund-2" });
+    expect([findById(a.id)!.credits, findById(b.id)!.credits]).toEqual([0, 1]);
+
+    // A reward already spent cannot be taken below zero; a chargeback of the purchase still closes it.
+    const c = await user(), d = await user();
+    recordReferral(c.id, d.id);
+    settlePayment({ ...pay, externalId: "ref-cb-1", userId: d.id });
+    getDb().prepare("UPDATE users SET credits = 0 WHERE id = ?").run(c.id);   // the referrer spent it
+    reversePayment({ provider: "mercadopago", externalId: "ref-cb-1", status: "charged_back" });
+    expect([findById(c.id)!.credits, findById(d.id)!.credits]).toEqual([0, 0]);
+    expect((getDb().prepare("SELECT status FROM referrals WHERE referredId = ?").get(d.id) as { status: string }).status).toBe("reversed");
   });
 
   it("self-referral is ignored", async () => {

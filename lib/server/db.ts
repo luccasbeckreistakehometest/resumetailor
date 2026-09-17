@@ -247,6 +247,9 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "onboarding", "tourVersion", "INTEGER NOT NULL DEFAULT 1");
   // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
   addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
+  // The purchase that paid a referral, so its refund or chargeback can take the reward back.
+  addColumnIfMissing(d, "referrals", "paymentId", "TEXT");
+  addColumnIfMissing(d, "referrals", "reversedAt", "TEXT");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }
@@ -348,7 +351,7 @@ const ROUND3_TABLES = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     referrerId TEXT NOT NULL,
     referredId TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    status TEXT NOT NULL DEFAULT 'pending',       -- pending | rewarded
+    status TEXT NOT NULL DEFAULT 'pending',       -- pending | rewarded | reversed
     createdAt TEXT NOT NULL,
     rewardedAt TEXT
   );
