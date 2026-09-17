@@ -227,6 +227,8 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "generations", "truthAck", "TEXT NOT NULL DEFAULT '[]'");
   // How many "missing numbers" rounds a kit used (capped by KIT_QUANTIFY_MAX).
   addColumnIfMissing(d, "generations", "quantified", "INTEGER NOT NULL DEFAULT 0");
+  // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
+  addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }

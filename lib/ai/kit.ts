@@ -31,6 +31,8 @@ export type Kit = Omit<z.infer<typeof KitSchema>, "quantifyAsks"> & { mode: Mode
 
 export interface KitInput {
   mode: Mode; targetRole: string; jobDescription?: string; resume?: string; profile?: string; lang: Lang;
+  /** What the candidate said out loud in the voice briefing (tailor/improve). */
+  spoken?: string;
   /** A second pass over a tailored kit: the posting's must-haves the first draft missed. */
   deepen?: { mustHaves: string[] };
 }
@@ -56,6 +58,10 @@ const styleRules = (lang: Lang) => `
 - Preserve every metric already in the candidate's résumé (numbers, %, money, team sizes, dates); never drop or change them.
 - Write like a person, not a chatbot. Never use these phrases (or their translations): ${promptBanList(lang).map((p) => `"${p}"`).join(", ")}. Vary how bullets start; avoid em-dashes as decoration.`;
 
+const spokenBlock = (i: KitInput) => i.spoken?.trim()
+  ? `\n\nFACTS THE CANDIDATE SAID OUT LOUD (real background; use them where relevant; never embellish or add numbers they did not say):\n${i.spoken.slice(0, 3000)}`
+  : "";
+
 function prompt(i: KitInput): { system: string; user: string } {
   const langLine = `Write every field in ${LANG_NAME[i.lang]}, in the register a strong local recruiter expects.${styleRules(i.lang)}`;
   const role = (i.targetRole || "").slice(0, 200);
@@ -65,7 +71,7 @@ function prompt(i: KitInput): { system: string; user: string } {
 For scoring: matchBefore = how ATS-ready/keyword-rich the ORIGINAL resume is. matchAfter = after your rewrite. keywords = the most important skills for the target role, marking before/after presence.
 ${langLine}
 ${RULES}`,
-      user: `TARGET ROLE (may be blank): ${role}\n\nCURRENT RESUME:\n${(i.resume || "").slice(0, 8000)}`,
+      user: `TARGET ROLE (may be blank): ${role}\n\nCURRENT RESUME:\n${(i.resume || "").slice(0, 8000)}${spokenBlock(i)}`,
     };
   }
   if (i.mode === "build") {
@@ -82,7 +88,7 @@ ${RULES}`,
 For scoring: matchBefore = % of the job's important keywords/requirements genuinely present in the ORIGINAL resume. matchAfter = after tailoring. keywords = the 8-12 most important keywords/requirements from the JD, each marked present-before / present-after.
 ${langLine}
 ${RULES}${deepenBlock(i)}`,
-    user: `JOB DESCRIPTION:\n${(i.jobDescription || "").slice(0, 6000)}\n\nCURRENT RESUME:\n${(i.resume || "").slice(0, 8000)}`,
+    user: `JOB DESCRIPTION:\n${(i.jobDescription || "").slice(0, 6000)}\n\nCURRENT RESUME:\n${(i.resume || "").slice(0, 8000)}${spokenBlock(i)}`,
   };
 }
 
@@ -134,7 +140,8 @@ export function mockKit(i: KitInput): Kit {
       behavioral: ["A campaign that failed and what you changed", "Managing a disagreement with sales"],
       questionsToAsk: ["How is marketing pipeline attributed today?", "What does success look like at 90 days?"],
     },
-    matchNotes: i.deepen ? "Demo mode: deepened fixture, not an AI result." : "Demo mode: this kit is a fixture, not an AI result.",
+    matchNotes: (i.deepen ? "Demo mode: deepened fixture, not an AI result." : "Demo mode: this kit is a fixture, not an AI result.")
+      + (i.spoken ? ` Spoken facts: ${i.spoken.split("\n").filter(Boolean).length}.` : ""),
     quantifyAsks: [
       { bullet: "Led a team of 4 across paid, CRM and content", question: MOCK_ASK[i.lang][0], unitHint: MOCK_ASK[i.lang][1] },
       { bullet: "Grew qualified pipeline 38% YoY through lifecycle campaigns", question: MOCK_ASK[i.lang][2], unitHint: MOCK_ASK[i.lang][3] },

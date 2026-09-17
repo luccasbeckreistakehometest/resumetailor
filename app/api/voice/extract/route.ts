@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { withOwner, bad, limited } from "@/lib/server/http";
-import { extractBriefing } from "@/lib/ai/voice";
+import { briefingFacts, extractBriefing } from "@/lib/ai/voice";
+import { envNumber } from "@/lib/server/env";
 import { runAi } from "@/lib/ai/guard";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { recordEvent } from "@/lib/server/onboarding";
@@ -16,7 +17,8 @@ const schema = z.object({
 /**
  * The listener sends each turn's transcript; the reply says what was understood and what to ask
  * next. Only for visitors the app already knows (the pages set the visitor cookie first), capped
- * per IP per hour and per day and per owner per hour.
+ * per IP per hour and per day, per owner per hour, and per briefing (VOICE_MAX_TURNS). Someone
+ * else's briefing id is refused.
  */
 export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
@@ -28,11 +30,19 @@ export async function POST(request: Request) {
     const existing = parsed.data.briefingId
       ? db.prepare("SELECT ownerId, transcript FROM voice_briefings WHERE id = ?").get(parsed.data.briefingId) as { ownerId: string; transcript: string } | undefined
       : undefined;
-    if (parsed.data.briefingId && existing && existing.ownerId !== owner.key && existing.ownerId !== owner.anonId) return bad("not_found", 404);
+    if (parsed.data.briefingId && existing && existing.ownerId !== owner.key && existing.ownerId !== owner.anonId) return bad("forbidden", 403);
     const over = takeAll([["VOICE_IP_HOUR", owner.ip], ["VOICE_IP_DAY", owner.ip], ["VOICE_OWNER_HOUR", owner.key]]);
     if (over) return limited(over);
+    // Turns per briefing are capped; the turn is claimed before the AI call and given back if it fails.
+    const maxTurns = envNumber("VOICE_MAX_TURNS", 8);
+    if (existing && db.prepare("UPDATE voice_briefings SET turns = turns + 1 WHERE id = ? AND turns < ?").run(parsed.data.briefingId, maxTurns).changes === 0) {
+      return { body: { error: "voice_turns_limit" }, status: 429 };
+    }
     const ran = await runAi("voice_extract", { ownerKey: owner.key, ip: owner.ip }, () => extractBriefing(parsed.data));
-    if (!ran.ok) return ran.reply;
+    if (!ran.ok) {
+      if (existing) db.prepare("UPDATE voice_briefings SET turns = turns - 1 WHERE id = ? AND turns > 1").run(parsed.data.briefingId);
+      return ran.reply;
+    }
     const { briefing } = ran.value;
     const id = existing ? parsed.data.briefingId! : newId("vb");
     const transcript = existing ? `${existing.transcript}\n${parsed.data.transcript}` : parsed.data.transcript;
@@ -43,6 +53,6 @@ export async function POST(request: Request) {
         .run(id, owner.key, parsed.data.lang, transcript, JSON.stringify(briefing), nowIso());
     }
     recordEvent(owner.key, "voice_turn", { missing: briefing.missing.length });
-    return { body: { briefingId: id, briefing } };
+    return { body: { briefingId: id, briefing, facts: briefingFacts(briefing) } };
   });
 }

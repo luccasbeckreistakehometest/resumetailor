@@ -20,6 +20,7 @@ import { VoiceBriefing } from "@/components/VoiceBriefing";
 import { ImportDrop, ImportableTextarea } from "@/components/FileDrop";
 import { Container, Eyebrow } from "@/components/ui";
 import type { Briefing } from "@/lib/ai/voice";
+import type { ProfileFacts } from "@/lib/profile/facts";
 import type { GenerationView } from "@/lib/server/generations";
 
 type Mode = "tailor" | "improve" | "build";
@@ -52,6 +53,8 @@ function StartInner() {
   // The saved base résumé (or a kit's résumé) pre-fills the paste step, which is then skipped.
   const [saved, setSaved] = useState<null | { from: "profile" | "kit"; date: string }>(null);
   const [remember, setRemember] = useState(true);
+  // What was said out loud (tailor/improve): the person can drop items before generating.
+  const [spoken, setSpoken] = useState<ProfileFacts | null>(null);
 
   useEffect(() => {
     if (params.get("from") === "fit" || params.get("gen")) return;
@@ -112,7 +115,8 @@ function StartInner() {
     setError(""); setLoading(true);
     try {
       const bid = override?.briefingId ?? briefingId;
-      const payload: Record<string, string | boolean> = { mode: m, targetRole: override?.targetRole ?? targetRole, lang, source: override?.source ?? source, remember, ...(bid ? { briefingId: bid } : {}) };
+      const payload: Record<string, string | boolean | string[]> = { mode: m, targetRole: override?.targetRole ?? targetRole, lang, source: override?.source ?? source, remember, ...(bid ? { briefingId: bid } : {}) };
+      if (spoken && m !== "build") payload.spokenFacts = [...spoken.achievements, ...spoken.tools];
       if (m === "tailor") Object.assign(payload, { jobDescription, resume });
       else if (m === "improve") Object.assign(payload, { resume });
       else Object.assign(payload, { profile: override?.profile ?? profile() });
@@ -123,11 +127,12 @@ function StartInner() {
     } catch (e) { setError(e instanceof Error ? e.message : d.quiz.validation.generic); }
     finally { setLoading(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetRole, lang, source, briefingId, jobDescription, resume, level, education, experience, skills, achievements, remember]);
+  }, [targetRole, lang, source, briefingId, jobDescription, resume, level, education, experience, skills, achievements, remember, spoken]);
 
   // Voice briefing confirmed: fill the form, then either paste what voice cannot carry or generate.
-  function onBriefing(b: Briefing, id: string) {
+  function onBriefing(b: Briefing, id: string, facts: ProfileFacts | null) {
     setSource("voice"); setBriefingId(id);
+    setSpoken(facts && facts.achievements.length + facts.tools.length > 0 ? facts : null);
     setTargetRole(b.targetRole); setLevel(b.level === "unknown" ? "" : b.level);
     setEducation(b.education); setExperience(b.experience); setSkills(b.skills); setAchievements(b.achievements);
     const m: Mode = b.mode === "unknown" ? "build" : b.mode;
@@ -167,7 +172,7 @@ function StartInner() {
     if (step + 1 >= flow.length) void generate(mode!); else setStep(step + 1);
   }
   function back() { setError(""); if (step === 0) { setMode(null); setPasteNeeded(null); } else setStep(step - 1); }
-  function reset() { setGen(null); setMode(null); setStep(0); setVia("choose"); setPasteNeeded(null); setSource("text"); setBriefingId(undefined); setNeedCredits(false); router.replace("/start"); }
+  function reset() { setSpoken(null); setGen(null); setMode(null); setStep(0); setVia("choose"); setPasteNeeded(null); setSource("text"); setBriefingId(undefined); setNeedCredits(false); router.replace("/start"); }
 
   const total = mode ? flow.length + 1 : 1;
   const num = mode ? Math.min(step + 2, total) : 1;
@@ -216,6 +221,8 @@ function StartInner() {
                 <button type="button" onClick={() => setSaved(null)} className="font-semibold text-oxblood underline-offset-4 hover:underline" data-testid="saved-resume-change">· {r.profile.change}</button>
               </p>
             )}
+
+            {spoken && mode !== "build" && current !== "intent" && <SpokenChip facts={spoken} onChange={setSpoken} />}
 
             {current === "intent" && (
               <>
@@ -372,6 +379,26 @@ function StartInner() {
       <SiteFooter />
       {authOpen && <AuthModal initialMode="up" onClose={() => setAuthOpen(false)} onDone={() => { void unlock(); }} />}
     </div>
+  );
+}
+
+function SpokenChip({ facts, onChange }: { facts: ProfileFacts; onChange: (f: ProfileFacts) => void }) {
+  const { r } = useI18n();
+  const V = r.voice;
+  const drop = (list: "achievements" | "tools", i: number) => onChange({ ...facts, [list]: facts[list].filter((_, j) => j !== i) });
+  const empty = facts.achievements.length + facts.tools.length === 0;
+  return (
+    <details className="mt-3 rounded-xl bg-moss-2 px-4 py-2.5 text-sm text-ink" data-testid="spoken-chip">
+      <summary className="cursor-pointer">{empty ? V.chipEmpty : V.chip(facts.achievements.length, facts.tools.length)} · <span className="font-semibold text-oxblood">{V.chipEdit}</span></summary>
+      <ul className="mt-2 space-y-1">
+        {(["achievements", "tools"] as const).flatMap((list) => facts[list].map((f, i) => (
+          <li key={`${list}-${i}`} className="flex items-start gap-2" data-testid="spoken-fact">
+            <span className="flex-1">{list === "tools" ? "🛠" : "🏆"} {f}</span>
+            <button type="button" onClick={() => drop(list, i)} className="text-xs font-semibold text-oxblood" aria-label={V.chipRemove}>✕</button>
+          </li>
+        )))}
+      </ul>
+    </details>
   );
 }
 
