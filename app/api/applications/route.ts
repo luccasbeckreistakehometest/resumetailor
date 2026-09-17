@@ -26,9 +26,9 @@ export async function GET() {
 export async function POST(request: Request) {
   const parsed = applicationSchema.safeParse(await request.json().catch(() => ({})));
   return withOwner(async (owner) => {
-    if (!parsed.success) return bad("Check the fields.");
+    if (!parsed.success) return bad("check_fields");
     const b = parsed.data;
-    if (!(b.company ?? "").trim() && !(b.role ?? "").trim()) return bad("Give it at least a company or a role.");
+    if (!(b.company ?? "").trim() && !(b.role ?? "").trim()) return bad("need_company_or_role");
     // A linked kit has to be the caller's own; a stranger's id is treated as no kit at all.
     let generationId: string | null = null;
     if (b.generationId) { const g = getGeneration(b.generationId); if (g && ownsGeneration(g, owner.userId, owner.anonId)) generationId = g.id; }

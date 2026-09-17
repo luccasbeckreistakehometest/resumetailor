@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import { ShareBar } from "@/app/cv/[slug]/ShareBar";
 import { TEMPLATES, type Template } from "@/lib/resume/public";
 import type { GenerationView } from "@/lib/server/generations";
@@ -15,12 +16,12 @@ type Patch = { enabled?: boolean; template?: Template; hideContact?: boolean; in
  * the view counter. Only rendered on an unlocked kit.
  */
 export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?: (p: PublicResumeView | null) => void }) {
-  const { x, d, lang } = useI18n();
+  const { x, d, lang, l } = useI18n();
   const P = x.publish;
   const [saved, setSaved] = useState<PublicResumeView | null>(gen.publicResume ?? null);
   // The switches flip the moment they are clicked; the server's answer replaces the guess (or reverts it on error).
   const [optimistic, setOptimistic] = useState<Partial<PublicResumeView> | null>(null);
-  const pub: PublicResumeView | null = saved || optimistic ? { slug: "", template: "modern", hideContact: false, indexable: false, hasPin: false, views: 0, lastViewedAt: null, createdAt: "", enabled: false, ...saved, ...optimistic } : null;
+  const pub: PublicResumeView | null = saved || optimistic ? { slug: "", template: "modern", hideContact: false, indexable: false, hasPin: false, takenDown: false, views: 0, lastViewedAt: null, createdAt: "", enabled: false, ...saved, ...optimistic } : null;
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -33,7 +34,7 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
     const r = await fetch(`/api/generations/${gen.id}/publish`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
     const j = await r.json().catch(() => ({}));
     setBusy(false); setOptimistic(null);
-    if (!r.ok) { setError(r.status === 409 ? P.needUnlock : j.error || x.errors.generic); return; }
+    if (!r.ok) { setError(r.status === 409 && j.error === "unlock_first" ? P.needUnlock : apiErrorText(j, l, x.errors.generic)); return; }
     setSaved(j.publicResume); onUpdate?.(j.publicResume);
   }
   async function refresh() {
@@ -45,6 +46,7 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
 
   return (
     <div className="rounded-xl border border-edge bg-surface p-5" data-testid="publish" data-enabled={pub?.enabled ? "1" : "0"}>
+      {pub?.takenDown && <p className="mb-3 rounded-lg bg-gold-2 px-3 py-2 text-sm text-ink" role="status" data-testid="publish-taken-down">{l.apiErrors.taken_down}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-ink-2">{P.title}</h3>

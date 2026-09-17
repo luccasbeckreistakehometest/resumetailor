@@ -10,11 +10,15 @@ let db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (db) return db;
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  db = new Database(path.join(DATA_DIR, "resumetailor.db"));
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  migrate(db);
-  return db;
+  const d = new Database(path.join(DATA_DIR, "resumetailor.db"));
+  // `next build` loads route modules in parallel workers against the same file: writers wait
+  // for each other instead of failing with SQLITE_BUSY.
+  d.pragma("busy_timeout = 5000");
+  d.pragma("journal_mode = WAL");
+  d.pragma("foreign_keys = ON");
+  migrate(d);
+  db = d;
+  return d;
 }
 
 export const nowIso = () => new Date().toISOString();
@@ -201,11 +205,112 @@ function migrate(d: Database.Database): void {
       UNIQUE(generationId, kind)
     );
   `);
-  addColumn(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
+  d.exec(LAUNCH_TABLES);
+  addColumnIfMissing(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
+  // Accounts: session revocation, disabling, consent, and where the signup came from (bonus cap).
+  addColumnIfMissing(d, "users", "sessionVersion", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(d, "users", "disabledAt", "TEXT");
+  addColumnIfMissing(d, "users", "termsAcceptedAt", "TEXT");
+  addColumnIfMissing(d, "users", "termsVersion", "TEXT");
+  addColumnIfMissing(d, "users", "signupIp", "TEXT");
+  addColumnIfMissing(d, "users", "mustChangePassword", "INTEGER NOT NULL DEFAULT 0");
+  // Payments: the provider's own reference (Stripe payment intent) and credits taken back on refunds.
+  addColumnIfMissing(d, "payments", "providerRef", "TEXT");
+  addColumnIfMissing(d, "payments", "reversedCredits", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(d, "payments", "reversedAt", "TEXT");
+  // Moderation: a page the admin took down stays down, whatever the owner toggles.
+  addColumnIfMissing(d, "public_resumes", "takenDownAt", "TEXT");
+  // ...and on the kit itself, so deleting the page and publishing again cannot undo a takedown.
+  addColumnIfMissing(d, "generations", "publishBlockedAt", "TEXT");
+  d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
+  d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
 }
 
-/** CREATE TABLE IF NOT EXISTS never touches an existing table; columns added later go through here. */
-function addColumn(d: Database.Database, table: string, column: string, ddl: string): void {
+const LAUNCH_TABLES = `
+  -- Small key/value store for operational state (admin password fingerprint, AI health).
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  );
+
+  -- Fixed-window counters for rate limits and lockouts. Rows expire; old ones are swept.
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    bucket TEXT NOT NULL,
+    key TEXT NOT NULL,
+    windowStart INTEGER NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    expiresAt INTEGER NOT NULL,
+    PRIMARY KEY (bucket, key, windowStart)
+  );
+  CREATE INDEX IF NOT EXISTS idx_rate_expires ON rate_limits(expiresAt);
+
+  -- Every AI call (and TTS synthesis) with its cost, so the daily spend ceiling and the admin
+  -- panel work from recorded numbers. Failures are kept with the operator-facing detail.
+  CREATE TABLE IF NOT EXISTS ai_usage (
+    id TEXT PRIMARY KEY,
+    feature TEXT NOT NULL,
+    ownerKey TEXT,
+    ip TEXT,
+    model TEXT NOT NULL DEFAULT '',
+    costUsd REAL NOT NULL DEFAULT 0,
+    ok INTEGER NOT NULL DEFAULT 1,
+    error TEXT,
+    createdAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_ai_usage_day ON ai_usage(createdAt);
+
+  -- Messages from the in-app contact form, answered from the admin panel.
+  CREATE TABLE IF NOT EXISTS contact_messages (
+    id TEXT PRIMARY KEY,
+    userId TEXT REFERENCES users(id) ON DELETE SET NULL,
+    name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL,
+    topic TEXT NOT NULL DEFAULT 'other',
+    message TEXT NOT NULL,
+    lang TEXT NOT NULL DEFAULT 'en',
+    status TEXT NOT NULL DEFAULT 'new',          -- new | open | done
+    ip TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_contact_status ON contact_messages(status, createdAt DESC);
+
+  -- Company insights are the same for everyone who pastes the same posting: cached by hash.
+  CREATE TABLE IF NOT EXISTS insights_cache (
+    hash TEXT PRIMARY KEY,
+    result TEXT NOT NULL,
+    createdAt TEXT NOT NULL
+  );
+
+  -- The spoken-prompt disk cache, tracked so it can be evicted least-recently-used first.
+  CREATE TABLE IF NOT EXISTS tts_cache (
+    key TEXT PRIMARY KEY,
+    bytes INTEGER NOT NULL,
+    lastUsedAt INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_tts_used ON tts_cache(lastUsedAt);
+`;
+
+/**
+ * Idempotent and race-safe column migration: two build workers can both see the column missing;
+ * the loser's "duplicate column name" is not an error. Arguments are always code literals.
+ */
+export function addColumnIfMissing(d: Pick<Database.Database, "prepare" | "exec">, table: string, column: string, ddl: string): void {
   const cols = d.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
-  if (!cols.some((c) => c.name === column)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+  if (cols.length === 0 || cols.some((c) => c.name === column)) return;
+  try {
+    d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+  } catch (error) {
+    if (!(error instanceof Error && /duplicate column name/i.test(error.message))) throw error;
+  }
+}
+
+export function getSetting(key: string): string | null {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
+  return row?.value ?? null;
+}
+export function setSetting(key: string, value: string): void {
+  getDb().prepare("INSERT INTO settings (key, value, updatedAt) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updatedAt = excluded.updatedAt")
+    .run(key, value, nowIso());
 }

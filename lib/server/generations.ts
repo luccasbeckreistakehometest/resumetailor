@@ -1,3 +1,4 @@
+import { envNumber } from "@/lib/server/env";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { moveCredits } from "@/lib/server/users";
 import type { Kit } from "@/lib/ai/kit";
@@ -9,10 +10,11 @@ export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
   targetRole: string; input: string; result: string; matchBefore: number; matchAfter: number; unlocked: number;
   unlockedAt: string | null; model: string; costUsd: number; deepened: number; createdAt: string;
+  publishBlockedAt: string | null;
 }
 
 /** "Go deeper" passes per kit. Each is a full generation, so the count is bounded; override per deployment. */
-export const DEEPEN_MAX = Number(process.env.KIT_DEEPEN_MAX ?? 2);
+export const DEEPEN_MAX = envNumber("KIT_DEEPEN_MAX", 2);
 
 /** The candidate's name is usually the first line of the resume; that makes a better title than "Resume". */
 export function titleFrom(kit: Kit): string {
@@ -63,11 +65,27 @@ export function unlockGeneration(id: string, userId: string): { ok: true; credit
   })();
 }
 
-/** Replaces the kit in place after a deepening pass. Unlock state and ownership are untouched; no credit moves. */
+/**
+ * Claims one "go deeper" pass BEFORE the generation runs: a single conditional UPDATE, so parallel
+ * requests on one kit cannot all pass the cap. False when the kit has used them all.
+ */
+export function reserveDeepen(id: string): boolean {
+  return getDb().prepare("UPDATE generations SET deepened = deepened + 1 WHERE id = ? AND deepened < ?").run(id, DEEPEN_MAX).changes === 1;
+}
+
+/** Gives a reserved pass back (the generation failed). */
+export function releaseDeepen(id: string): void {
+  getDb().prepare("UPDATE generations SET deepened = deepened - 1 WHERE id = ? AND deepened > 0").run(id);
+}
+
+/**
+ * Replaces the kit in place after a deepening pass (the pass itself was counted by reserveDeepen).
+ * Unlock state and ownership are untouched; no credit moves.
+ */
 export function deepenGeneration(id: string, kit: Kit, model: string, costUsd: number): GenerationRow {
   const db = getDb();
   db.transaction(() => {
-    db.prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ?, deepened = deepened + 1 WHERE id = ?")
+    db.prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ? WHERE id = ?")
       .run(JSON.stringify(kit), kit.matchBefore, kit.matchAfter, titleFrom(kit), model, costUsd, id);
     clearVariants(id);   // letters, emails and the LinkedIn pass were written from the old text
   })();

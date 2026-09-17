@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { KIT_MODEL, aiMock, costOf, getClient } from "@/lib/ai/client";
+import { KIT_MODEL, MOCK_AI_DOWN, MockAiDown, aiMock, costOf, getClient } from "@/lib/ai/client";
 
 export type Mode = "tailor" | "improve" | "build";
 export type Lang = "en" | "pt" | "es";
@@ -121,7 +121,10 @@ export function mockKit(i: KitInput): Kit {
 }
 
 export async function generateKit(i: KitInput): Promise<{ kit: Kit; model: string; costUsd: number }> {
-  if (aiMock()) return { kit: mockKit(i), model: "mock", costUsd: 0 };
+  if (aiMock()) {
+    if (i.targetRole.includes(MOCK_AI_DOWN)) throw new MockAiDown();
+    return { kit: mockKit(i), model: "mock", costUsd: 0 };
+  }
   const { system, user } = prompt(i);
   // Streaming avoids HTTP timeouts on a long kit; the parsed output arrives with the final message.
   const stream = getClient().messages.stream({
@@ -132,6 +135,6 @@ export async function generateKit(i: KitInput): Promise<{ kit: Kit; model: strin
     output_config: { format: zodOutputFormat(KitSchema) },
   });
   const response = await stream.finalMessage();
-  if (response.stop_reason === "max_tokens" || !response.parsed_output) throw new Error("The kit came back incomplete. Please retry.");
+  if (response.stop_reason === "max_tokens" || !response.parsed_output) throw new Error("incomplete: the kit came back truncated or unparsed");
   return { kit: normalise(response.parsed_output as z.infer<typeof KitSchema>, i.mode), model: KIT_MODEL, costUsd: costOf(response.usage, KIT_MODEL) };
 }

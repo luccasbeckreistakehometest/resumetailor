@@ -87,7 +87,7 @@ textarea.field { line-height: 1.5; resize: vertical; }
 /* Tour spotlight */
 .tour-mask { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
 .tour-hole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(27,23,19,.62); transition: all .25s ease; }
-.tour-card { position: fixed; z-index: 91; max-width: 340px; }
+.tour-card { position: fixed; z-index: 91; max-width: min(340px, calc(100vw - 24px)); }
 
 /* listening pulse */
 @keyframes pulse-ring { 0% { transform: scale(.9); opacity: .8 } 100% { transform: scale(1.9); opacity: 0 } }

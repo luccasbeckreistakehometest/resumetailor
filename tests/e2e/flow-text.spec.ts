@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { buildKitByText, signUp } from "./helpers";
 
 test("type flow: preview → account → first kit unlocked with the free credit → print → library", async ({ page }) => {

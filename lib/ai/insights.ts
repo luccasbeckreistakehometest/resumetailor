@@ -1,15 +1,20 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { EXTRACT_MODEL, aiMock, getClient } from "@/lib/ai/client";
+import { EXTRACT_MODEL, aiMock, costOf, getClient } from "@/lib/ai/client";
+import { envNumber, secretEnv } from "@/lib/server/env";
 
-const TAVILY_KEY = process.env.TAVILY_API_KEY;
+/** Company insights exist only with a real search key; the copy that promises them hides too. */
+export const insightsEnabled = () => !!secretEnv("TAVILY_API_KEY") || (aiMock() && process.env.AI_MOCK_INSIGHTS === "1");
 type Hit = { title: string; url: string; content: string };
+
+/** Tavily bills per search (basic depth = 1 credit); recorded with the model cost in ai_usage. */
+export const tavilyCost = (searches: number) => searches * envNumber("TAVILY_COST_PER_SEARCH_USD", 0.008);
 
 async function tavily(query: string): Promise<Hit[]> {
   try {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ api_key: TAVILY_KEY, query, search_depth: "basic", max_results: 4 }),
+      body: JSON.stringify({ api_key: secretEnv("TAVILY_API_KEY"), query, search_depth: "basic", max_results: 4 }),
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -26,9 +31,9 @@ export interface Insights {
 }
 
 /** Public company facts for interview prep. Optional: with no search key it reports disabled rather than invent. */
-export async function companyInsights(jobDescription: string): Promise<Insights> {
-  if (aiMock()) return { enabled: true, found: true, company: "Acme", about: "Acme builds demo software. [demo]", tech: ["TypeScript"], interview: ["Two rounds, one take-home."], sources: [{ title: "Acme — About", url: "https://example.com" }] };
-  if (!TAVILY_KEY) return { enabled: false, found: false };
+export async function companyInsights(jobDescription: string): Promise<{ insights: Insights; costUsd: number; model: string }> {
+  if (aiMock()) return { insights: { enabled: true, found: true, company: "Acme", about: "Acme builds demo software. [demo]", tech: ["TypeScript"], interview: ["Two rounds, one take-home."], sources: [{ title: "Acme — About", url: "https://example.com" }] }, costUsd: 0, model: "mock" };
+  if (!insightsEnabled()) return { insights: { enabled: false, found: false }, costUsd: 0, model: "" };
   const c = getClient();
   const ex = await c.messages.stream({
     model: EXTRACT_MODEL, max_tokens: 200,
@@ -38,12 +43,13 @@ export async function companyInsights(jobDescription: string): Promise<Insights>
   }).finalMessage();
   const company = (ex.parsed_output as z.infer<typeof Company> | null)?.company?.trim() ?? "";
   const role = (ex.parsed_output as z.infer<typeof Company> | null)?.role?.trim() ?? "";
-  if (!company) return { enabled: true, found: false };
+  let costUsd = costOf(ex.usage, EXTRACT_MODEL);
+  if (!company) return { insights: { enabled: true, found: false }, costUsd, model: EXTRACT_MODEL };
 
-  const all = (await Promise.all([
-    tavily(`${company} company what they do overview`), tavily(`${company} engineering tech stack tools`), tavily(`${company} interview hiring process candidates`),
-  ])).flat();
-  if (!all.length) return { enabled: true, found: false, company };
+  const queries = [`${company} company what they do overview`, `${company} engineering tech stack tools`, `${company} interview hiring process candidates`];
+  const all = (await Promise.all(queries.map(tavily))).flat();
+  costUsd += tavilyCost(queries.length);
+  if (!all.length) return { insights: { enabled: true, found: false, company }, costUsd, model: EXTRACT_MODEL };
   const context = all.map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\n${(r.content || "").slice(0, 700)}`).join("\n\n");
 
   const sy = await c.messages.stream({
@@ -52,7 +58,9 @@ export async function companyInsights(jobDescription: string): Promise<Insights>
     messages: [{ role: "user", content: `SEARCH RESULTS:\n\n${context}` }],
     output_config: { format: zodOutputFormat(Synth) },
   }).finalMessage();
+  costUsd += costOf(sy.usage, EXTRACT_MODEL);
   const p = (sy.parsed_output as z.infer<typeof Synth> | null) ?? { about: "", tech: [], interview: [], sourceIdx: [] };
   const used = p.sourceIdx.map((n) => all[n - 1]).filter(Boolean).slice(0, 5).map((r) => ({ title: r.title, url: r.url }));
-  return { enabled: true, found: true, company, about: p.about, tech: p.tech.slice(0, 10), interview: p.interview.slice(0, 8), sources: used.length ? used : all.slice(0, 3).map((r) => ({ title: r.title, url: r.url })) };
+  const insights: Insights = { enabled: true, found: true, company, about: p.about, tech: p.tech.slice(0, 10), interview: p.interview.slice(0, 8), sources: used.length ? used : all.slice(0, 3).map((r) => ({ title: r.title, url: r.url })) };
+  return { insights, costUsd, model: EXTRACT_MODEL };
 }

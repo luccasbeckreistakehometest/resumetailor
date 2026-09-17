@@ -1,11 +1,12 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { getDb, newId, nowIso } from "@/lib/server/db";
-import { hashPassword, verifyPassword } from "@/lib/server/auth";
+import { authSecret, hashPassword, safeEqual, verifyPassword } from "@/lib/server/auth";
 import { PIN_RULE, slugify, type Template } from "@/lib/resume/public";
 
 export interface PublicResumeRow {
   id: string; generationId: string; userId: string; slug: string; enabled: number; template: string; pinHash: string | null;
   hideContact: number; indexable: number; views: number; lastViewedAt: string | null; createdAt: string; updatedAt: string;
+  takenDownAt: string | null;
 }
 
 export function getPublicByGeneration(generationId: string): PublicResumeRow | null {
@@ -33,24 +34,27 @@ export interface PublishPatch { enabled?: boolean; template?: Template; hideCont
  * working) and applies the patch. `pin: ""` or null clears the PIN; a new PIN invalidates every
  * browser that had verified the old one, because the cookie token is derived from the hash.
  */
-export function upsertPublic(generationId: string, userId: string, title: string, patch: PublishPatch): PublicResumeRow {
+export async function upsertPublic(generationId: string, userId: string, title: string, patch: PublishPatch): Promise<PublicResumeRow> {
   const db = getDb();
+  if (patch.pin && !PIN_RULE.test(patch.pin)) throw new Error("pin");
+  const pinHash = patch.pin ? await hashPassword(patch.pin) : null;
   return db.transaction(() => {
     let row = getPublicByGeneration(generationId);
     const at = nowIso();
     if (!row) {
-      db.prepare("INSERT INTO public_resumes (id,generationId,userId,slug,enabled,template,pinHash,hideContact,indexable,views,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-        .run(newId("pub"), generationId, userId, freshSlug(title), 0, "modern", null, 0, 0, 0, at, at);
+      // A kit whose page was taken down stays blocked on a new page too (the admin can restore it there).
+      const blocked = (db.prepare("SELECT publishBlockedAt FROM generations WHERE id = ?").get(generationId) as { publishBlockedAt: string | null } | undefined)?.publishBlockedAt ?? null;
+      db.prepare("INSERT INTO public_resumes (id,generationId,userId,slug,enabled,template,pinHash,hideContact,indexable,views,createdAt,updatedAt,takenDownAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .run(newId("pub"), generationId, userId, freshSlug(title), 0, "modern", null, 0, 0, 0, at, at, blocked);
       row = getPublicByGeneration(generationId)!;
     }
     const next = { ...row };
-    if (patch.enabled !== undefined) next.enabled = patch.enabled ? 1 : 0;
+    if (patch.enabled !== undefined) next.enabled = patch.enabled && !row.takenDownAt ? 1 : 0;
     if (patch.template !== undefined) next.template = patch.template;
     if (patch.hideContact !== undefined) next.hideContact = patch.hideContact ? 1 : 0;
     if (patch.indexable !== undefined) next.indexable = patch.indexable ? 1 : 0;
     if (patch.pin !== undefined) {
-      if (patch.pin) { if (!PIN_RULE.test(patch.pin)) throw new Error("pin"); next.pinHash = hashPassword(patch.pin); }
-      else next.pinHash = null;
+      next.pinHash = patch.pin ? pinHash : null;
     }
     db.prepare("UPDATE public_resumes SET enabled=?, template=?, pinHash=?, hideContact=?, indexable=?, updatedAt=? WHERE id=?")
       .run(next.enabled, next.template, next.pinHash, next.hideContact, next.indexable, at, row.id);
@@ -67,24 +71,37 @@ export function bumpViews(id: string): void {
   getDb().prepare("UPDATE public_resumes SET views = views + 1, lastViewedAt = ? WHERE id = ?").run(nowIso(), id);
 }
 
-export const verifyPin = (row: PublicResumeRow, pin: string): boolean => !!row.pinHash && verifyPassword(pin, row.pinHash);
+export const verifyPin = async (row: PublicResumeRow, pin: string): Promise<boolean> => !!row.pinHash && verifyPassword(pin, row.pinHash);
+
+/**
+ * Admin moderation: the page goes offline and the owner cannot switch it back on. The block is
+ * also stored on the kit, so deleting the page and publishing it again brings nothing back.
+ */
+export function setTakenDown(slug: string, down: boolean): PublicResumeRow | null {
+  const db = getDb();
+  const at = down ? nowIso() : null;
+  db.transaction(() => {
+    db.prepare("UPDATE public_resumes SET takenDownAt = ?, enabled = CASE WHEN ? THEN 0 ELSE enabled END, updatedAt = ? WHERE slug = ?")
+      .run(at, down ? 1 : 0, nowIso(), slug);
+    db.prepare("UPDATE generations SET publishBlockedAt = ? WHERE id = (SELECT generationId FROM public_resumes WHERE slug = ?)").run(at, slug);
+  })();
+  return getPublicBySlug(slug);
+}
 
 /* ---------- the "PIN verified" cookie: an HMAC over slug + current PIN hash, nothing a browser can forge ---------- */
 export const pinCookieName = (slug: string) => `rt_cv_${slug.replace(/[^a-z0-9-]/gi, "")}`;
-const secret = () => { const v = process.env.AUTH_SECRET; if (!v || v.length < 16) throw new Error("AUTH_SECRET is missing or too short"); return v; };
 export function pinToken(row: PublicResumeRow): string {
-  return createHmac("sha256", secret()).update(`cv|${row.slug}|${row.pinHash ?? ""}`).digest("base64url");
+  return createHmac("sha256", authSecret()).update(`cv|${row.slug}|${row.pinHash ?? ""}`).digest("base64url");
 }
 export function pinTokenValid(row: PublicResumeRow, token: string | undefined): boolean {
   if (!token || !row.pinHash) return false;
-  const expected = pinToken(row);
-  return token.length === expected.length && timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+  return safeEqual(token, pinToken(row));
 }
 
 export function serialisePublic(row: PublicResumeRow) {
   return {
     slug: row.slug, enabled: row.enabled === 1, template: row.template as Template, hideContact: row.hideContact === 1, indexable: row.indexable === 1,
-    hasPin: !!row.pinHash, views: row.views, lastViewedAt: row.lastViewedAt, createdAt: row.createdAt,
+    hasPin: !!row.pinHash, takenDown: !!row.takenDownAt, views: row.views, lastViewedAt: row.lastViewedAt, createdAt: row.createdAt,
   };
 }
 export type PublicResumeView = ReturnType<typeof serialisePublic>;

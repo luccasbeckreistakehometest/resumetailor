@@ -14,7 +14,7 @@ const none = { appliedAt: null, interviewAt: null, offerAt: null, rejectedAt: nu
 const app = (stage: ApplicationLike["stage"], m: Partial<ApplicationLike> = {}): ApplicationLike => ({ stage, nextStepAt: null, ...none, ...m });
 
 describe("milestones", () => {
-  it("stamps everything a stage implies, once", () => {
+  it("stamps everything a stage implies, once", async () => {
     expect(milestonesFor("applied", none, "2026-09-01")).toEqual({ ...none, appliedAt: "2026-09-01" });
     expect(milestonesFor("offer", none, "2026-09-01")).toEqual({ appliedAt: "2026-09-01", interviewAt: "2026-09-01", offerAt: "2026-09-01", rejectedAt: null });
     expect(milestonesFor("rejected", none, "2026-09-01")).toEqual({ ...none, appliedAt: "2026-09-01", rejectedAt: "2026-09-01" });
@@ -22,7 +22,7 @@ describe("milestones", () => {
     // a whole row may be passed in; only the milestone keys come back
     expect(Object.keys(milestonesFor("applied", { ...none, stage: "saved", notes: "x" } as never, "2026-09-01")).sort()).toEqual(["appliedAt", "interviewAt", "offerAt", "rejectedAt"]);
   });
-  it("keeps the first date when a card moves back and forth", () => {
+  it("keeps the first date when a card moves back and forth", async () => {
     const first = milestonesFor("interview", none, "2026-09-01");
     expect(milestonesFor("interview", first, "2026-09-20").interviewAt).toBe("2026-09-01");
     expect(milestonesFor("rejected", first, "2026-09-20")).toEqual({ ...first, rejectedAt: "2026-09-20" });
@@ -30,7 +30,7 @@ describe("milestones", () => {
 });
 
 describe("funnel", () => {
-  it("counts by milestone, not by column, so a rejection after an interview still counts the interview", () => {
+  it("counts by milestone, not by column, so a rejection after an interview still counts the interview", async () => {
     const items = [
       app("saved"),
       app("applied", { appliedAt: "2026-09-01" }),
@@ -41,7 +41,7 @@ describe("funnel", () => {
     const f = funnel(items, "2026-09-15");
     expect(f).toMatchObject({ total: 5, saved: 1, applied: 4, interviews: 3, offers: 1, rejected: 1, interviewRate: 75, offerRate: 33 });
   });
-  it("has no rate before anything was applied to, and tracks next steps", () => {
+  it("has no rate before anything was applied to, and tracks next steps", async () => {
     expect(funnel([app("saved")], "2026-09-15").interviewRate).toBeNull();
     const items = [
       app("applied", { appliedAt: "2026-09-01", nextStepAt: "2026-09-10" }),   // overdue
@@ -57,7 +57,7 @@ describe("funnel", () => {
     expect(steps[0].overdue).toBe(true);
     expect(steps[1].overdue).toBe(false);
   });
-  it("normalises pasted links", () => {
+  it("normalises pasted links", async () => {
     expect(normaliseLink(" gupy.io/jobs/1 ")).toBe("https://gupy.io/jobs/1");
     expect(normaliseLink("http://x.y")).toBe("http://x.y");
     expect(normaliseLink("")).toBe("");
@@ -68,8 +68,8 @@ describe("persistence", () => {
   let n = 0;
   const user = () => createUser({ email: `a${++n}@example.com`, password: "password123" });
 
-  it("moves through stages with milestones and never clears them", () => {
-    const u = user();
+  it("moves through stages with milestones and never clears them", async () => {
+    const u = await user();
     const a = createApplication({ userId: u.id, anonId: null }, { company: "Acme", role: "Growth Lead", link: "acme.com/jobs/1" });
     expect(a.stage).toBe("saved");
     expect(a.link).toBe("https://acme.com/jobs/1");
@@ -81,14 +81,14 @@ describe("persistence", () => {
     expect(back.nextStepAt).toBe("2026-09-22");
   });
 
-  it("is scoped to its owner and claimed on signup", () => {
+  it("is scoped to its owner and claimed on signup", async () => {
     const anon = "anon_apps";
     const a = createApplication({ userId: null, anonId: anon }, { company: "Globex" });
     expect(ownsApplication(a, null, anon)).toBe(true);
-    const other = user();
+    const other = await user();
     expect(ownsApplication(a, other.id, undefined)).toBe(false);
     expect(listApplications(other.id, undefined)).toHaveLength(0);
-    const u = user();
+    const u = await user();
     claimAnonymous(u.id, anon);
     expect(listApplications(u.id, undefined).map((r) => r.id)).toEqual([a.id]);
     expect(listApplications(null, anon)).toHaveLength(0);

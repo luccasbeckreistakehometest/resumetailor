@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
+import { envNumber } from "@/lib/server/env";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { canonical, fitScore, fitVerdict, topGaps, type FitAnalysis } from "@/lib/fit/logic";
 
 export interface FitRow { id: string; ownerKey: string; hash: string; lang: string; role: string; result: string; model: string; costUsd: number; createdAt: string }
 
 /** AI calls per person per rolling day. Cache hits are free and never count. Override per deployment. */
-export const FIT_DAILY_LIMIT = Number(process.env.FIT_CHECKS_PER_DAY ?? 5);
+export const FIT_DAILY_LIMIT = envNumber("FIT_CHECKS_PER_DAY", 5);
 const DAY_MS = 86_400_000;
 
 /** Same posting + résumé + language → same key, whatever the spacing or casing. */

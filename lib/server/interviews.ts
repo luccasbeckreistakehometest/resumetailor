@@ -1,3 +1,4 @@
+import { envNumber } from "@/lib/server/env";
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import type { GenerationRow } from "@/lib/server/generations";
 import type { Kit, Lang } from "@/lib/ai/kit";
@@ -11,7 +12,7 @@ export interface SessionRow {
 }
 
 /** Every answer is an AI call, so practice on one kit is bounded. Override per deployment. */
-export const MAX_SESSIONS_PER_KIT = Number(process.env.INTERVIEW_MAX_SESSIONS_PER_KIT ?? 5);
+export const MAX_SESSIONS_PER_KIT = envNumber("INTERVIEW_MAX_SESSIONS_PER_KIT", 5);
 
 export function createSession(input: { userId: string | null; anonId: string | null; generation: GenerationRow; model: string }): SessionRow {
   const kit = JSON.parse(input.generation.result) as Kit;
@@ -54,16 +55,23 @@ export function listSessions(userId: string | null, anonId: string | undefined, 
   return [];
 }
 
-export function appendTurn(id: string, turn: Turn, costUsd: number): SessionRow {
+/**
+ * Appends one scored answer. Re-checked inside the transaction: the answer must be for the next
+ * question of a session still open, so a double submit that raced past the route's check is
+ * refused (null) instead of storing the answer twice and skipping a question.
+ */
+export function appendTurn(id: string, turn: Turn, costUsd: number): SessionRow | null {
   const db = getDb();
-  db.transaction(() => {
+  const appended = db.transaction(() => {
     const row = getSession(id);
     if (!row) throw new Error("session not found");
     const turns = JSON.parse(row.turns) as Turn[];
+    if (row.status !== "active" || turns.length !== turn.questionIdx) return false;
     turns.push(turn);
     db.prepare("UPDATE interview_sessions SET turns = ?, costUsd = costUsd + ? WHERE id = ?").run(JSON.stringify(turns), costUsd, id);
+    return true;
   })();
-  return getSession(id)!;
+  return appended ? getSession(id)! : null;
 }
 
 export function finishSession(id: string, summary: SessionSummary, costUsd: number): SessionRow {

@@ -19,7 +19,7 @@ const turn = (questionIdx: number, s: [number, number, number]): Turn =>
   ({ questionIdx, answer: "a", source: "text", scores: { structure: s[0], specificity: s[1], relevance: s[2] }, coaching: [], modelAnswer: "", at: "2026-01-01T00:00:00.000Z" });
 
 describe("questions", () => {
-  it("opens with the role, frames topics as STAR questions, and passes real questions through", () => {
+  it("opens with the role, frames topics as STAR questions, and passes real questions through", async () => {
     const qs = buildQuestions({ interviewPrep: { ...kit.interviewPrep, behavioral: ["A campaign that failed and what you changed", "How do you handle a disagreement with sales?"], technical: ["Attribution models"] } }, "Growth Lead", "en", false);
     expect(qs[0].kind).toBe("opener");
     expect(qs[0].text).toContain("Growth Lead");
@@ -29,18 +29,18 @@ describe("questions", () => {
     expect(qs[3].text).toContain("attribution models");
   });
 
-  it("writes the opener in the kit's language", () => {
+  it("writes the opener in the kit's language", async () => {
     expect(buildQuestions(kit, "Analista", "pt", false)[0].text).toMatch(/^Pra começar/);
     expect(buildQuestions(kit, "Analista", "es", false)[0].text).toMatch(/^Para empezar/);
   });
 
-  it("gives a locked kit a two-question preview and caps the full interview", () => {
+  it("gives a locked kit a two-question preview and caps the full interview", async () => {
     expect(buildQuestions(kit, "Growth Lead", "en", true)).toHaveLength(PREVIEW_QUESTIONS);
     const many = { interviewPrep: { ...kit.interviewPrep, behavioral: Array.from({ length: 6 }, (_, i) => `story ${i}`), technical: Array.from({ length: 6 }, (_, i) => `topic ${i}`) } };
     expect(buildQuestions(many, "Growth Lead", "en", false)).toHaveLength(MAX_QUESTIONS);
   });
 
-  it("skips blank items", () => {
+  it("skips blank items", async () => {
     const qs = buildQuestions({ interviewPrep: { ...kit.interviewPrep, behavioral: ["", "  "], technical: [] } }, "", "en", false);
     expect(qs).toHaveLength(1);
     expect(qs[0].text).toContain("this role");
@@ -48,7 +48,7 @@ describe("questions", () => {
 });
 
 describe("aggregation", () => {
-  it("averages each dimension, names the weakest, and rounds to one decimal", () => {
+  it("averages each dimension, names the weakest, and rounds to one decimal", async () => {
     const a = aggregate([turn(0, [8, 4, 7]), turn(1, [6, 5, 9])]);
     expect(a.answered).toBe(2);
     expect(a.averages).toEqual({ structure: 7, specificity: 4.5, relevance: 8 });
@@ -57,7 +57,7 @@ describe("aggregation", () => {
     expect(a.overall).toBe(6.5);
   });
 
-  it("breaks ties towards structure first, and is empty-safe", () => {
+  it("breaks ties towards structure first, and is empty-safe", async () => {
     expect(aggregate([turn(0, [5, 5, 5])]).weakest).toBe("structure");
     expect(aggregate([turn(0, [5, 3, 3])]).weakest).toBe("specificity");
     const empty = aggregate([]);
@@ -65,7 +65,7 @@ describe("aggregation", () => {
     expect(empty.overall).toBe(0);
   });
 
-  it("scores a full, number-bearing answer higher than a thin one in mock mode", () => {
+  it("scores a full, number-bearing answer higher than a thin one in mock mode", async () => {
     const thin = mockAnswerScore({ question: { kind: "opener", text: "q" }, answer: "I did some marketing stuff.", targetRole: "x", background: "", lang: "en" });
     const full = mockAnswerScore({ question: { kind: "opener", text: "q" }, answer: "At Acme I led a team of 4 and grew qualified pipeline 38% in 12 months by rebuilding segmentation and running weekly A/B tests across 3 markets, then handed the playbook to sales.", targetRole: "x", background: "", lang: "en" });
     expect(overallOf(full.scores)).toBeGreaterThan(overallOf(thin.scores));
@@ -78,8 +78,8 @@ describe("sessions", () => {
   const user = () => createUser({ email: `i${++n}@example.com`, password: "password123" });
   const gen = (userId: string | null, anonId: string | null) => saveGeneration({ userId, anonId, mode: "tailor", source: "text", lang: "pt", targetRole: "Analista", input: {}, kit, model: "mock", costUsd: 0 });
 
-  it("previews a locked kit and runs the full interview once unlocked", () => {
-    const u = user();
+  it("previews a locked kit and runs the full interview once unlocked", async () => {
+    const u = await user();
     const g = gen(u.id, null);
     const preview = createSession({ userId: u.id, anonId: null, generation: g, model: "mock" });
     expect(preview.mode).toBe("preview");
@@ -92,14 +92,18 @@ describe("sessions", () => {
     expect(countSessionsForKit(g.id, u.id, undefined)).toBe(2);
   });
 
-  it("appends turns in order, sums cost, and closes with a summary", () => {
-    const u = user();
+  it("appends turns in order, sums cost, and closes with a summary", async () => {
+    const u = await user();
     const s = createSession({ userId: u.id, anonId: null, generation: gen(u.id, null), model: "mock" });
-    appendTurn(s.id, turn(0, [7, 6, 8]), 0.01);
-    const after = appendTurn(s.id, turn(1, [5, 4, 6]), 0.02);
+    expect(appendTurn(s.id, turn(0, [7, 6, 8]), 0.01)).not.toBeNull();
+    // A double submit of the first answer (it raced past the route's order check) is refused.
+    expect(appendTurn(s.id, turn(0, [7, 6, 8]), 0.01)).toBeNull();
+    const after = appendTurn(s.id, turn(1, [5, 4, 6]), 0.02)!;
     expect(JSON.parse(after.turns)).toHaveLength(2);
     expect(after.costUsd).toBeCloseTo(0.03);
+    expect(appendTurn(s.id, turn(3, [5, 4, 6]), 0)).toBeNull();          // skipping ahead is refused too
     const done = finishSession(s.id, { rehearse: ["a", "b", "c"], overall: "ok" }, 0.005);
+    expect(appendTurn(s.id, turn(2, [5, 5, 5]), 0)).toBeNull();          // and nothing lands on a closed session
     expect(done.status).toBe("done");
     expect(done.completedAt).toBeTruthy();
     const view = serialiseSession(done, { title: "T", targetRole: "R" });
@@ -108,8 +112,8 @@ describe("sessions", () => {
     expect(view.summary?.rehearse).toHaveLength(3);
   });
 
-  it("never lets another user see or count a session", () => {
-    const a = user(), b = user();
+  it("never lets another user see or count a session", async () => {
+    const a = await user(), b = await user();
     const s = createSession({ userId: a.id, anonId: null, generation: gen(a.id, null), model: "mock" });
     expect(ownsSession(s, b.id, undefined)).toBe(false);
     expect(ownsSession(s, a.id, undefined)).toBe(true);
@@ -117,12 +121,12 @@ describe("sessions", () => {
     expect(listSessions(a.id, undefined).map((r) => r.id)).toContain(s.id);
   });
 
-  it("anonymous sessions follow the kit into the new account", () => {
+  it("anonymous sessions follow the kit into the new account", async () => {
     const anon = "anon_interview";
     const g = gen(null, anon);
     const s = createSession({ userId: null, anonId: anon, generation: g, model: "mock" });
     expect(ownsSession(s, null, anon)).toBe(true);
-    const u = user();
+    const u = await user();
     claimAnonymous(u.id, anon);
     expect(getSession(s.id)!.userId).toBe(u.id);
     expect(ownsSession(getSession(s.id)!, null, anon)).toBe(false);

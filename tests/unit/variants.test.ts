@@ -8,7 +8,7 @@ process.env.DATA_DIR = DIR;
 fs.rmSync(DIR, { recursive: true, force: true });
 
 const { createUser } = await import("@/lib/server/users");
-const { saveGeneration, deepenGeneration, deleteGeneration } = await import("@/lib/server/generations");
+const { saveGeneration, deepenGeneration, deleteGeneration, reserveDeepen, releaseDeepen, getGeneration, DEEPEN_MAX } = await import("@/lib/server/generations");
 const { mockKit } = await import("@/lib/ai/kit");
 const { getVariant, listVariants, saveVariant, clearVariants } = await import("@/lib/server/variants");
 
@@ -16,13 +16,13 @@ const kit = mockKit({ mode: "tailor", targetRole: "Growth Lead", lang: "pt", res
 const args = { kit, title: "Alex Ribeiro", targetRole: "Growth Lead", posting: "posting" };
 
 describe("kinds and fixtures", () => {
-  it("knows its seven kinds", () => {
+  it("knows its seven kinds", async () => {
     expect(VARIANT_KINDS).toHaveLength(7);
     expect(isVariantKind("cover:warm")).toBe(true);
     expect(isVariantKind("email:nudge")).toBe(true);
     expect(isVariantKind("cover:sarcastic")).toBe(false);
   });
-  it("writes each tone differently, in the kit's language, signed by the candidate, with no subject on a letter", () => {
+  it("writes each tone differently, in the kit's language, signed by the candidate, with no subject on a letter", async () => {
     const bodies = (["formal", "warm", "direct", "confident"] as const).map((t) => mockVariant({ ...args, lang: "pt", kind: `cover:${t}` }));
     expect(new Set(bodies.map((b) => b.body)).size).toBe(4);
     for (const b of bodies) { expect(b.subject).toBe(""); expect(b.body).toContain("Alex Ribeiro"); expect(b.body).toContain("Growth Lead"); }
@@ -30,7 +30,7 @@ describe("kinds and fixtures", () => {
     expect(mockVariant({ ...args, lang: "en", kind: "cover:formal" }).body).toMatch(/^Dear/);
     expect(mockVariant({ ...args, lang: "es", kind: "cover:formal" }).body).toMatch(/^Estimado/);
   });
-  it("gives emails a subject and bracketed placeholders for what only the candidate knows", () => {
+  it("gives emails a subject and bracketed placeholders for what only the candidate knows", async () => {
     for (const k of ["applied", "thanks", "nudge"] as const) {
       const v = mockVariant({ ...args, lang: "en", kind: `email:${k}` });
       expect(v.subject).toContain("Growth Lead");
@@ -39,11 +39,12 @@ describe("kinds and fixtures", () => {
   });
 });
 
+const cacheUser = await createUser({ email: "var@example.com", password: "password123" });
 describe("cache", () => {
-  const user = createUser({ email: "var@example.com", password: "password123" });
+  const user = cacheUser;
   const gen = () => saveGeneration({ userId: user.id, anonId: null, mode: "tailor", source: "text", lang: "pt", targetRole: "Growth Lead", input: { jobDescription: "y".repeat(40), resume: "x" }, kit, model: "mock", costUsd: 0 });
 
-  it("stores one row per kit + kind, replaces on conflict, and lists them", () => {
+  it("stores one row per kit + kind, replaces on conflict, and lists them", async () => {
     const g = gen();
     expect(getVariant(g.id, "cover:warm")).toBeNull();
     const a = saveVariant({ generationId: g.id, kind: "cover:warm", variant: { subject: "", body: "one" }, model: "mock", costUsd: 0.001 });
@@ -55,7 +56,18 @@ describe("cache", () => {
     clearVariants(g.id);
     expect(listVariants(g.id)).toEqual([]);
   });
-  it("is cleared when the kit is deepened, and gone when the kit is deleted", () => {
+  it("deepening passes are claimed before the generation runs and given back when it fails", () => {
+    const g = gen();
+    const claims = Array.from({ length: 6 }, () => reserveDeepen(g.id));   // a parallel burst
+    expect(claims.filter(Boolean)).toHaveLength(DEEPEN_MAX);
+    expect(getGeneration(g.id)!.deepened).toBe(DEEPEN_MAX);
+    releaseDeepen(g.id);
+    expect(reserveDeepen(g.id)).toBe(true);
+    deepenGeneration(g.id, kit, "mock", 0);                               // the claim already counted the pass
+    expect(getGeneration(g.id)!.deepened).toBe(DEEPEN_MAX);
+    expect(reserveDeepen("gen_missing")).toBe(false);
+  });
+  it("is cleared when the kit is deepened, and gone when the kit is deleted", async () => {
     const g = gen();
     saveVariant({ generationId: g.id, kind: "cover:direct", variant: { subject: "", body: "old" }, model: "mock", costUsd: 0 });
     deepenGeneration(g.id, kit, "mock", 0);

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { skipTour } from "./helpers";
 
 // A posting whose vocabulary the demo kit barely touches, so the first draft reads generic.
@@ -56,4 +56,17 @@ test("a kit built without a posting has no meter", async ({ page }) => {
   await page.getByTestId("next").click();
   await expect(page.getByTestId("result")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("personalisation")).toBeHidden();
+});
+
+test("parallel deepen requests on one kit never run more passes than the limit", async ({ page }) => {
+  await page.goto("/");
+  await skipTour(page);
+  const made = await page.request.post("/api/generate", { data: { mode: "tailor", targetRole: "Demand Generation Manager", jobDescription: POSTING, resume: RESUME, lang: "en" } });
+  expect(made.status()).toBe(200);
+  const { id } = await made.json();
+  const codes = await Promise.all(Array.from({ length: 6 }, () => page.request.post(`/api/generations/${id}/deepen`).then((r) => r.status())));
+  expect(codes.filter((c) => c === 200).length).toBeLessThanOrEqual(2);
+  expect(codes.filter((c) => c === 429).length).toBeGreaterThanOrEqual(4);
+  const kit = await (await page.request.get(`/api/generations/${id}`)).json();
+  expect(kit.deepened).toBe(codes.filter((c) => c === 200).length);
 });

@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { ANGLES } from "./lp/[slug]/angles";
+import { LEGAL_DOCS } from "./legal/docs";
 
 const BASE = (process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const ats = { en: `${BASE}/ats-check`, "pt-BR": `${BASE}/ats-check/pt`, es: `${BASE}/ats-check/es` };
@@ -14,6 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/fit`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/start`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.7 },
-    ...["jobseeker", "firstjob", "careerchange", "vschatgpt"].map((slug) => ({ url: `${BASE}/lp/${slug}`, lastModified, changeFrequency: "monthly" as const, priority: 0.6 })),
+    ...ANGLES.map((slug) => ({ url: `${BASE}/lp/${slug}`, lastModified, changeFrequency: "monthly" as const, priority: 0.6 })),
+    { url: `${BASE}/contact`, lastModified, changeFrequency: "yearly", priority: 0.3 },
+    ...Object.keys(LEGAL_DOCS).map((doc) => ({ url: `${BASE}/legal/${doc}`, lastModified, changeFrequency: "yearly" as const, priority: 0.2 })),
   ];
 }

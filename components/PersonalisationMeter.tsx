@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { apiErrorText } from "@/app/i18n/launch";
 import type { GenerationView } from "@/lib/server/generations";
 
 /**
@@ -9,7 +10,7 @@ import type { GenerationView } from "@/lib/server/generations";
  * with the posting, and one click to go deeper when it reads generic.
  */
 export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; onUpdate: (g: GenerationView) => void }) {
-  const { x } = useI18n();
+  const { x, l } = useI18n();
   const P = x.personalisation;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -22,8 +23,8 @@ export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; o
     const r = await fetch(`/api/generations/${gen.id}/deepen`, { method: "POST" });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.status === 429) { setLimit(true); return; }
-    if (!r.ok) { setError(j.error || x.errors.generic); return; }
+    if (r.status === 429 && j.error === "limit") { setLimit(true); return; }
+    if (!r.ok) { setError(apiErrorText(j, l, x.errors.generic)); return; }
     onUpdate(j);
   }
 

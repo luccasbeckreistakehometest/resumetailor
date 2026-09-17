@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("first visit offers the tour, it walks across pages, and never comes back once done", async ({ page }) => {
   await page.goto("/");

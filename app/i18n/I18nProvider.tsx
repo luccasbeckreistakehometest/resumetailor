@@ -3,8 +3,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { dictionaries, Dict, Lang } from "./dictionaries";
 import { extra, type Extra } from "./extra";
+import { launch, type Launch } from "./launch";
 
-type Ctx = { lang: Lang; d: Dict; x: Extra; setLang: (l: Lang) => void };
+type Ctx = { lang: Lang; d: Dict; x: Extra; l: Launch; setLang: (l: Lang) => void };
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -26,7 +27,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem("rt_lang", l); } catch {} };
 
-  return <I18nContext.Provider value={{ lang, d: dictionaries[lang], x: extra[lang], setLang }}>{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={{ lang, d: dictionaries[lang], x: extra[lang], l: launch[lang], setLang }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

@@ -2,27 +2,37 @@ import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { currentUser } from "@/lib/server/session";
 import { packByKey } from "@/lib/packs";
+import { baseUrl, canSell, secretEnv, testFixturesAllowed } from "@/lib/server/env";
+import { jsonError } from "@/lib/server/http";
 
 export const runtime = "nodejs";
 
-/** Brazil: Pix, boleto and card through Checkout Pro, priced in BRL. */
+/**
+ * Pix, boleto and card through Checkout Pro, charged in BRL. Offered to every language (the
+ * pricing page labels the currency); return and notification URLs come from NEXT_PUBLIC_BASE_URL.
+ */
 export async function POST(request: Request) {
-  const token = process.env.MP_ACCESS_TOKEN;
-  if (!token) return NextResponse.json({ error: "Pagamento não configurado ainda." }, { status: 503 });
+  const token = secretEnv("MP_ACCESS_TOKEN");
+  if (!token || !canSell()) return jsonError("payments_off", 503);
   const user = await currentUser();
-  if (!user) return NextResponse.json({ error: "Entre na sua conta para comprar créditos." }, { status: 401 });
+  if (!user) return jsonError("sign_in_required", 401);
+  if (user.mustChangePassword) return jsonError("password_change_required", 403);
   const { pack: packKey } = await request.json().catch(() => ({}));
   const pack = packByKey(String(packKey ?? "1"));
-  const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const origin = baseUrl();
+  if (process.env.MP_API_MOCK_DIR && testFixturesAllowed()) {
+    // e2e: no real preference; the test drives /success and the webhook with mocked payments.
+    return NextResponse.json({ url: `${origin}/success?provider=mp&mock=1` });
+  }
   try {
     const pref = new Preference(new MercadoPagoConfig({ accessToken: token }));
     const result = await pref.create({
       body: {
-        items: [{ id: pack.key, title: `${pack.credits} crédito${pack.credits > 1 ? "s" : ""} ResumeTailor`, quantity: 1, unit_price: pack.brl, currency_id: "BRL" }],
+        items: [{ id: pack.key, title: `${pack.credits} crédito${pack.credits > 1 ? "s" : ""} ResumeTailor`, description: "Créditos pré-pagos, sem assinatura", quantity: 1, unit_price: pack.brl, currency_id: "BRL" }],
         metadata: { user_id: user.id, pack: pack.key, credits: pack.credits },
         external_reference: user.id,
         payer: { email: user.email },
-        back_urls: { success: `${origin}/success?provider=mp`, failure: `${origin}/pricing?canceled=1`, pending: `${origin}/success?provider=mp&pending=1` },
+        back_urls: { success: `${origin}/success?provider=mp`, failure: `${origin}/pricing?canceled=1`, pending: `${origin}/success?provider=mp` },
         auto_return: "approved",
         notification_url: `${origin}/api/webhooks/mercadopago`,
       },
@@ -30,6 +40,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: result.init_point });
   } catch (error) {
     console.error("mercadopago checkout", error);
-    return NextResponse.json({ error: "Não foi possível iniciar o pagamento." }, { status: 500 });
+    return jsonError("checkout_failed", 502);
   }
 }

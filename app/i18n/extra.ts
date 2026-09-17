@@ -36,7 +36,7 @@ const en = {
     useIt: "Looks right — build my kit", edit: "Let me fix something", typeInstead: "Type instead",
     resumeNeeded: "You mentioned you have a resume — paste it below so I can work from the real thing.",
     jobNeeded: "Paste the job posting you're applying to.",
-    listenPrompt: "Hear it", textOnly: "Text only on this server (no AI voice configured).",
+    listenPrompt: "Hear it", textOnly: "Spoken prompts are off right now — the question is written above.",
     modeLabel: { tailor: "Tailor to a job", improve: "Improve my resume", build: "Build my first resume", unknown: "Not sure yet" },
     levelLabel: { student: "Student / first job", entry: "Entry level", mid: "Mid level", senior: "Senior", unknown: "—" },
     fields: { mode: "Mode", level: "Level", targetRole: "Target role", education: "Education", experience: "Experience", skills: "Skills", achievements: "Achievements" },
@@ -69,8 +69,7 @@ const en = {
     tours: "Tours completed", interviews: "Interviews", applications: "Applications", recent: "Recent kits", payments: "Payments", onboarding: "First sessions", grant: "Grant", credits: "Credits",
     email: "Email", when: "When", mode: "Mode", match: "Match", status: "Status", provider: "Provider", amount: "Amount", events: "events", forbidden: "Admins only.",
   },
-  errors: { generic: "Something went wrong. Please try again.", aiOff: "The AI service isn't configured on this server yet." },
-  pricing: { notConfigured: "Checkout is not configured on this server yet." },
+  errors: { generic: "Something went wrong. Please try again." },
   interview: {
     eyebrow: "Interview practice", title: "Mock interview",
     subtitle: "Questions built from this kit. Answer out loud like you're in the room; each answer gets scored and coached.",
@@ -284,7 +283,6 @@ const en = {
     honest: "Only what your résumé supports made it in. If a missing term is genuinely true of you, add it yourself — never claim what isn't.",
     cta: "Full LinkedIn pass",
   },
-  footer: "Secure payments by Stripe · No subscription",
 };
 
 const pt: typeof en = {
@@ -320,7 +318,7 @@ const pt: typeof en = {
     useIt: "Tá certo — monta meu kit", edit: "Quero corrigir algo", typeInstead: "Prefiro digitar",
     resumeNeeded: "Você disse que tem currículo — cola ele aqui embaixo pra eu trabalhar em cima do real.",
     jobNeeded: "Cola a vaga que você vai se candidatar.",
-    listenPrompt: "Ouvir", textOnly: "Só texto neste servidor (voz da IA não configurada).",
+    listenPrompt: "Ouvir", textOnly: "A voz está desligada agora — a pergunta está escrita aí em cima.",
     modeLabel: { tailor: "Ajustar pra uma vaga", improve: "Melhorar meu currículo", build: "Fazer meu primeiro currículo", unknown: "Ainda não sei" },
     levelLabel: { student: "Estudante / primeiro emprego", entry: "Início de carreira", mid: "Pleno", senior: "Sênior", unknown: "—" },
     fields: { mode: "Objetivo", level: "Nível", targetRole: "Vaga desejada", education: "Formação", experience: "Experiência", skills: "Habilidades", achievements: "Conquistas" },
@@ -353,8 +351,7 @@ const pt: typeof en = {
     tours: "Tours concluídos", interviews: "Entrevistas", applications: "Candidaturas", recent: "Kits recentes", payments: "Pagamentos", onboarding: "Primeiras sessões", grant: "Conceder", credits: "Créditos",
     email: "E-mail", when: "Quando", mode: "Modo", match: "Nota", status: "Status", provider: "Meio", amount: "Valor", events: "eventos", forbidden: "Só admin.",
   },
-  errors: { generic: "Deu algo errado. Tenta de novo.", aiOff: "A IA ainda não está configurada neste servidor." },
-  pricing: { notConfigured: "O pagamento ainda não está configurado neste servidor." },
+  errors: { generic: "Deu algo errado. Tenta de novo." },
   interview: {
     eyebrow: "Simulação de entrevista", title: "Entrevista simulada",
     subtitle: "Perguntas montadas a partir deste kit. Responde em voz alta como se estivesse na sala; cada resposta ganha nota e orientação.",
@@ -570,7 +567,6 @@ const pt: typeof en = {
     honest: "Só entrou o que o seu currículo sustenta. Se um termo que falta é verdade sobre você, adiciona por conta — nunca afirma o que não tem.",
     cta: "LinkedIn completo",
   },
-  footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
 const es: typeof en = {
@@ -606,7 +602,7 @@ const es: typeof en = {
     useIt: "Está bien — arma mi kit", edit: "Quiero corregir algo", typeInstead: "Prefiero escribir",
     resumeNeeded: "Dijiste que tienes CV — pégalo abajo para trabajar sobre el real.",
     jobNeeded: "Pega la oferta a la que postulas.",
-    listenPrompt: "Escuchar", textOnly: "Solo texto en este servidor (voz de IA no configurada).",
+    listenPrompt: "Escuchar", textOnly: "La voz está desactivada por ahora — la pregunta está escrita arriba.",
     modeLabel: { tailor: "Ajustar a una oferta", improve: "Mejorar mi CV", build: "Crear mi primer CV", unknown: "Aún no sé" },
     levelLabel: { student: "Estudiante / primer empleo", entry: "Junior", mid: "Semi senior", senior: "Senior", unknown: "—" },
     fields: { mode: "Objetivo", level: "Nivel", targetRole: "Puesto objetivo", education: "Formación", experience: "Experiencia", skills: "Habilidades", achievements: "Logros" },
@@ -639,8 +635,7 @@ const es: typeof en = {
     tours: "Tours completados", interviews: "Entrevistas", applications: "Postulaciones", recent: "Kits recientes", payments: "Pagos", onboarding: "Primeras sesiones", grant: "Otorgar", credits: "Créditos",
     email: "Email", when: "Cuándo", mode: "Modo", match: "Puntaje", status: "Estado", provider: "Medio", amount: "Monto", events: "eventos", forbidden: "Solo admins.",
   },
-  errors: { generic: "Algo salió mal. Inténtalo de nuevo.", aiOff: "La IA aún no está configurada en este servidor." },
-  pricing: { notConfigured: "El pago aún no está configurado en este servidor." },
+  errors: { generic: "Algo salió mal. Inténtalo de nuevo." },
   interview: {
     eyebrow: "Práctica de entrevista", title: "Entrevista simulada",
     subtitle: "Preguntas armadas a partir de este kit. Responde en voz alta como si estuvieras en la sala; cada respuesta recibe puntaje y coaching.",
@@ -854,7 +849,6 @@ const es: typeof en = {
     honest: "Solo entró lo que tu CV respalda. Si un término que falta es cierto de ti, agrégalo tú — nunca afirmes lo que no tienes.",
     cta: "Pase completo de LinkedIn",
   },
-  footer: "Pagos seguros con Stripe · Sin suscripción",
 };
 
 export type Extra = typeof en;
