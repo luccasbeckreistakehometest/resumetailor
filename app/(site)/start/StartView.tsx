@@ -13,6 +13,7 @@ import { TruthCards } from "@/components/editor/KitChecks";
 import { QuantifyCard } from "@/components/QuantifyCard";
 import { RedFlagNotice } from "@/components/RedFlagNotice";
 import { IntlCard } from "@/components/IntlCard";
+import { WhatsNew } from "@/components/WhatsNew";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { apiErrorText } from "@/app/i18n/launch";
@@ -185,6 +186,7 @@ function StartInner() {
       <Container className="max-w-3xl py-10">
         {!aiReady && <p className="mb-6 rounded-xl border border-gold bg-gold-2 px-4 py-3 text-sm text-ink" role="status" data-testid="ai-down">{l.aiDown}</p>}
 
+        {via === "choose" && !gen && <WhatsNew />}
         {/* 1. Talk or type */}
         {via === "choose" && !gen && (
           <div data-tour="choose">

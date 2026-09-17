@@ -37,8 +37,8 @@ function rememberCheckout(before: number, credits: number): void {
  * buttons, just the free first kit.
  */
 export function PricingView() {
-  const { lang, x, l } = useI18n();
-  const { payments, features, loading, refresh } = useAuth();
+  const { lang, x, l, r } = useI18n();
+  const { payments, features, loading, refresh, limits } = useAuth();
   const c = COPY[lang];
   const options = checkoutOptions(payments, lang);
   const [chosen, setChosen] = useState<CheckoutProvider | null>(null);
@@ -103,6 +103,14 @@ export function PricingView() {
             </div>
           ))}
         </div>
+
+        <section className="mt-10 rounded-2xl border-2 border-ink p-6" data-testid="pricing-checklist">
+          <p className="font-display text-3xl text-ink">{r.showcase.checklistTitle}</p>
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {r.showcase.checklist(limits).map((item) => <li key={item} className="flex gap-2 text-sm text-ink-2"><span className="text-moss">✓</span>{item}</li>)}
+          </ul>
+          <p className="mt-4 font-semibold text-ink">{r.showcase.checklistFooter}</p>
+        </section>
 
         <div className="mt-8 max-w-xl"><VoucherField /></div>
 

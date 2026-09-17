@@ -9,10 +9,12 @@ export type User = { id: string; email: string; name: string; role: "user" | "ad
 export type Payments = { stripe: boolean; mercadopago: boolean };
 export type Support = { email: string | null; whatsapp: string | null };
 export type Features = { insights: boolean; voice: boolean };
+export type Limits = { deepen: number; interviews: number; quantify: number; intl: number; pitch: number };
+export const DEFAULT_LIMITS: Limits = { deepen: 2, interviews: 5, quantify: 1, intl: 2, pitch: 5 };
 export type RegisterResult = { error: string | null; bonus?: boolean };
 
 type Ctx = {
-  user: User | null; loading: boolean; aiReady: boolean; payments: Payments; support: Support; features: Features;
+  user: User | null; loading: boolean; aiReady: boolean; payments: Payments; support: Support; features: Features; limits: Limits;
   refresh: () => Promise<User | null>; signOut: () => Promise<void>;
   login: (email: string, password: string) => Promise<string | null>;
   register: (email: string, password: string, name: string, lang: string, acceptTerms: boolean) => Promise<RegisterResult>;
@@ -23,7 +25,7 @@ const NO_SUPPORT: Support = { email: null, whatsapp: null };
 const NO_FEATURES: Features = { insights: false, voice: false };
 
 const AuthCtx = createContext<Ctx>({
-  user: null, loading: true, aiReady: true, payments: NO_PAYMENTS, support: NO_SUPPORT, features: NO_FEATURES,
+  user: null, loading: true, aiReady: true, payments: NO_PAYMENTS, support: NO_SUPPORT, features: NO_FEATURES, limits: DEFAULT_LIMITS,
   refresh: async () => null, signOut: async () => {}, login: async () => null, register: async () => ({ error: null }),
 });
 
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [payments, setPayments] = useState<Payments>(NO_PAYMENTS);
   const [support, setSupport] = useState<Support>(NO_SUPPORT);
   const [features, setFeatures] = useState<Features>(NO_FEATURES);
+  const [limits, setLimits] = useState<Limits>(DEFAULT_LIMITS);
 
   const refresh = useCallback(async (): Promise<User | null> => {
     let next: User | null = null;
@@ -48,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const j = await r.json();
       next = j.user ?? null;
       setUser(next); setAiReady(j.aiReady !== false);
-      setPayments(j.payments ?? NO_PAYMENTS); setSupport(j.support ?? NO_SUPPORT); setFeatures(j.features ?? NO_FEATURES);
+      setPayments(j.payments ?? NO_PAYMENTS); setSupport(j.support ?? NO_SUPPORT); setFeatures(j.features ?? NO_FEATURES); setLimits(j.limits ?? DEFAULT_LIMITS);
     } catch { setUser(null); }
     setLoading(false);
     return next;
@@ -73,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthCtx.Provider value={{
-      user, loading, aiReady, payments, support, features, refresh,
+      user, loading, aiReady, payments, support, features, limits, refresh,
       signOut: async () => { await fetch("/api/auth/logout", { method: "POST" }); await refresh(); },
       login: async (email, password) => {
         const { ok, j } = await post("/api/auth/login", { email, password });

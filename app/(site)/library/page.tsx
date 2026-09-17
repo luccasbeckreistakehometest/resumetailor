@@ -12,6 +12,7 @@ import { TrendChart } from "@/components/TrendChart";
 import { buildTrend, toPoint } from "@/lib/interview/trend";
 import { BaseResumeCard } from "@/components/BaseResumeCard";
 import { ReferralCard } from "@/components/ReferralCard";
+import { WhatsNew } from "@/components/WhatsNew";
 
 export default function LibraryPage() {
   const { d, x, r, lang } = useI18n();
@@ -39,6 +40,7 @@ export default function LibraryPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <Container className="max-w-4xl py-12">
+        <WhatsNew />
         <Eyebrow>ResumeTailor</Eyebrow>
         <h1 className="font-display mt-2 text-4xl text-ink" data-tour="nav-library">{d.library.title}</h1>
         <p className="mt-2 text-ink-2">{user ? x.auth.title : x.credits.firstFree}</p>

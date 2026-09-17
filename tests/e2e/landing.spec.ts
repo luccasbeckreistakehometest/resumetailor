@@ -41,7 +41,8 @@ test.describe("landing", () => {
     for (const slug of ["jobseeker", "firstjob", "careerchange", "vschatgpt"]) {
       await page.goto(`/lp/${slug}`);
       await expect(page.locator("h1")).not.toBeEmpty();
-      await expect(page.getByRole("link", { name: /start free|match score/i })).toBeVisible();
+      await expect(page.getByTestId("lp-cta")).toHaveText(/start free|match score/i);
+      await expect(page.getByTestId("showcase-card").first()).toBeVisible();
       await expect(page.getByTestId("lp-ats")).toHaveAttribute("href", /ats-check/);
     }
   });

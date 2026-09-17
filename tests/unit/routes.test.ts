@@ -66,3 +66,22 @@ describe("localized route table", () => {
     }
   });
 });
+
+describe("showcase copy parity", () => {
+  it("every feature card and angle exists in every language, with 6+ features per angle", async () => {
+    const { showcaseCopy } = await import("@/app/i18n/r3/showcase");
+    const { ANGLE_CONTENT, angleFaq } = await import("@/app/i18n/r3/angles");
+    const keys = Object.keys(showcaseCopy.en.cards).sort();
+    for (const l of ["pt", "es"] as const) {
+      expect(Object.keys(showcaseCopy[l].cards).sort()).toEqual(keys);
+      for (const k of keys) expect(showcaseCopy[l].cards[k as "truth"].t.length, `${l}.${k}`).toBeGreaterThan(3);
+      expect(showcaseCopy[l].checklist({ deepen: 2, interviews: 5, quantify: 1, intl: 2, pitch: 5 })).toHaveLength(showcaseCopy.en.checklist({ deepen: 2, interviews: 5, quantify: 1, intl: 2, pitch: 5 }).length);
+    }
+    for (const [angle, c] of Object.entries(ANGLE_CONTENT)) {
+      expect(c.features.length, angle).toBeGreaterThanOrEqual(6);
+      for (const f of c.features) expect(keys).toContain(f);
+    }
+    for (const l of ["en", "pt", "es"] as const) expect(angleFaq[l].base).toHaveLength(3);
+    expect(angleFaq.pt.specific.gupy?.a).toContain("sem afiliação");
+  });
+});

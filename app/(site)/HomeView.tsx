@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/components/AuthProvider";
 import { Container, Eyebrow, H2, Rule, Stamp } from "@/components/ui";
+import { FeatureShowcase } from "@/components/FeatureShowcase";
 
 // Position of "Company insights" in d.features.items (the arrays are parallel across languages).
 const INSIGHTS_FEATURE = 10;
@@ -15,7 +16,8 @@ const ATS_SYSTEMS = ["Workday", "Greenhouse", "Gupy", "Lever", "SAP SuccessFacto
 
 /** The landing page. The "company insights" feature card only shows when that feature is configured. */
 export function HomeView() {
-  const { d, x, to, startHref } = useI18n();
+  const { d, x, r, to, startHref } = useI18n();
+  const S = r.showcase;
   const { features } = useAuth();
   const L = d.landing;
   return (
@@ -32,7 +34,7 @@ export function HomeView() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-2">{L.hero.subtitle}</p>
             <ul className="mt-6 space-y-2.5">
-              {L.hero.bullets.map((b) => (
+              {S.heroBullets.map((b) => (
                 <li key={b} className="flex items-start gap-3 text-[15px] text-ink-2">
                   <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-oxblood" />{b}
                 </li>
@@ -96,6 +98,18 @@ export function HomeView() {
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{f.d}</p>
               </div>
             ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Round 3: the proof-first tools, and the way to everything else */}
+      <section className="border-t border-edge bg-paper-2/40" data-testid="home-new">
+        <Container className="py-20">
+          <div className="max-w-2xl"><Eyebrow>{S.whatsNew.replace(":", "")}</Eyebrow><H2 className="mt-2">{S.positioning}</H2></div>
+          <div className="mt-10"><FeatureShowcase keys={["truth", "human", "numbers", "editor", "compare", "pitch", "tracker", "intl", "calculator"]} testId="home-showcase" /></div>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link href={to("tools")} className="btn btn-ink" data-testid="home-hub">{S.seeAll}</Link>
+            <span className="text-sm text-muted">{S.noSub}</span>
           </div>
         </Container>
       </section>

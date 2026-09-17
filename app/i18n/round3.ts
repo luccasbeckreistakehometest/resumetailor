@@ -13,6 +13,7 @@ import { intlCopy } from "./r3/intl";
 import { codesCopy } from "./r3/codes";
 import { showcaseCopy } from "./r3/showcase";
 import { angleFaq } from "./r3/angles";
+import { tourCopy } from "./r3/tour";
 
 /**
  * Round-3 copy, one file per feature under ./r3, exposed as `r` by useI18n(). Every feature
@@ -35,6 +36,7 @@ const build = (lang: L) => ({
   codes: codesCopy[lang],
   showcase: showcaseCopy[lang],
   angleFaq: angleFaq[lang],
+  tour: tourCopy[lang],
 });
 export type Round3 = ReturnType<typeof build>;
 export const round3: Record<L, Round3> = { en: build("en"), pt: build("pt"), es: build("es") };

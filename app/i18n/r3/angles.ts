@@ -47,7 +47,7 @@ const pt: AngleFaq = {
     vschatgpt: { q: "Por que não usar só o ChatGPT?", a: "O chat concorda com você. A gente confere seus números, dá nota pras suas respostas e avisa quando o texto tem cara de robô — e o kit sai pronto pra enviar." },
     layoff: { q: "Dá pra usar um currículo pra várias vagas?", a: "Dá. Seu currículo base fica salvo; cada vaga nova sai em dois cliques, e o radar mantém os follow-ups em dia." },
     interview: { q: "O que a nota da entrevista mede?", a: "Estrutura, especificidade e relevância de cada resposta, além do ritmo e dos vícios de linguagem quando você responde falando." },
-    gupy: { q: "Vocês são parceiros da Gupy?", a: "Não. O ResumeTailor é compatível com a Gupy e com outros sistemas de candidatura, mas não tem afiliação com nenhum deles." },
+    gupy: { q: "Vocês são parceiros da Gupy?", a: "Não. O ResumeTailor é compatível com a Gupy e com outros sistemas de candidatura — sem afiliação com nenhum deles." },
   },
 };
 const es: AngleFaq = {

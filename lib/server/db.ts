@@ -243,6 +243,8 @@ function migrate(d: Database.Database): void {
   // The account's share code for referrals (created on first use).
   addColumnIfMissing(d, "users", "refCode", "TEXT");
   d.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_refcode ON users(refCode) WHERE refCode IS NOT NULL");
+  // Which version of the tour a visitor's saved step belongs to (the steps changed in round 3).
+  addColumnIfMissing(d, "onboarding", "tourVersion", "INTEGER NOT NULL DEFAULT 1");
   // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
   addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");

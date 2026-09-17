@@ -7,7 +7,7 @@ export type FeatureKey =
   | "tracker" | "webcv" | "letters" | "linkedin" | "calculator" | "compare" | "intl" | "codes" | "ats";
 type Card = { t: string; d: string };
 
-const en: { cards: Record<FeatureKey, Card>; free: string; kit: string; kitTitle: string; freeTitle: string; freeIntro: string; priceTitle: string; priceLine: (p: string) => string; noSub: string; seeAll: string; faqTitle: string; ctaFinal: string; checklistTitle: string; checklist: (c: Caps) => string[]; checklistFooter: string; whatsNew: string; whatsNewItems: string; whatsNewCta: string; dismiss: string; hubTitle: string; hubIntro: string; hubFree: string; hubKit: string; open: string; heroBullets: string[]; positioning: string } = {
+const en: { cards: Record<FeatureKey, Card>; free: string; kit: string; kitTitle: string; freeTitle: string; freeIntro: string; priceTitle: string; priceLine: (p: string) => string; noSub: string; seeAll: string; faqTitle: string; ctaFinal: string; checklistTitle: string; checklist: (c: Caps) => string[]; checklistFooter: string; whatsNew: string; whatsNewItems: string; whatsNewCta: string; dismiss: string; hubTitle: string; navLabel: string; hubIntro: string; hubFree: string; hubKit: string; open: string; heroBullets: string[]; positioning: string } = {
   cards: {
     match: { t: "Match score, before and after", d: "See how well your résumé matches the posting — and how much the kit improves it." },
     meter: { t: "Is it really tailored?", d: "A meter shows how much of the posting your résumé uses, and one click goes deeper." },
@@ -34,10 +34,10 @@ const en: { cards: Record<FeatureKey, Card>; free: string; kit: string; kitTitle
   priceTitle: "One credit unlocks all of this", priceLine: (p) => `From ${p} per kit`, noSub: "No subscription. Nothing renews.",
   seeAll: "Everything you can do →", faqTitle: "Questions", ctaFinal: "Start free",
   checklistTitle: "One credit unlocks all of this",
-  checklist: (c) => ["Tailored résumé — edit it, Word (.docx) and PDF", "Cover letter in 4 tones + 3 recruiter e-mails", "Full LinkedIn pass", `Up to ${c.interviews} mock interviews`, `${c.deepen} “go deeper” passes`, `${c.quantify} “missing numbers” round`, `${c.intl} international versions`, `Video-intro script and ${c.pitch} take ratings`, "Truth check and what-changed view", "Your résumé as a web page"],
+  checklist: (c) => ["Tailored résumé — edit it, Word (.docx) and PDF", "Cover letter in 4 tones + 3 recruiter e-mails", "Full LinkedIn pass", `Up to ${c.interviews} mock interviews`, `${c.deepen} “go deeper” pass${c.deepen === 1 ? "" : "es"}`, `${c.quantify} “missing numbers” round${c.quantify === 1 ? "" : "s"}`, `${c.intl} international version${c.intl === 1 ? "" : "s"}`, `Video-intro script and ${c.pitch} take ratings`, "Truth check and what-changed view", "Your résumé as a web page"],
   checklistFooter: "No subscription. No trial that turns into a charge. Credits never expire.",
   whatsNew: "New:", whatsNewItems: "truth check · editor with Word · job comparator · video-intro studio · follow-up radar", whatsNewCta: "See everything", dismiss: "Dismiss",
-  hubTitle: "Everything you can do", hubIntro: "Free tools first; the rest comes with a kit (your first one is on us with an account).",
+  hubTitle: "Everything you can do", navLabel: "Tools", hubIntro: "Free tools first; the rest comes with a kit (your first one is on us with an account).",
   hubFree: "Free", hubKit: "With a kit", open: "Open",
   heroBullets: ["It doesn't make things up — and it proves it", "Edit, export to Word, paste field by field", "Rank up to 5 jobs and spot the scams", "No subscription. Nothing renews."],
   positioning: "ChatGPT gives you text. We give you the whole application — and prove nothing was made up.",
@@ -71,10 +71,10 @@ const pt: typeof en = {
   priceTitle: "Um crédito libera tudo isto", priceLine: (p) => `A partir de ${p} por kit`, noSub: "Sem assinatura. Nada renova sozinho.",
   seeAll: "Tudo que dá pra fazer →", faqTitle: "Perguntas", ctaFinal: "Começar grátis",
   checklistTitle: "Um crédito libera tudo isto",
-  checklist: (c) => ["Currículo ajustado — editável, em Word (.docx) e PDF", "Carta em 4 tons + 3 e-mails pro recrutador", "LinkedIn completo pra vaga", `Até ${c.interviews} entrevistas simuladas`, `${c.deepen} aprofundamentos`, `${c.quantify} rodada de números`, `${c.intl} versões internacionais`, `Roteiro de vídeo e ${c.pitch} avaliações de gravação`, "Checagem de verdade e o que mudou, linha por linha", "Seu currículo como página na web"],
+  checklist: (c) => ["Currículo ajustado — editável, em Word (.docx) e PDF", "Carta em 4 tons + 3 e-mails pro recrutador", "LinkedIn completo pra vaga", `Até ${c.interviews} entrevistas simuladas`, `${c.deepen} ${c.deepen === 1 ? "aprofundamento" : "aprofundamentos"}`, `${c.quantify} ${c.quantify === 1 ? "rodada" : "rodadas"} de números`, `${c.intl} ${c.intl === 1 ? "versão internacional" : "versões internacionais"}`, `Roteiro de vídeo e ${c.pitch} avaliações de gravação`, "Checagem de verdade e o que mudou, linha por linha", "Seu currículo como página na web"],
   checklistFooter: "Sem assinatura. Sem teste que vira cobrança. O crédito não vence.",
   whatsNew: "Novo:", whatsNewItems: "checagem de verdade · editor com Word · comparador de vagas · estúdio de vídeo · radar de follow-up", whatsNewCta: "Ver tudo", dismiss: "Fechar",
-  hubTitle: "Tudo que dá pra fazer", hubIntro: "Primeiro o que é grátis; o resto vem no kit (o primeiro é por nossa conta com uma conta).",
+  hubTitle: "Tudo que dá pra fazer", navLabel: "Recursos", hubIntro: "Primeiro o que é grátis; o resto vem no kit (o primeiro é por nossa conta com uma conta).",
   hubFree: "Grátis", hubKit: "No kit", open: "Abrir",
   heroBullets: ["Checagem de verdade: todo número do currículo novo veio de você. Se não veio, a gente marca.", "Editou, baixou em Word, colou na Gupy — cada campo com botão de copiar.", "Fala uma vez. O perfil fica salvo e a próxima vaga sai em dois cliques.", "Sem assinatura. Nada renova sozinho."],
   positioning: "O ChatGPT te dá texto. A gente te dá a candidatura inteira — e prova que não inventou nada.",
@@ -107,10 +107,10 @@ const es: typeof en = {
   priceTitle: "Un crédito desbloquea todo esto", priceLine: (p) => `Desde ${p} por kit`, noSub: "Sin suscripción. Nada se renueva solo.",
   seeAll: "Todo lo que puedes hacer →", faqTitle: "Preguntas", ctaFinal: "Empezar gratis",
   checklistTitle: "Un crédito desbloquea todo esto",
-  checklist: (c) => ["CV ajustado — editable, en Word (.docx) y PDF", "Carta en 4 tonos + 3 correos al reclutador", "LinkedIn completo para el puesto", `Hasta ${c.interviews} entrevistas de práctica`, `${c.deepen} pasadas de profundización`, `${c.quantify} ronda de números`, `${c.intl} versiones internacionales`, `Guion de video y ${c.pitch} evaluaciones de toma`, "Verificación de veracidad y qué cambió", "Tu CV como página web"],
+  checklist: (c) => ["CV ajustado — editable, en Word (.docx) y PDF", "Carta en 4 tonos + 3 correos al reclutador", "LinkedIn completo para el puesto", `Hasta ${c.interviews} entrevistas de práctica`, `${c.deepen} ${c.deepen === 1 ? "pasada" : "pasadas"} de profundización`, `${c.quantify} ${c.quantify === 1 ? "ronda" : "rondas"} de números`, `${c.intl} ${c.intl === 1 ? "versión internacional" : "versiones internacionales"}`, `Guion de video y ${c.pitch} evaluaciones de toma`, "Verificación de veracidad y qué cambió", "Tu CV como página web"],
   checklistFooter: "Sin suscripción. Sin prueba que se convierte en cobro. Los créditos no vencen.",
   whatsNew: "Nuevo:", whatsNewItems: "verificación de veracidad · editor con Word · comparador de ofertas · estudio de video · radar de seguimiento", whatsNewCta: "Ver todo", dismiss: "Cerrar",
-  hubTitle: "Todo lo que puedes hacer", hubIntro: "Primero lo gratis; lo demás viene con un kit (el primero va por nuestra cuenta con una cuenta).",
+  hubTitle: "Todo lo que puedes hacer", navLabel: "Recursos", hubIntro: "Primero lo gratis; lo demás viene con un kit (el primero va por nuestra cuenta con una cuenta).",
   hubFree: "Gratis", hubKit: "Con un kit", open: "Abrir",
   heroBullets: ["No inventa nada — y te lo demuestra", "Edita, descarga en Word y pega campo por campo", "Compara hasta 5 ofertas y detecta estafas", "Sin suscripción. Nada se renueva solo."],
   positioning: "ChatGPT te da texto. Nosotros, la postulación completa — y demostramos que no inventamos nada.",

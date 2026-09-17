@@ -20,7 +20,7 @@ export function Logo() {
 }
 
 export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
-  const { d, x, l, to, startHref } = useI18n();
+  const { d, x, l, r, to, startHref } = useI18n();
   const { user } = useAuth();
   const [menu, setMenu] = useState(false);
   return (
@@ -31,9 +31,11 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
           <nav className="hidden items-center gap-6 text-sm font-medium text-ink-2 md:flex" aria-label={l.menu.title}>
             <Link href={to("ats")} className="hover:text-ink" data-testid="nav-ats">{x.nav.atsCheck}</Link>
             <Link href={to("fit")} className="hover:text-ink" data-testid="nav-fit">{x.nav.fit}</Link>
+            <Link href={to("compare")} className="hover:text-ink" data-testid="nav-compare">{r.compare.navLabel}</Link>
             <Link href={to("pricing")} className="hover:text-ink">{x.nav.pricing}</Link>
             <Link href="/library" className="hover:text-ink" data-tour="nav-library">{d.nav.myCVs}</Link>
             <Link href="/applications" className="hover:text-ink" data-testid="nav-applications">{x.nav.applications}</Link>
+            <Link href={to("tools")} className="hover:text-ink" data-testid="nav-tools">{r.showcase.navLabel}</Link>
             {user?.role === "admin" && <Link href="/admin" className="hover:text-ink">Admin</Link>}
           </nav>
         )}
@@ -57,7 +59,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
 /** Below md: everything the desktop header offers — navigation, credits, account, language, sign out. */
 function MobileMenu({ onClose, minimal }: { onClose: () => void; minimal: boolean }) {
-  const { d, x, l, to, startHref } = useI18n();
+  const { d, x, l, r, lang, to, startHref } = useI18n();
   const { user, signOut } = useAuth();
   const ref = useDialog<HTMLDivElement>(onClose);
   const link = "block rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-paper-2";
@@ -80,10 +82,13 @@ function MobileMenu({ onClose, minimal }: { onClose: () => void; minimal: boolea
           {!minimal && <Link href={startHref()} className="btn btn-primary mb-2 w-full">{l.menu.start}</Link>}
           <Link href={to("ats")} className={link}>{x.nav.atsCheck}</Link>
           <Link href={to("fit")} className={link}>{x.nav.fit}</Link>
+          <Link href={to("compare")} className={link}>{r.compare.navLabel}</Link>
+          {lang === "pt" && <Link href={to("calculator")} className={link}>{r.showcase.cards.calculator.t}</Link>}
           <Link href={to("pricing")} className={link}>{x.nav.pricing}</Link>
           <Link href="/library" className={link} data-testid="menu-library">{d.nav.myCVs}</Link>
           <Link href="/applications" className={link}>{x.nav.applications}</Link>
           <Link href="/interview" className={link}>{x.interview.sessionsTitle}</Link>
+          <Link href={to("tools")} className={link} data-testid="menu-tools">{r.showcase.hubTitle}</Link>
           {user && <Link href="/account" className={link} data-testid="menu-account">{l.menu.account}</Link>}
           {user?.role === "admin" && <Link href="/admin" className={link}>{l.menu.admin}</Link>}
           <Link href="/contact" className={link}>{l.footer.contact}</Link>
