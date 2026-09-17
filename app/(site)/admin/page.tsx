@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Container, Eyebrow } from "@/components/ui";
 import { AiPanel, Messages, UserLookup, type AiInfo } from "./AdminTools";
 import { AcquisitionPanel } from "./AcquisitionPanel";
+import { VouchersPanel } from "./VouchersPanel";
 
 type Row = Record<string, string | number | null>;
 type Overview = {
@@ -21,7 +22,7 @@ export default function AdminPage() {
   const { user, loading } = useAuth();
   const [data, setData] = useState<Overview | null>(null);
   const [grant, setGrant] = useState<{ userId: string; delta: string }>({ userId: "", delta: "1" });
-  const [tab, setTab] = useState<"recent" | "acquisition" | "users" | "payments" | "onboarding" | "voice" | "interviews" | "messages">("recent");
+  const [tab, setTab] = useState<"recent" | "acquisition" | "codes" | "users" | "payments" | "onboarding" | "voice" | "interviews" | "messages">("recent");
 
   const load = () => fetch("/api/admin/overview", { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then(setData);
   useEffect(() => { if (user?.role === "admin") void load(); }, [user]);
@@ -69,9 +70,9 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-8 flex gap-2 overflow-x-auto border-b border-edge">
-              {(["recent", "acquisition", "users", "payments", "onboarding", "voice", "interviews", "messages"] as const).map((t) => (
+              {(["recent", "acquisition", "codes", "users", "payments", "onboarding", "voice", "interviews", "messages"] as const).map((t) => (
                 <button key={t} onClick={() => setTab(t)} data-testid={`admin-tab-${t}`} className={"px-3 py-2 text-sm font-medium " + (tab === t ? "border-b-2 border-ink text-ink" : "text-muted")}>
-                  {{ recent: x.admin.recent, acquisition: r.acquisition.tab, users: x.admin.users, payments: x.admin.payments, onboarding: x.admin.onboarding, voice: x.admin.voice, interviews: x.admin.interviews, messages: `${l.admin.messages}${data.totals.messagesNew ? ` (${data.totals.messagesNew})` : ""}` }[t]}
+                  {{ recent: x.admin.recent, acquisition: r.acquisition.tab, codes: r.codes.admin.tab, users: x.admin.users, payments: x.admin.payments, onboarding: x.admin.onboarding, voice: x.admin.voice, interviews: x.admin.interviews, messages: `${l.admin.messages}${data.totals.messagesNew ? ` (${data.totals.messagesNew})` : ""}` }[t]}
                 </button>
               ))}
             </div>
@@ -83,6 +84,7 @@ export default function AdminPage() {
               {tab === "voice" && <Table cols={[x.admin.when, "Owner", "Lang", "Transcript"]} rows={data.voiceBriefings.map((v) => [fmtDate(v.createdAt), String(v.ownerId).slice(0, 18), v.lang, v.transcript])} />}
               {tab === "messages" && <Messages />}
               {tab === "acquisition" && <AcquisitionPanel />}
+              {tab === "codes" && <VouchersPanel />}
               {tab === "interviews" && <Table cols={[x.admin.when, "Owner", "Kit", x.admin.mode, x.admin.status, "Q", "Lang", x.admin.aiCost]} rows={data.interviews.map((s) => [fmtDate(s.createdAt), s.owner, s.kitTitle, s.mode, s.status, `${s.answered}/${s.questions}`, s.lang, `$${Number(s.costUsd).toFixed(3)}`])} />}
             </div>
           </>

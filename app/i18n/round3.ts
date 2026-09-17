@@ -10,6 +10,9 @@ import { trackerCopy } from "./r3/tracker";
 import { pitchCopy } from "./r3/pitch";
 import { compareCopy } from "./r3/compare";
 import { intlCopy } from "./r3/intl";
+import { codesCopy } from "./r3/codes";
+import { showcaseCopy } from "./r3/showcase";
+import { angleFaq } from "./r3/angles";
 
 /**
  * Round-3 copy, one file per feature under ./r3, exposed as `r` by useI18n(). Every feature
@@ -29,6 +32,9 @@ const build = (lang: L) => ({
   pitch: pitchCopy[lang],
   compare: compareCopy[lang],
   intl: intlCopy[lang],
+  codes: codesCopy[lang],
+  showcase: showcaseCopy[lang],
+  angleFaq: angleFaq[lang],
 });
 export type Round3 = ReturnType<typeof build>;
 export const round3: Record<L, Round3> = { en: build("en"), pt: build("pt"), es: build("es") };

@@ -11,6 +11,7 @@ import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
 import { Container, Eyebrow, Stamp } from "@/components/ui";
 import { PACKS } from "@/lib/packs";
+import { VoucherField } from "@/components/VoucherField";
 import { checkoutEndpoint, checkoutOptions, currencyOf, priceLabel, unitPrice, type CheckoutProvider } from "@/lib/checkout";
 
 const COPY = {
@@ -102,6 +103,8 @@ export function PricingView() {
             </div>
           ))}
         </div>
+
+        <div className="mt-8 max-w-xl"><VoucherField /></div>
 
         <div className="mt-6 space-y-1 text-sm text-muted" data-testid="pricing-notes">
           {provider === "mercadopago" && <p data-testid="brl-note">{l.pricing.brlNote}</p>}

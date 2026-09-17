@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ANON_COOKIE, SESSION_COOKIE } from "@/lib/server/auth";
@@ -8,6 +9,7 @@ import { isDisposableEmail } from "@/lib/server/disposable";
 import { jsonError, requestIp } from "@/lib/server/http";
 import { takeAll } from "@/lib/server/ratelimit";
 import { linkVisitor, serverEvent } from "@/lib/server/analytics";
+import { REF_COOKIE, recordReferral, userByRefCode } from "@/lib/server/vouchers";
 
 const schema = z.object({
   email: z.string().trim().max(200).email(), password: z.string().min(8).max(200), name: z.string().trim().max(80).optional(),
@@ -39,10 +41,14 @@ export async function POST(request: Request) {
   const anon = await anonId();
   claimAnonymous(user.id, anon);
   linkVisitor(user.id, anon);
+  // Came through a friend's link: a pending referral (credits only when this account buys).
+  const ref = (await cookies()).get(REF_COOKIE)?.value;
+  if (ref) recordReferral(userByRefCode(ref), user.id);
   serverEvent({ anonId: anon, userId: user.id }, "signup", { lang: user.lang });
   recordEvent(user.id, "signup", { lang: user.lang, claimedAnon: !!anon, bonus: user.credits > 0 });
   const res = NextResponse.json({ ok: true, user: toPublic(user), bonus: user.credits > 0 });
   res.cookies.set(SESSION_COOKIE, sessionTokenFor(user), SESSION_COOKIE_OPTIONS);
   res.cookies.set(ANON_COOKIE, "", { ...SESSION_COOKIE_OPTIONS, maxAge: 0 });
+  if (ref) res.cookies.set(REF_COOKIE, "", { ...SESSION_COOKIE_OPTIONS, maxAge: 0 });
   return res;
 }

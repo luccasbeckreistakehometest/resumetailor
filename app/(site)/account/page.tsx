@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { VoucherField } from "@/components/VoucherField";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
@@ -111,6 +112,7 @@ export default function AccountPage() {
               <h2 id="acc-plan" className="font-display text-2xl text-ink">{A.plan}</h2>
               <p className="mt-2 text-sm text-ink-2" data-testid="account-plan">{A.planText(user.credits)}</p>
               <Link href="/pricing" className="btn btn-primary mt-4">{A.buy}</Link>
+              <div className="mt-4"><VoucherField /></div>
               <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted">{A.payments}</h3>
               {data && data.payments.length === 0 && <p className="mt-2 text-sm text-muted">{A.noPayments}</p>}
               {data && data.payments.length > 0 && (

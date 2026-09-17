@@ -11,6 +11,7 @@ import type { SessionView } from "@/lib/server/interviews";
 import { TrendChart } from "@/components/TrendChart";
 import { buildTrend, toPoint } from "@/lib/interview/trend";
 import { BaseResumeCard } from "@/components/BaseResumeCard";
+import { ReferralCard } from "@/components/ReferralCard";
 
 export default function LibraryPage() {
   const { d, x, r, lang } = useI18n();
@@ -43,6 +44,7 @@ export default function LibraryPage() {
         <p className="mt-2 text-ink-2">{user ? x.auth.title : x.credits.firstFree}</p>
 
         <BaseResumeCard key={user?.id ?? "anon"} />
+        {user && <ReferralCard key={user.id} />}
 
         {items && items.length === 0 && (
           <div className="card mt-10 p-10 text-center"><p className="text-ink-2">{x.library.empty}</p><Link href="/start" className="btn btn-primary mt-6">{d.library.emptyCta}</Link></div>

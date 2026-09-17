@@ -28,6 +28,8 @@ export function exportAccount(userId: string) {
       .map((v) => ({ ...v, extracted: parse(v.extracted as string) })),
     onboarding: db.prepare("SELECT tourCompleted, tourStep, firstSeenAt, completedAt, events FROM onboarding WHERE id = ?").get(userId) ?? null,
     careerProfile: (() => { const p = db.prepare("SELECT resume, facts, roles, updatedAt FROM career_profiles WHERE ownerKey = ?").get(userId) as Record<string, string> | undefined; return p ? { ...p, facts: parse(p.facts), roles: parse(p.roles) } : null; })(),
+    voucherRedemptions: all("SELECT code, createdAt FROM voucher_redemptions WHERE userId = ?", userId),
+    referrals: all("SELECT status, createdAt, rewardedAt FROM referrals WHERE referrerId = ?", userId),
     contactMessages: all("SELECT topic, message, status, createdAt FROM contact_messages WHERE userId = ? ORDER BY createdAt", userId),
   };
 }
@@ -56,6 +58,7 @@ export function deleteAccount(userId: string): boolean {
     db.prepare("DELETE FROM onboarding WHERE id = ?").run(userId);
     db.prepare("DELETE FROM fit_checks WHERE ownerKey = ?").run(userId);
     db.prepare("DELETE FROM career_profiles WHERE ownerKey = ?").run(userId);
+    db.prepare("DELETE FROM referrals WHERE referrerId = ? OR referredId = ?").run(userId, userId);
     db.prepare("DELETE FROM contact_messages WHERE userId = ? OR lower(email) = lower(?)").run(userId, u.email);
     // Cost records stay for the spend totals, with nothing that points to the person.
     db.prepare("UPDATE ai_usage SET ownerKey = 'deleted', ip = NULL WHERE ownerKey = ?").run(userId);

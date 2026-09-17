@@ -2,6 +2,7 @@ import { getDb, newId, nowIso } from "@/lib/server/db";
 import { findById, moveCredits } from "@/lib/server/users";
 import { canSell, secretEnv, testFixturesAllowed } from "@/lib/server/env";
 import { serverEvent } from "@/lib/server/analytics";
+import { rewardReferralOnPurchase } from "@/lib/server/vouchers";
 
 export type Provider = "stripe" | "mercadopago";
 export type SettleStatus = "approved" | "rejected" | "pending";
@@ -41,6 +42,8 @@ export function settlePayment(input: {
     }
     if (input.status !== "approved") return { granted: false };
     moveCredits(input.userId, input.credits, "purchase", id);
+    // Referral: the referred account's first paid purchase rewards both sides, once.
+    rewardReferralOnPurchase(input.userId);
     serverEvent({ userId: input.userId }, "purchase", { amount: input.amount, currency: input.currency, pack: input.pack, provider: input.provider });
     return { granted: true };
   })();
