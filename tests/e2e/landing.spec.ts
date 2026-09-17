@@ -22,9 +22,13 @@ test.describe("landing", () => {
     await skipTour(page);
     await page.goto("/");
     const en = await page.locator("h1").innerText();
+    // The home page exists at /pt and /es: the switcher goes there instead of swapping in place.
     await page.getByRole("button", { name: "PT" }).click();
+    await expect(page).toHaveURL(/\/pt$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
     const pt = await page.locator("h1").innerText();
     await page.getByRole("button", { name: "ES" }).click();
+    await expect(page).toHaveURL(/\/es$/);
     const es = await page.locator("h1").innerText();
     expect(pt).not.toEqual(en);
     expect(es).not.toEqual(en);

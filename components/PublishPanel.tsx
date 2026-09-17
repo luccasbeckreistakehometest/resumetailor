@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
-import { ShareBar } from "@/app/cv/[slug]/ShareBar";
+import { ShareBar } from "@/app/(site)/cv/[slug]/ShareBar";
 import { TEMPLATES, type Template } from "@/lib/resume/public";
 import type { GenerationView } from "@/lib/server/generations";
 import type { PublicResumeView } from "@/lib/server/publicResumes";

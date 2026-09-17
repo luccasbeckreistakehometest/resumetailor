@@ -1,33 +1,58 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { dictionaries, Dict, Lang } from "./dictionaries";
 import { extra, type Extra } from "./extra";
 import { launch, type Launch } from "./launch";
+import { round3, type Round3 } from "./round3";
+import { href, type RouteKey } from "@/lib/i18n/routes";
 
-type Ctx = { lang: Lang; d: Dict; x: Extra; l: Launch; setLang: (l: Lang) => void };
+type Ctx = {
+  lang: Lang; d: Dict; x: Extra; l: Launch; r: Round3; setLang: (l: Lang) => void;
+  /** True on a page whose URL decides the language (/pt, /es…): the switcher navigates instead. */
+  locked: boolean;
+  /** The URL of a localized public page in the current language. */
+  to: (key: RouteKey) => string;
+  /** /start with an optional query; a localized page passes its language along. */
+  startHref: (query?: string) => string;
+};
 const I18nContext = createContext<Ctx | null>(null);
+const isLang = (v: unknown): v is Lang => v === "en" || v === "pt" || v === "es";
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+/**
+ * `initialLang` is what the server renders. A locked provider (the /pt and /es pages) keeps it
+ * and remembers it for the app pages; an unlocked one (everything else) starts in English and
+ * then follows `?lang=`, the saved choice or the browser, after mount.
+ */
+export function I18nProvider({ children, initialLang = "en", locked = false }: { children: React.ReactNode; initialLang?: Lang; locked?: boolean }) {
+  const [lang, setLangState] = useState<Lang>(initialLang);
 
-  // Detected after mount, inside a callback: the server render is always "en" and the swap happens
-  // once the browser can tell us its preference, which keeps hydration clean.
   useEffect(() => {
+    if (locked) { try { localStorage.setItem("rt_lang", initialLang); } catch {} return; }
+    // Detected inside a callback: the server render is English and the swap happens once the
+    // browser can tell us its preference, which keeps hydration clean.
     const id = requestAnimationFrame(() => {
-      const saved = localStorage.getItem("rt_lang") as Lang | null;
-      if (saved && dictionaries[saved]) return setLangState(saved);
+      const fromUrl = new URLSearchParams(window.location.search).get("lang");
+      if (isLang(fromUrl)) { setLangState(fromUrl); try { localStorage.setItem("rt_lang", fromUrl); } catch {} return; }
+      let saved: string | null = null;
+      try { saved = localStorage.getItem("rt_lang"); } catch {}
+      if (isLang(saved)) return setLangState(saved);
       const nav = (navigator.language || "").toLowerCase();
       setLangState(nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en");
     });
     return () => cancelAnimationFrame(id);
-  }, []);
+  }, [locked, initialLang]);
 
   useEffect(() => { document.documentElement.lang = lang === "pt" ? "pt-BR" : lang; }, [lang]);
 
-  const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem("rt_lang", l); } catch {} };
+  const setLang = useCallback((l: Lang) => { setLangState(l); try { localStorage.setItem("rt_lang", l); } catch {} }, []);
+  const to = useCallback((key: RouteKey) => href(key, lang), [lang]);
+  const startHref = useCallback((query = "") => {
+    const q = [locked ? `lang=${lang}` : "", query].filter(Boolean).join("&");
+    return q ? `/start?${q}` : "/start";
+  }, [locked, lang]);
 
-  return <I18nContext.Provider value={{ lang, d: dictionaries[lang], x: extra[lang], l: launch[lang], setLang }}>{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={{ lang, d: dictionaries[lang], x: extra[lang], l: launch[lang], r: round3[lang], setLang, locked, to, startHref }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
   // NEXT_DEV_MEMORY_EVICTION=full makes Turbopack move cold data to that disk cache instead of RAM
   // (long local dev sessions; the e2e suite runs on a production build instead).
   experimental: {
+    // Three root layouts (English, /pt, /es): an unmatched URL needs its own branded 404.
+    globalNotFound: true,
     turbopackFileSystemCacheForDev: process.env.NEXT_DEV_FS_CACHE !== "0",
     ...(process.env.NEXT_DEV_MEMORY_EVICTION === "full" ? { turbopackMemoryEviction: "full" as const } : {}),
   },

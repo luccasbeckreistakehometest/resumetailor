@@ -15,7 +15,7 @@ export function usePaymentLine(): string {
 }
 
 export function SiteFooter() {
-  const { d, x, l } = useI18n();
+  const { d, x, l, to, startHref } = useI18n();
   const payLine = usePaymentLine();
   return (
     <footer className="mt-auto border-t border-edge py-10" data-testid="site-footer">
@@ -26,12 +26,12 @@ export function SiteFooter() {
           <p className="mt-1 max-w-sm">{l.footer.prepaid}</p>
         </div>
         <nav className="flex flex-col gap-2" aria-label="ResumeTailor">
-          <Link href="/ats-check" className="hover:text-ink">{x.nav.atsCheck}</Link>
-          <Link href="/fit" className="hover:text-ink">{x.nav.fit}</Link>
-          <Link href="/pricing" className="hover:text-ink">{x.nav.pricing}</Link>
+          <Link href={to("ats")} className="hover:text-ink">{x.nav.atsCheck}</Link>
+          <Link href={to("fit")} className="hover:text-ink">{x.nav.fit}</Link>
+          <Link href={to("pricing")} className="hover:text-ink">{x.nav.pricing}</Link>
           <Link href="/library" className="hover:text-ink">{d.nav.myCVs}</Link>
           <Link href="/applications" className="hover:text-ink">{x.nav.applications}</Link>
-          <Link href="/start" className="hover:text-ink">{d.nav.start}</Link>
+          <Link href={startHref()} className="hover:text-ink">{d.nav.start}</Link>
         </nav>
         <LegalLinks />
       </div>
