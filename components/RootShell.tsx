@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { SupportChat } from "@/components/SupportChat";
 import { Tour } from "@/components/Tour";
 import { LangPill } from "@/components/LangPill";
+import { Analytics } from "@/components/Analytics";
 import { htmlLang, type RouteLang } from "@/lib/i18n/routes";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -22,6 +23,7 @@ export function RootShell({ lang, children }: { lang: RouteLang; children: React
           <AuthProvider>
             {children}
             <LangPill />
+            <Analytics />
             <Tour />
             <SupportChat />
           </AuthProvider>

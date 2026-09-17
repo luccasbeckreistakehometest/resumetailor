@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/server/session";
 import { packByKey } from "@/lib/packs";
 import { baseUrl, canSell, secretEnv } from "@/lib/server/env";
 import { jsonError } from "@/lib/server/http";
+import { serverEvent } from "@/lib/server/analytics";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,7 @@ export async function POST(request: Request) {
   const pack = packByKey(String(packKey ?? "1"));
   // Return URLs come from configuration, never from the request's Origin header.
   const origin = baseUrl();
+  serverEvent({ userId: user.id }, "checkout_start", { pack: pack.key, provider: "stripe" });
   try {
     const stripe = new Stripe(key);
     const session = await stripe.checkout.sessions.create({

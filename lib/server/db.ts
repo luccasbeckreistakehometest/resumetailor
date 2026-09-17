@@ -227,6 +227,8 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "generations", "truthAck", "TEXT NOT NULL DEFAULT '[]'");
   // How many "missing numbers" rounds a kit used (capped by KIT_QUANTIFY_MAX).
   addColumnIfMissing(d, "generations", "quantified", "INTEGER NOT NULL DEFAULT 0");
+  // The visitor cookie an account was created from (first-touch attribution survives signup).
+  addColumnIfMissing(d, "users", "attributionVisitorId", "TEXT");
   // Spoken turns per briefing (capped by VOICE_MAX_TURNS).
   addColumnIfMissing(d, "voice_briefings", "turns", "INTEGER NOT NULL DEFAULT 1");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
@@ -256,6 +258,43 @@ const ROUND3_TABLES = `
     updatedAt TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_versions_gen ON resume_versions(generationId, createdAt);
+
+  -- First-party analytics: page views and conversions per visitor cookie (no IP), kept
+  -- ANALYTICS_RETENTION_DAYS; and where each visitor first came from (first touch).
+  CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    at TEXT NOT NULL,
+    day TEXT NOT NULL,
+    visitorId TEXT NOT NULL,
+    sessionId TEXT,
+    userId TEXT,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL DEFAULT '',
+    lang TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    medium TEXT NOT NULL DEFAULT '',
+    campaign TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    term TEXT NOT NULL DEFAULT '',
+    refHost TEXT NOT NULL DEFAULT '',
+    device TEXT NOT NULL DEFAULT '',
+    props TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_events_day_name ON events(day, name);
+  CREATE INDEX IF NOT EXISTS idx_events_visitor ON events(visitorId, day);
+  CREATE INDEX IF NOT EXISTS idx_events_campaign ON events(campaign, day);
+  CREATE TABLE IF NOT EXISTS attribution (
+    visitorId TEXT PRIMARY KEY,
+    firstAt TEXT NOT NULL,
+    landingPath TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    medium TEXT NOT NULL DEFAULT '',
+    campaign TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    term TEXT NOT NULL DEFAULT '',
+    refHost TEXT NOT NULL DEFAULT '',
+    userId TEXT
+  );
 `;
 
 const LAUNCH_TABLES = `

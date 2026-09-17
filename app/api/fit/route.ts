@@ -5,6 +5,7 @@ import { analyseFit } from "@/lib/ai/fit";
 import { fitHash, fitUsage, getCachedFit, saveFit, serialiseFit } from "@/lib/server/fit";
 import { recordEvent } from "@/lib/server/onboarding";
 import { lease, takeAll } from "@/lib/server/ratelimit";
+import { serverEvent } from "@/lib/server/analytics";
 
 export const runtime = "nodejs";
 
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
       if (!ran.ok) return ran.reply;
       const { result, model, costUsd } = ran.value;
       const row = saveFit({ ownerKey: owner.key, hash, lang, result, model, costUsd });
+      serverEvent(owner, "fit_run");
       recordEvent(owner.key, "fit_check", { score: serialiseFit(row, false, usage).score, items: result.items.length });
       return { body: serialiseFit(row, false, fitUsage(owner.key)) };
     } finally {

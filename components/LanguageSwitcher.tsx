@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { Lang } from "@/app/i18n/dictionaries";
 import { hasLang, href, routeKeyFor } from "@/lib/i18n/routes";
+import { track } from "@/lib/client/track";
 
 const LANGS: { code: Lang; short: string }[] = [{ code: "en", short: "EN" }, { code: "pt", short: "PT" }, { code: "es", short: "ES" }];
 
@@ -17,6 +18,7 @@ export function LanguageSwitcher() {
   const router = useRouter();
   const choose = (code: Lang) => {
     const match = routeKeyFor(pathname);
+    if (code !== lang) track("lang_switch", { from: lang, to: code });
     setLang(code);
     if (match && match.lang !== code && hasLang(match.key, code)) router.push(href(match.key, code) as never);
   };

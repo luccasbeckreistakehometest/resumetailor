@@ -10,6 +10,7 @@ import { saveProfile } from "@/lib/server/profiles";
 import { getDb } from "@/lib/server/db";
 import { briefingFacts, type Briefing } from "@/lib/ai/voice";
 import { emptyFacts, factKey, factsText, type ProfileFacts } from "@/lib/profile/facts";
+import { serverEvent } from "@/lib/server/analytics";
 
 /**
  * The facts said out loud in a briefing the caller owns, filtered to the ones the person kept.
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
       input: { jobDescription: b.jobDescription, resume: b.resume, profile: b.profile, briefingId: b.briefingId, ...(spokenText ? { spoken: spokenText } : {}) }, kit, model, costUsd,
     });
     if (b.remember && b.mode !== "build" && b.resume) saveProfile(owner.key, { resume: b.resume, role: b.targetRole, facts: spoken?.facts });
+    serverEvent(owner, "preview_ready", { mode: b.mode, source: b.source });
     recordEvent(owner.key, "generate", { mode: b.mode, source: b.source, matchAfter: kit.matchAfter });
     return { body: serialise(row) };
   });

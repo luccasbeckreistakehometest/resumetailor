@@ -24,8 +24,9 @@ export async function GET() {
       aiCostUsd: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM generations").c,
       aiSpendAllTime: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM ai_usage").c,
       messagesNew: one<{ n: number }>("SELECT COUNT(*) n FROM contact_messages WHERE status='new'").n,
-      toursStarted: one<{ n: number }>("SELECT COUNT(*) n FROM onboarding").n,
-      toursCompleted: one<{ n: number }>("SELECT COUNT(*) n FROM onboarding WHERE tourCompleted=1").n,
+      // Real tour starts/finishes (events), not every visitor that loaded a page.
+      toursStarted: one<{ n: number }>("SELECT COUNT(DISTINCT visitorId) n FROM events WHERE name='tour_start'").n,
+      toursCompleted: one<{ n: number }>("SELECT COUNT(DISTINCT visitorId) n FROM events WHERE name='tour_done'").n,
       interviews: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions").n,
       interviewsDone: one<{ n: number }>("SELECT COUNT(*) n FROM interview_sessions WHERE status='done'").n,
       interviewCostUsd: one<{ c: number }>("SELECT COALESCE(SUM(costUsd),0) c FROM interview_sessions").c,

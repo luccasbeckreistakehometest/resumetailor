@@ -6,6 +6,7 @@ import { getVariant } from "@/lib/server/variants";
 import { buildDocx, DOCX_MIME, fileBase, toPlainText, type ExportDoc, type ExportLang } from "@/lib/resume/export";
 import { recordEvent } from "@/lib/server/onboarding";
 import type { Kit } from "@/lib/ai/kit";
+import { serverEvent } from "@/lib/server/analytics";
 
 export const runtime = "nodejs";
 type Ctx = { params: Promise<{ id: string }> };
@@ -43,6 +44,7 @@ export async function GET(request: Request, ctx: Ctx) {
       ? { body: new Uint8Array(await buildDocx(text, doc, base)), type: DOCX_MIME, name: `${base}.docx` }
       : { body: toPlainText(text), type: "text/plain; charset=utf-8", name: `${base}.txt` };
     recordEvent(owner.key, "export", { generationId: id, doc, format, variant });
+    if (format === "docx") serverEvent(owner, "export_docx", { doc });
     return { body: { ok: true } };
   });
   if (!file) return res;

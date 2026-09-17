@@ -6,6 +6,7 @@ import { getGeneration, ownsGeneration } from "@/lib/server/generations";
 import { MAX_SESSIONS_PER_KIT, countSessionsForKit, createSession, listSessions, serialiseSession } from "@/lib/server/interviews";
 import { recordEvent } from "@/lib/server/onboarding";
 import { takeAll } from "@/lib/server/ratelimit";
+import { serverEvent } from "@/lib/server/analytics";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
     const over = takeAll([["INTERVIEW_IP_HOUR", owner.ip], ["INTERVIEW_OWNER_HOUR", owner.key]]);
     if (over) return limited(over);
     const row = createSession({ userId: owner.userId, anonId: owner.anonId, generation: gen, model: EXTRACT_MODEL });
+    serverEvent(owner, "interview_start", { mode: row.mode });
     recordEvent(owner.key, "interview_start", { generationId: gen.id, mode: row.mode });
     return { body: serialiseSession(row, { title: gen.title, targetRole: gen.targetRole }) };
   });

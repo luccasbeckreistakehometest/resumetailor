@@ -7,6 +7,7 @@ import { recordEvent } from "@/lib/server/onboarding";
 import { isDisposableEmail } from "@/lib/server/disposable";
 import { jsonError, requestIp } from "@/lib/server/http";
 import { takeAll } from "@/lib/server/ratelimit";
+import { linkVisitor, serverEvent } from "@/lib/server/analytics";
 
 const schema = z.object({
   email: z.string().trim().max(200).email(), password: z.string().min(8).max(200), name: z.string().trim().max(80).optional(),
@@ -37,6 +38,8 @@ export async function POST(request: Request) {
   // Whatever they made before signing up comes with them.
   const anon = await anonId();
   claimAnonymous(user.id, anon);
+  linkVisitor(user.id, anon);
+  serverEvent({ anonId: anon, userId: user.id }, "signup", { lang: user.lang });
   recordEvent(user.id, "signup", { lang: user.lang, claimedAnon: !!anon, bonus: user.credits > 0 });
   const res = NextResponse.json({ ok: true, user: toPublic(user), bonus: user.credits > 0 });
   res.cookies.set(SESSION_COOKIE, sessionTokenFor(user), SESSION_COOKIE_OPTIONS);

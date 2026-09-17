@@ -4,6 +4,7 @@ import { getGeneration, ownsGeneration } from "@/lib/server/generations";
 import { deletePublic, getPublicByGeneration, serialisePublic, upsertPublic } from "@/lib/server/publicResumes";
 import { TEMPLATES } from "@/lib/resume/public";
 import { recordEvent } from "@/lib/server/onboarding";
+import { serverEvent } from "@/lib/server/analytics";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -37,6 +38,7 @@ export async function PUT(request: Request, ctx: Ctx) {
     if ((current?.takenDownAt || row.publishBlockedAt) && parsed.data.enabled) return bad("taken_down", 409);
     try {
       const p = await upsertPublic(id, owner.userId, row.title, parsed.data);
+      if (parsed.data.enabled) serverEvent(owner, "publish_on");
       if (parsed.data.enabled !== undefined) recordEvent(owner.userId, parsed.data.enabled ? "cv_publish" : "cv_unpublish", { generationId: id });
       return { body: { publicResume: serialisePublic(p) } };
     } catch (e) {

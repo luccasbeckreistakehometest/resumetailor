@@ -8,6 +8,7 @@ import { Eyebrow, Stamp } from "@/components/ui";
 import { ImportableTextarea } from "@/components/FileDrop";
 import { atsCheck, decodeShare, encodeShare, wordCount, type AtsResult, type Check, type Lang } from "@/lib/ats/check";
 import { ATS_COPY } from "./copy";
+import { track } from "@/lib/client/track";
 
 /** Search-facing copy: server-rendered in the route's language, then following the visitor's unless the route is localised. */
 export function AtsSeo({ lang, forced, part }: { lang: Lang; forced: boolean; part: "head" | "faq" }) {
@@ -72,6 +73,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
     if (wordCount(resume) < 20) { setError(A.tooShort); setResult(null); return; }
     setError(""); setCopied(false);
     const r = atsCheck(resume, posting, lang);
+    track("ats_check_run", { score: r.score, posting: r.hasPosting });
     setResult(r);
     setShare(`${window.location.origin}${window.location.pathname}?r=${encodeShare(r, L)}`);
     setTimeout(() => document.getElementById("ats-result")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);

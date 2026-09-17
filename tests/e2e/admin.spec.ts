@@ -13,7 +13,7 @@ test("admin sees totals, users, and the first-session timeline; users do not", a
   await login(page, "admin@resumetailor.app", "resumetailor2026");
   await page.goto("/admin");
   await expect(page.getByTestId("admin-totals")).toBeVisible();
-  await expect(page.getByTestId("admin-totals")).toContainText("1"); // one user
+  await expect(page.getByTestId("admin-totals")).toContainText(/Users\s*[1-9]/); // at least this user
   await page.getByRole("button", { name: /^users|usuários|usuarios/i }).click();
   await expect(page.getByTestId("admin-table")).toContainText(user.email);
   await page.getByRole("button", { name: /first sessions|primeiras/i }).click();

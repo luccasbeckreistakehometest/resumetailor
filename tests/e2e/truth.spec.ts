@@ -52,7 +52,11 @@ test.describe("truth check and what changed", () => {
     await skipTour(page);
     await page.goto("/ats-check/pt");
     const api: string[] = [];
-    page.on("request", (r) => { if (new URL(r.url()).pathname.startsWith("/api/") && r.method() !== "GET") api.push(r.url()); });
+    page.on("request", (r) => {
+      const path = new URL(r.url()).pathname;
+      if (path === "/api/e") { expect(r.postDataBuffer()?.toString() ?? "").not.toContain("proativa"); return; }
+      if (path.startsWith("/api/") && r.method() !== "GET") api.push(r.url());
+    });
     await page.getByTestId("ats-resume").fill(`Ana Lima\nana@example.com · +55 11 91234-5678\n\nResumo\nProfissional proativa, dinâmica e apaixonada por dados, com vasta experiência.\n\nExperiência\nAnalista — Acme (2019–2023)\n- Responsável por relatórios\n- Responsável por dashboards\n- Responsável por reuniões\n\nFormação\nEstatística — UFPE (2018)\n\nHabilidades\nSQL, Excel`);
     await page.getByTestId("ats-check").click();
     await expect(page.getByTestId("ats-result")).toBeVisible();

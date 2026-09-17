@@ -29,5 +29,7 @@ export MP_ACCESS_TOKEN="TEST-e2e-fake-token"
 export MP_API_MOCK_DIR="$PWD/data/e2e/mp"
 export ADMIN_EMAIL="admin@resumetailor.app" ADMIN_PASSWORD="resumetailor2026"
 export FIT_CHECKS_PER_DAY=3
+# The suite runs in a headless browser: let analytics count it (crawlers are still dropped).
+export ANALYTICS_ALLOW_HEADLESS=1
 export AI_PROBE_RETRY_SECONDS=8
 exec npx next start -p "$PORT"
