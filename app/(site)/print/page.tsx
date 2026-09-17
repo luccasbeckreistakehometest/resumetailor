@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import type { GenerationView } from "@/lib/server/generations";
+import { fileBase } from "@/lib/resume/export";
 
 type Template = "ats" | "modern" | "elegant" | "compact" | "bold";
 const TEMPLATES: Template[] = ["ats", "modern", "elegant", "compact", "bold"];
@@ -21,6 +22,13 @@ function PrintInner() {
     const load = id ? fetch(`/api/generations/${id}`).then((r) => r.ok ? r.json() : null) : Promise.resolve(null);
     void load.then(setGen);
   }, [params]);
+
+  // "Save as PDF" suggests the page title as the file name: make it the candidate and the role.
+  useEffect(() => {
+    if (!gen?.kit) return;
+    const lang = (["en", "pt", "es"].includes(gen.lang) ? gen.lang : "en") as "en" | "pt" | "es";
+    document.title = fileBase("resume", lang, gen.title, gen.targetRole);
+  }, [gen]);
 
   if (gen === undefined) return null;
   if (!gen || !gen.kit) {

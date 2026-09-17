@@ -315,6 +315,7 @@ function StartInner() {
                 <p className="text-sm font-medium text-moss">✓ {x.credits.unlocked}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link href={`/print?id=${gen.id}`} target="_blank" className="btn btn-primary">{d.print.save}</Link>
+                  <Link href={`/edit/${gen.id}`} className="btn btn-ink" data-testid="edit-kit">✎ {r.editor.cta}</Link>
                   <Link href={`/interview/${gen.id}`} className="btn btn-ink" data-testid="practice">🎙 {x.interview.practice}</Link>
                   <Link href={`/linkedin/${gen.id}`} className="btn btn-ghost" data-testid="linkedin-link">in · {x.linkedin.cta}</Link>
                   <Link href={`/applications?add=1&gen=${gen.id}&role=${encodeURIComponent(gen.targetRole)}`} className="btn btn-ghost" data-testid="track">{x.applications.trackFromKit}</Link>

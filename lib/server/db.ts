@@ -238,6 +238,18 @@ const ROUND3_TABLES = `
     roles TEXT NOT NULL DEFAULT '[]',
     updatedAt TEXT NOT NULL
   );
+
+  -- Every version of a kit's résumé: the AI's, each deepening or number pass, the person's edits
+  -- (consecutive autosaves coalesce) and restores. The first row is the AI original and is kept.
+  CREATE TABLE IF NOT EXISTS resume_versions (
+    id TEXT PRIMARY KEY,
+    generationId TEXT NOT NULL REFERENCES generations(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    source TEXT NOT NULL,                        -- ai | deepen | quantify | user | restore
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_versions_gen ON resume_versions(generationId, createdAt);
 `;
 
 const LAUNCH_TABLES = `

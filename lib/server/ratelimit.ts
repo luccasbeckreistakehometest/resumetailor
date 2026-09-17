@@ -103,6 +103,8 @@ const DEFAULTS = {
   CONTACT_IP_HOUR: [5, 3600],
   PASSWORD_USER_15M: [6, 900],
   EXPORT_USER_HOUR: [6, 3600],
+  KIT_EDIT_OWNER_HOUR: [600, 3600],
+  KIT_EXPORT_KIT_DAY: [30, 86_400],
 } as const satisfies Record<string, readonly [number, number]>;
 export type LimitName = keyof typeof DEFAULTS;
 

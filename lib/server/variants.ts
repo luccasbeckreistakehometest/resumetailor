@@ -22,3 +22,7 @@ export function clearVariants(generationId: string): void {
 }
 export const serialiseVariant = (r: VariantRow, cached: boolean) => ({ kind: r.kind, subject: r.subject, body: r.body, cached, createdAt: r.createdAt });
 export type VariantView = ReturnType<typeof serialiseVariant>;
+/** The letters, e-mails and LinkedIn pass only (what an edit of the résumé makes stale). */
+export function clearTextVariants(generationId: string): number {
+  return getDb().prepare("DELETE FROM kit_variants WHERE generationId = ? AND (kind LIKE 'cover:%' OR kind LIKE 'email:%' OR kind = 'linkedin')").run(generationId).changes;
+}

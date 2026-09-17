@@ -5,6 +5,7 @@ import type { Kit } from "@/lib/ai/kit";
 import { personalisation } from "@/lib/ats/personalisation";
 import { getPublicByGeneration, serialisePublic } from "@/lib/server/publicResumes";
 import { clearVariants } from "@/lib/server/variants";
+import { ensureOriginal, recordVersion } from "@/lib/server/versions";
 
 export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
@@ -85,6 +86,9 @@ export function releaseDeepen(id: string): void {
 export function deepenGeneration(id: string, kit: Kit, model: string, costUsd: number): GenerationRow {
   const db = getDb();
   db.transaction(() => {
+    const before = getGeneration(id);
+    if (before) ensureOriginal(id, (JSON.parse(before.result) as Kit).resume);
+    recordVersion(id, kit.resume, "deepen");
     db.prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ? WHERE id = ?")
       .run(JSON.stringify(kit), kit.matchBefore, kit.matchAfter, titleFrom(kit), model, costUsd, id);
     clearVariants(id);   // letters, emails and the LinkedIn pass were written from the old text

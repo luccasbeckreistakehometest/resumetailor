@@ -5,7 +5,7 @@ import { lease, takeAll } from "@/lib/server/ratelimit";
 import { generateVariant, VARIANT_KINDS } from "@/lib/ai/variants";
 import type { Kit, Lang } from "@/lib/ai/kit";
 import { getGeneration, ownsGeneration } from "@/lib/server/generations";
-import { getVariant, listVariants, saveVariant, serialiseVariant } from "@/lib/server/variants";
+import { clearTextVariants, getVariant, listVariants, saveVariant, serialiseVariant } from "@/lib/server/variants";
 import { recordEvent } from "@/lib/server/onboarding";
 
 export const runtime = "nodejs";
@@ -55,5 +55,21 @@ export async function POST(request: Request, ctx: Ctx) {
     } finally {
       slot.release();
     }
+  });
+}
+
+/**
+ * "Refresh letters and e-mails with the new version": after an edit, the cached letters and
+ * e-mails (and the LinkedIn pass) were written from the old text. Only on request, never automatic.
+ */
+export async function DELETE(_: Request, ctx: Ctx) {
+  const { id } = await ctx.params;
+  return withOwner(async (owner) => {
+    const row = getGeneration(id);
+    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
+    if (row.unlocked !== 1) return bad("unlock_first", 403);
+    const removed = clearTextVariants(id);
+    recordEvent(owner.key, "variants_refresh", { generationId: id, removed });
+    return { body: { ok: true, removed } };
   });
 }
