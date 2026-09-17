@@ -91,7 +91,7 @@ export default function AdminPage() {
 }
 
 const Table = ({ cols, rows }: { cols: string[]; rows: (string | number | null | undefined)[][] }) => (
-  <table className="w-full text-left text-sm">
+  <table className="w-full text-left text-sm" data-testid="admin-table">
     <thead><tr className="border-b border-edge text-xs uppercase tracking-wide text-muted">{cols.map((c) => <th key={c} className="py-2 pr-4 font-semibold">{c}</th>)}</tr></thead>
     <tbody>{rows.map((r, i) => <tr key={i} className="border-b border-edge/60">{r.map((c, j) => <td key={j} className="max-w-md truncate py-2 pr-4 text-ink-2">{c ?? "—"}</td>)}</tr>)}</tbody>
   </table>

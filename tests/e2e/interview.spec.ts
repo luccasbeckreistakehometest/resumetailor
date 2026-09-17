@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { buildKitByText, login, signUp } from "./helpers";
 
 const VOICE_ANSWER = "At Acme I led the lifecycle programme for two years. Pipeline had stalled, so I rebuilt the segmentation and ran weekly A/B tests. Qualified pipeline grew 38 percent in 12 months and I handed the playbook to sales.";
@@ -85,6 +85,6 @@ test.describe("mock interview", () => {
     await page.goto("/admin");
     await expect(page.getByTestId("admin-totals")).toContainText(/Interviews|Entrevistas/);
     await page.getByRole("button", { name: /^interviews|^entrevistas/i }).click();
-    await expect(page.getByRole("table")).toContainText(user.email);
+    await expect(page.getByTestId("admin-table")).toContainText(user.email);
   });
 });

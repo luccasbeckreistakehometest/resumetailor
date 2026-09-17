@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { skipTour } from "./helpers";
 
 // A posting whose vocabulary the demo kit barely touches, so the first draft reads generic.

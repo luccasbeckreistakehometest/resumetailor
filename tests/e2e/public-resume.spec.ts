@@ -1,4 +1,5 @@
-import { test, expect, type Browser } from "@playwright/test";
+import { type Browser } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { buildKitByText, signUp } from "./helpers";
 
 /** A visitor with no cookies at all: what a recruiter who got the link on WhatsApp sees. */

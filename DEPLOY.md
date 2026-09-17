@@ -18,14 +18,27 @@ cp .env.example .env && nano .env      # preencha (abaixo)
 Sem git: `rsync -av --exclude node_modules --exclude .next --exclude data ./ root@SEU_IP:/root/resumetailor/`
 
 ## 3. `.env` — o que cada chave faz
+**Comentário sempre em linha própria.** O `env_file` do docker lê `CHAVE=   # comentário` como se o
+comentário fosse o valor (foi assim que a voz e os insights ficaram "configurados" com lixo). O app
+também trata qualquer valor começando com `#` como vazio, mas não conte com isso.
+
 | chave | obrigatória | de onde |
 |---|---|---|
-| `AUTH_SECRET` | sim | `openssl rand -hex 32` |
-| `ANTHROPIC_API_KEY` | sim (IA) | console.anthropic.com → API keys. **Precisa de crédito** — sem ela o app roda, mas geração e voz respondem "IA não configurada". |
-| `NEXT_PUBLIC_BASE_URL` | sim | `https://seu-dominio.com` (usado nos retornos do checkout e nos webhooks) |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | sim | sua conta admin (criada no primeiro boot) |
-| `MP_ACCESS_TOKEN` | Brasil | Mercado Pago → Suas integrações → credenciais de **produção** |
-| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | global | Stripe → Developers → API keys / Webhooks |
+| `AUTH_SECRET` | sim | `openssl rand -hex 32` (gerado no servidor; em produção o app recusa valor curto ou de exemplo) |
+| `ANTHROPIC_API_KEY` | sim (IA) | console.anthropic.com → API keys. **Precisa de crédito.** O app testa a chave no boot (`GET /v1/models`) e mostra "IA fora do ar" em /start se ela for recusada. |
+| `NEXT_PUBLIC_BASE_URL` | sim | `https://seu-dominio.com` — retornos do checkout, notificação do MP, OG/canonical. Entra no build (NEXT_PUBLIC). |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | sim | conta admin; trocar `ADMIN_PASSWORD` e dar `up -d` ressincroniza a senha |
+| `MP_ACCESS_TOKEN` | pagamentos | Mercado Pago → credenciais de **produção**. Com o Stripe desligado, todo idioma paga por aqui (em BRL, rotulado). |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | opcional | Stripe → API keys / Webhooks (cartão em USD) |
+| `AI_DAILY_BUDGET_USD` | recomendado | teto diário de gasto de IA (padrão 25). Atingiu → IA e voz pausam até 00:00 UTC; aparece no /admin |
+| `ELEVENLABS_API_KEY` / `OPENAI_API_KEY` | opcional | voz da IA; vazio = só texto |
+| `TAVILY_API_KEY` | opcional | insights da empresa; vazio = recurso e textos somem |
+| `SUPPORT_EMAIL` / `SUPPORT_WHATSAPP` | opcional | só aparecem se preenchidos (lidos em tempo de execução, sem rebuild). O formulário de contato sempre funciona. |
+| `LEGAL_NAME` / `LEGAL_DOCUMENT` / `LEGAL_ADDRESS` / `LEGAL_EMAIL` | recomendado | identificação do responsável nas páginas legais; vazio = a linha some e aponta pro formulário |
+| `ANON_PREVIEWS_PER_IP_PER_DAY`, `SIGNUP_BONUS_PER_IP_30D`, `RL_*` | opcional | limites de abuso (ver `lib/server/ratelimit.ts`) |
+
+O Dockerfile não copia o `.env` pra imagem: ele monta o contexto só no passo de build e extrai as
+linhas `NEXT_PUBLIC_*`. Mudou uma `NEXT_PUBLIC_*`? Precisa de `--build`.
 
 ## 4. Subir
 ```bash
@@ -47,9 +60,9 @@ systemctl reload caddy
 Caddy emite e renova o certificado sozinho.
 
 ## 6. Webhooks (créditos entram sozinhos)
-- **Mercado Pago**: Suas integrações → Webhooks → URL `https://seu-dominio.com/api/webhooks/mercadopago`, evento *Pagamentos*.
-- **Stripe**: Webhooks → endpoint `https://seu-dominio.com/api/webhooks/stripe`, evento `checkout.session.completed`. Copie o *signing secret* para `STRIPE_WEBHOOK_SECRET`.
-- Fallback: a página `/success` também confirma o pagamento direto no Stripe se o webhook atrasar; no MP ela espera o webhook.
+- **Mercado Pago**: Suas integrações → Webhooks → URL `https://seu-dominio.com/api/webhooks/mercadopago`, evento *Pagamentos*. Falha ao consultar o pagamento → resposta 5xx (o MP tenta de novo). `refunded`/`charged_back` tiram os créditos.
+- **Stripe**: Webhooks → endpoint `https://seu-dominio.com/api/webhooks/stripe`, eventos `checkout.session.completed`, `charge.refunded` e `charge.dispute.created`. Copie o *signing secret* para `STRIPE_WEBHOOK_SECRET`.
+- Fallback: a página `/success` confirma direto no provedor (sessão do Stripe ou `payment_id` do MP) e só mostra "pago" quando os créditos já estão na conta.
 
 ## 7. Operar
 ```bash
@@ -57,7 +70,9 @@ docker compose pull && docker compose up -d --build   # atualizar
 cp data/resumetailor.db backups/$(date +%F).db         # backup (faça um cron diário)
 docker compose logs --tail 200 app                      # logs
 ```
-Painel admin: `https://seu-dominio.com/admin` com `ADMIN_EMAIL`.
+Painel admin: `https://seu-dominio.com/admin` com `ADMIN_EMAIL` — saúde da IA e gasto do dia,
+busca de usuário (senha temporária, desativar, desconectar), tirar currículo público do ar e as
+mensagens do formulário de contato. Saúde: `GET /api/health` → `{ok, db}`.
 
 ## Custos por kit
 Com `AI_MODEL_KIT=claude-sonnet-5` cada kit custa ~US$0,02–0,05 em IA. Trocar para `claude-opus-5`

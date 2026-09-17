@@ -110,7 +110,7 @@ function AuthDialog({ onClose, onDone, initialMode = "in" }: { onClose: () => vo
             </div>
             {up && (
               <label className="flex items-start gap-2.5 text-sm text-ink-2" data-testid="auth-consent">
-                <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-[var(--oxblood)]" checked={accept} onChange={(e) => setAccept(e.target.checked)} required data-testid="auth-accept" />
+                <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-[var(--oxblood)]" checked={accept} onChange={(e) => setAccept(e.target.checked)} aria-required="true" data-testid="auth-accept" />
                 <span>
                   {l.auth.consentBefore} <Link href="/legal/terms" target="_blank" className="font-medium text-oxblood underline underline-offset-2">{l.auth.consentTerms}</Link>{" "}
                   {l.auth.consentAnd} <Link href="/legal/privacy" target="_blank" className="font-medium text-oxblood underline underline-offset-2">{l.auth.consentPrivacy}</Link>{l.auth.consentAfter}

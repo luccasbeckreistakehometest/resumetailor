@@ -4,7 +4,7 @@ import { EXTRACT_MODEL, aiMock, costOf, getClient } from "@/lib/ai/client";
 import { secretEnv } from "@/lib/server/env";
 
 /** Company insights exist only with a real search key; the copy that promises them hides too. */
-export const insightsEnabled = () => aiMock() || !!secretEnv("TAVILY_API_KEY");
+export const insightsEnabled = () => !!secretEnv("TAVILY_API_KEY") || (aiMock() && process.env.AI_MOCK_INSIGHTS === "1");
 type Hit = { title: string; url: string; content: string };
 
 async function tavily(query: string): Promise<Hit[]> {

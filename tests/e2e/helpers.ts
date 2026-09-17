@@ -16,8 +16,13 @@ export async function skipTour(page: Page) {
 }
 
 export async function signUp(page: Page, email = `u${Date.now()}@example.com`, password = "password123") {
+  const modal = page.getByTestId("auth-modal");
+  await expect(modal).toBeVisible();
+  if ((await modal.getAttribute("data-mode")) === "in") await page.getByTestId("auth-switch").click();
+  await expect(modal).toHaveAttribute("data-mode", "up");
   await page.getByTestId("auth-email").fill(email);
   await page.getByTestId("auth-password").fill(password);
+  await page.getByTestId("auth-accept").check();
   await page.getByTestId("auth-submit").click();
   await expect(page.getByTestId("auth-modal")).toBeHidden();
   return { email, password };
@@ -25,10 +30,16 @@ export async function signUp(page: Page, email = `u${Date.now()}@example.com`, p
 
 export async function login(page: Page, email: string, password: string) {
   await page.goto("/login");
-  await page.getByText(/Already have an account|Já tem conta|Ya tienes cuenta/).click();
+  await expect(page.getByTestId("auth-modal")).toHaveAttribute("data-mode", "in");
   await page.getByTestId("auth-email").fill(email);
   await page.getByTestId("auth-password").fill(password);
   await page.getByTestId("auth-submit").click();
+  // Settled: either signed in (the dialog closes) or refused (an error shows).
+  await expect(async () => {
+    const closed = !(await page.getByTestId("auth-modal").isVisible());
+    const refused = await page.getByTestId("auth-error").isVisible();
+    expect(closed || refused).toBe(true);
+  }).toPass({ timeout: 10_000 });
 }
 
 /** Text flow through the "build my first resume" path up to the (mocked) result. */

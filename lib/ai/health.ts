@@ -22,7 +22,9 @@ const state = (g.__rtAiHealth ??= { probe: null, inflight: null, failure: null, 
 
 type FetchLike = (url: string, init: { headers: Record<string, string>; signal?: AbortSignal }) => Promise<{ status: number; ok: boolean }>;
 
-export async function probeAi(fetchImpl: FetchLike = fetch as unknown as FetchLike, now = Date.now()): Promise<AiHealth> {
+let defaultFetch: FetchLike = (url, init) => fetch(url, init);
+
+export async function probeAi(fetchImpl: FetchLike = defaultFetch, now = Date.now()): Promise<AiHealth> {
   if (aiMock()) return (state.probe = { ok: true, reason: null, checkedAt: now });
   const key = secretEnv("ANTHROPIC_API_KEY");
   if (!key || !aiConfigured()) return (state.probe = { ok: false, reason: "no_key", checkedAt: now });
@@ -105,7 +107,8 @@ export function aiHealthSnapshot(): { ready: boolean; probe: AiHealth | null; la
   return { ready: aiReady(), probe: state.probe, lastFailure: state.failure, stored };
 }
 
-/** Test hook. */
+/** Test hooks: background probes never reach the network in unit tests. */
+export function __setProbeFetch(fn: FetchLike): void { defaultFetch = fn; }
 export function __resetAiHealth(): void {
   state.probe = null; state.inflight = null; state.failure = null; state.lastOkAt = 0;
 }

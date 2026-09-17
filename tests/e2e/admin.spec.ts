@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { buildKitByText, login, signUp } from "./helpers";
 
 test("admin sees totals, users, and the first-session timeline; users do not", async ({ page }) => {
@@ -15,7 +15,7 @@ test("admin sees totals, users, and the first-session timeline; users do not", a
   await expect(page.getByTestId("admin-totals")).toBeVisible();
   await expect(page.getByTestId("admin-totals")).toContainText("1"); // one user
   await page.getByRole("button", { name: /^users|usuários|usuarios/i }).click();
-  await expect(page.getByRole("table")).toContainText(user.email);
+  await expect(page.getByTestId("admin-table")).toContainText(user.email);
   await page.getByRole("button", { name: /first sessions|primeiras/i }).click();
-  await expect(page.getByRole("table")).toContainText(/generate/);
+  await expect(page.getByTestId("admin-table")).toContainText(/generate/);
 });

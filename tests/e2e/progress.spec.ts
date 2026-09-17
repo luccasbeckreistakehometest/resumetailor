@@ -1,4 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { buildKitByText } from "./helpers";
 
 const THIN = "I did some marketing work and helped the team with campaigns and reports.";
