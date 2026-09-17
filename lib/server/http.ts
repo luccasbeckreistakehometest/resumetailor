@@ -8,9 +8,14 @@ import type { ApiErrorCode } from "@/lib/errors";
 export interface Owner { userId: string | null; anonId: string; key: string; ip: string; isNewAnon: boolean }
 export type Reply = { body: unknown; status?: number; headers?: Record<string, string> };
 
-/** Resolves who is calling and, for a first-time visitor, mints the anonymous cookie on the way out. */
-export async function withOwner(fn: (owner: Owner) => Promise<Reply>): Promise<NextResponse> {
+/**
+ * Resolves who is calling and, for a first-time visitor, mints the anonymous cookie on the way out.
+ * An account that signed in with an admin-issued temporary password is refused until it picks a
+ * new one (the client sends it to /account); `allowPendingPasswordChange` opts a route out.
+ */
+export async function withOwner(fn: (owner: Owner) => Promise<Reply>, opts: { allowPendingPasswordChange?: boolean } = {}): Promise<NextResponse> {
   const owner = await ownerKey();
+  if (owner.mustChangePassword && !opts.allowPendingPasswordChange) return jsonError("password_change_required", 403);
   const ip = clientIp(await headers());
   const key = owner.userId ?? owner.anonId;
   const { body, status, headers: extra } = await fn({ userId: owner.userId, anonId: owner.anonId, key, ip, isNewAnon: owner.isNewAnon });

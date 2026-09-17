@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   if (!key || !canSell()) return jsonError("payments_off", 503);
   const user = await currentUser();
   if (!user) return jsonError("sign_in_required", 401);
+  if (user.mustChangePassword) return jsonError("password_change_required", 403);
   const { pack: packKey } = await request.json().catch(() => ({}));
   const pack = packByKey(String(packKey ?? "1"));
   // Return URLs come from configuration, never from the request's Origin header.

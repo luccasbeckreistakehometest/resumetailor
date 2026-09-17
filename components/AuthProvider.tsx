@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 
@@ -54,6 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => { const id = setTimeout(() => void refresh(), 0); return () => clearTimeout(id); }, [refresh]);
+
+  // Signed in with an admin-issued temporary password: the account page (where it is changed) comes
+  // first. The server refuses the rest with password_change_required until then.
+  const pathname = usePathname();
+  const router = useRouter();
+  const mustChange = !!user?.mustChangePassword;
+  useEffect(() => {
+    if (mustChange && !/^\/(account|legal|contact)(\/|$)/.test(pathname)) router.replace("/account");
+  }, [mustChange, pathname, router]);
 
   const post = async (url: string, body: unknown): Promise<{ ok: boolean; j: Record<string, unknown> }> => {
     const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

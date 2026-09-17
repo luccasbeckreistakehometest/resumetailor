@@ -36,12 +36,12 @@ export async function anonId(): Promise<string | undefined> {
 }
 
 /** Owner key for rows and onboarding: the user id when logged in, else the anonymous cookie. */
-export async function ownerKey(): Promise<{ userId: string | null; anonId: string; isNewAnon: boolean }> {
+export async function ownerKey(): Promise<{ userId: string | null; anonId: string; isNewAnon: boolean; mustChangePassword: boolean }> {
   const user = await currentUser();
   const existing = await anonId();
-  if (user) return { userId: user.id, anonId: existing ?? "", isNewAnon: false };
-  if (existing) return { userId: null, anonId: existing, isNewAnon: false };
-  return { userId: null, anonId: newAnonId(), isNewAnon: true };
+  if (user) return { userId: user.id, anonId: existing ?? "", isNewAnon: false, mustChangePassword: user.mustChangePassword };
+  if (existing) return { userId: null, anonId: existing, isNewAnon: false, mustChangePassword: false };
+  return { userId: null, anonId: newAnonId(), isNewAnon: true, mustChangePassword: false };
 }
 
 export const ANON_COOKIE_OPTIONS = {

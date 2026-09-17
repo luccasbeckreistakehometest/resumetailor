@@ -78,9 +78,18 @@ test.describe("support and admin tools", () => {
     await login(u, user.email, user.password);
     await expect(u.getByTestId("auth-error")).toBeVisible();
     await login(u, user.email, temp);
-    await expect(u).toHaveURL(/\/start/);
-    await u.goto("/account");
+    // A temporary password leads straight to the account page, and the rest of the API waits for a new one.
+    await expect(u).toHaveURL(/\/account/);
     await expect(u.getByTestId("must-change")).toBeVisible();
+    await u.goto("/start");
+    await expect(u).toHaveURL(/\/account/);
+    const pending = await u.request.get("/api/generations");
+    expect(pending.status()).toBe(403);
+    expect((await pending.json()).error).toBe("password_change_required");
+    await u.getByTestId("pw-current").fill(temp);
+    await u.getByTestId("pw-next").fill("chosen-after-reset");
+    await u.getByTestId("pw-save").click();
+    await expect(u.getByTestId("must-change")).toBeHidden();
     const kitId = (await u.evaluate(() => fetch("/api/generations").then((r) => r.json()))).items[0].id;
     const re = await u.request.put(`/api/generations/${kitId}/publish`, { data: { enabled: true } });
     expect(re.status()).toBe(409);
@@ -101,11 +110,11 @@ test.describe("support and admin tools", () => {
     await page.getByTestId("admin-disable").click();
     await expect(page.getByTestId("admin-enable")).toBeVisible();
     expect((await u.evaluate(() => fetch("/api/auth/me").then((r) => r.json()))).user).toBeNull();
-    await login(u, user.email, temp);
+    await login(u, user.email, "chosen-after-reset");
     await expect(u.getByTestId("auth-error")).toBeVisible();
     await page.getByTestId("admin-enable").click();
     await expect(page.getByTestId("admin-disable")).toBeVisible();
-    await login(u, user.email, temp);
+    await login(u, user.email, "chosen-after-reset");
     await expect(u).toHaveURL(/\/start/);
     await device.close();
   });

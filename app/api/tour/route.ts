@@ -7,7 +7,7 @@ export async function GET() {
   return withOwner(async (owner) => {
     const o = peekOnboarding(owner.key);
     return { body: { tourCompleted: o.tourCompleted === 1, tourStep: o.tourStep, firstSeenAt: o.firstSeenAt } };
-  });
+  }, { allowPendingPasswordChange: true });
 }
 
 const schema = z.object({
@@ -24,5 +24,5 @@ export async function POST(request: Request) {
     if (event) recordEvent(owner.key, event, meta);
     const o = step !== undefined || completed !== undefined ? setTourStep(owner.key, step ?? getOnboarding(owner.key).tourStep, completed ?? false) : getOnboarding(owner.key);
     return { body: { tourCompleted: o.tourCompleted === 1, tourStep: o.tourStep } };
-  });
+  }, { allowPendingPasswordChange: true });
 }
