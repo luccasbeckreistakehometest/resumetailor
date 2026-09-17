@@ -11,6 +11,9 @@ export interface PaymentRow {
   reversedCredits: number; reversedAt: string | null;
 }
 
+/** A payment in one of these states was paid at some point (its credits were granted). */
+const PAID_STATES = ["approved", "partially_refunded", "refunded", "charged_back"];
+
 /**
  * Records a payment and grants its credits exactly once. Webhooks and the success-page
  * verification both call this, so the (provider, externalId) unique index stops double grants.
@@ -23,7 +26,7 @@ export function settlePayment(input: {
   return db.transaction(() => {
     const existing = db.prepare("SELECT id, status FROM payments WHERE provider = ? AND externalId = ?").get(input.provider, input.externalId) as { id: string; status: string } | undefined;
     // Terminal states never move back to pending/approved from a late or replayed notification.
-    if (existing && ["approved", "refunded", "charged_back"].includes(existing.status)) {
+    if (existing && PAID_STATES.includes(existing.status)) {
       if (input.providerRef) db.prepare("UPDATE payments SET providerRef = COALESCE(providerRef, ?) WHERE id = ?").run(input.providerRef, existing.id);
       return { granted: false };
     }
@@ -44,8 +47,9 @@ export function settlePayment(input: {
 /**
  * A refund or a chargeback takes the credits back — as many as are left: credits already spent
  * on kits cannot be recovered, and the balance never goes negative (the ledger shows what was
- * actually taken). `share` is the refunded fraction (1 = everything); repeated notifications are
- * idempotent because reversedCredits remembers how much of the payment was already handled.
+ * actually taken). `share` is the refunded fraction (1 = everything; less marks the payment
+ * partially_refunded); repeated notifications are idempotent because reversedCredits remembers how
+ * much of the payment was already handled. A full refund or a chargeback is never downgraded.
  */
 export function reversePayment(input: { provider: Provider; externalId?: string; providerRef?: string; status: "refunded" | "charged_back"; share?: number }):
   { found: boolean; taken: number } {
@@ -55,10 +59,14 @@ export function reversePayment(input: { provider: Provider; externalId?: string;
       ? db.prepare("SELECT * FROM payments WHERE provider = ? AND externalId = ?").get(input.provider, input.externalId)
       : db.prepare("SELECT * FROM payments WHERE provider = ? AND providerRef = ?").get(input.provider, input.providerRef ?? "")) as PaymentRow | undefined;
     if (!row) return { found: false, taken: 0 };
-    const wasPaid = row.status === "approved" || row.status === "refunded" || row.status === "charged_back";
-    db.prepare("UPDATE payments SET status = ?, reversedAt = COALESCE(reversedAt, ?) WHERE id = ?").run(input.status, nowIso(), row.id);
+    const wasPaid = PAID_STATES.includes(row.status);
+    const share = Math.min(1, Math.max(0, input.share ?? 1));
+    const next = row.status === "charged_back" ? "charged_back"
+      : input.status === "charged_back" ? "charged_back"
+      : share >= 1 || row.status === "refunded" ? "refunded" : "partially_refunded";
+    db.prepare("UPDATE payments SET status = ?, reversedAt = COALESCE(reversedAt, ?) WHERE id = ?").run(next, nowIso(), row.id);
     if (!wasPaid || !row.userId) return { found: true, taken: 0 };
-    const target = Math.floor(row.credits * Math.min(1, Math.max(0, input.share ?? 1)));
+    const target = Math.floor(row.credits * share);
     const due = target - row.reversedCredits;
     if (due <= 0) return { found: true, taken: 0 };
     const balance = findById(row.userId)?.credits ?? 0;
@@ -96,7 +104,7 @@ export interface MpPayment {
 }
 
 export type MpAction =
-  | { kind: "settle"; externalId: string; userId: string; pack: string; credits: number; amount: number; currency: string; status: SettleStatus }
+  | { kind: "settle"; externalId: string; userId: string; pack: string; credits: number; amount: number; currency: string; status: SettleStatus; refundShare?: number }
   | { kind: "reverse"; externalId: string; status: "refunded" | "charged_back"; share: number }
   | { kind: "ignore"; reason: string };
 
@@ -115,11 +123,20 @@ export function mpAction(p: MpPayment): MpAction {
   const credits = Number(p.metadata?.credits ?? 0);
   if (!userId || !(credits > 0)) return { kind: "ignore", reason: "not one of our checkouts" };
   const mapped: SettleStatus = status === "approved" ? "approved" : ["rejected", "cancelled"].includes(status) ? "rejected" : "pending";
-  return { kind: "settle", externalId, userId: String(userId), pack: String(p.metadata?.pack ?? "1"), credits, amount, currency: String(p.currency_id ?? "BRL"), status: mapped };
+  const action: MpAction = { kind: "settle", externalId, userId: String(userId), pack: String(p.metadata?.pack ?? "1"), credits, amount, currency: String(p.currency_id ?? "BRL"), status: mapped };
+  // A partial refund leaves the payment "approved" (status_detail partially_refunded) with the refunded amount set.
+  const refunded = Number(p.transaction_amount_refunded ?? 0);
+  if (mapped === "approved" && refunded > 0 && amount > 0) return { ...action, refundShare: Math.min(1, refunded / amount) };
+  return action;
 }
 
 export function applyMpAction(a: MpAction): { granted: boolean; reversed: number } {
-  if (a.kind === "settle") return { granted: settlePayment({ provider: "mercadopago", ...a }).granted, reversed: 0 };
+  if (a.kind === "settle") {
+    const { refundShare, ...settle } = a;
+    const granted = settlePayment({ provider: "mercadopago", ...settle }).granted;
+    const reversed = refundShare ? reversePayment({ provider: "mercadopago", externalId: a.externalId, status: "refunded", share: refundShare }).taken : 0;
+    return { granted, reversed };
+  }
   if (a.kind === "reverse") return { granted: false, reversed: reversePayment({ provider: "mercadopago", externalId: a.externalId, status: a.status, share: a.share }).taken };
   return { granted: false, reversed: 0 };
 }

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 }
 
 function statusOf(dbStatus: string | undefined, fallback: Status): Status {
-  if (dbStatus === "approved") return "paid";
+  if (dbStatus === "approved" || dbStatus === "partially_refunded") return "paid";
   if (dbStatus === "rejected") return "failed";
   if (dbStatus === "refunded" || dbStatus === "charged_back") return "refunded";
   return fallback;

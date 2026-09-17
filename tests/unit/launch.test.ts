@@ -267,8 +267,30 @@ describe("payments: refunds and Mercado Pago mapping", () => {
     const u = await users.createUser({ email: email(), password: "password123", bonus: false });
     settlePayment({ provider: "stripe", externalId: "cs-r3", userId: u.id, pack: "15", credits: 15, amount: 75, currency: "USD", status: "approved", providerRef: "pi_r3" });
     expect(reversePayment({ provider: "stripe", providerRef: "pi_r3", status: "refunded", share: 0.4 }).taken).toBe(6);
+    expect(getPayment("stripe", "cs-r3")!.status).toBe("partially_refunded");
+    expect(settlePayment({ provider: "stripe", externalId: "cs-r3", userId: u.id, pack: "15", credits: 15, amount: 75, currency: "USD", status: "approved" }).granted).toBe(false);
     expect(reversePayment({ provider: "stripe", providerRef: "pi_r3", status: "refunded", share: 1 }).taken).toBe(9);
+    expect(getPayment("stripe", "cs-r3")!.status).toBe("refunded");
+    expect(reversePayment({ provider: "stripe", providerRef: "pi_r3", status: "refunded", share: 0.5 }).taken).toBe(0);
+    expect(getPayment("stripe", "cs-r3")!.status).toBe("refunded");   // never downgraded
     expect(users.findById(u.id)!.credits).toBe(0);
+  });
+
+  it("a Mercado Pago partial refund (still 'approved') takes back the refunded share, and grants first if the approval was missed", async () => {
+    const u = await users.createUser({ email: email(), password: "password123", bonus: false });
+    const meta = { user_id: u.id, pack: "5", credits: 5 };
+    const partial = { id: 7001, status: "approved", status_detail: "partially_refunded", transaction_amount: 149, transaction_amount_refunded: 59.6, currency_id: "BRL", metadata: meta };
+    const action = mpAction(partial);
+    expect(action).toMatchObject({ kind: "settle", status: "approved", credits: 5 });
+    expect(action.kind === "settle" && action.refundShare).toBeCloseTo(0.4, 5);
+    // The approval notification never arrived: the payment is recorded, granted, then 2 of 5 credits go back.
+    expect(applyMpAction(action)).toEqual({ granted: true, reversed: 2 });
+    expect(users.findById(u.id)!.credits).toBe(3);
+    expect(getPayment("mercadopago", "7001")!.status).toBe("partially_refunded");
+    expect(applyMpAction(mpAction(partial))).toEqual({ granted: false, reversed: 0 });   // replay
+    expect(applyMpAction(mpAction({ ...partial, status: "refunded", transaction_amount_refunded: 149 }))).toEqual({ granted: false, reversed: 3 });
+    expect(users.findById(u.id)!.credits).toBe(0);
+    expect(getPayment("mercadopago", "7001")!.status).toBe("refunded");
   });
 
   it("maps Mercado Pago payments to ledger actions", () => {
