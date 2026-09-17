@@ -36,6 +36,11 @@ test.describe("abuse and cost limits", () => {
     expect(first.status()).toBe(200);
     const { briefingId } = await first.json();
     const other = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.203.0.4" } });
+    // No visitor cookie yet (a script, not a page): refused before any AI call.
+    const cold = await other.request.post("http://localhost:3100/api/voice/extract", { data: { transcript: "hi, I want a job", lang: "en" } });
+    expect(cold.status()).toBe(403);
+    expect((await other.request.post("http://localhost:3100/api/fit", { data: { posting: "p".repeat(40), resume: "r".repeat(40), lang: "en" } })).status()).toBe(403);
+    await other.request.get("http://localhost:3100/api/tour");   // what every page does first
     const hijack = await other.request.post("http://localhost:3100/api/voice/extract", { data: { transcript: "overwrite someone else's story", lang: "en", briefingId } });
     expect(hijack.status()).toBe(404);
     await other.close();

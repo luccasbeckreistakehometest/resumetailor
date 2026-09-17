@@ -34,7 +34,7 @@ export async function POST(request: Request, ctx: Ctx) {
     const kind = parsed.data.kind as (typeof VARIANT_KINDS)[number];
     const cached = getVariant(id, kind);
     if (cached) return { body: serialiseVariant(cached, true) };
-    const gate = aiGate();
+    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
     const rl = take("KIT_EXTRAS_OWNER_HOUR", owner.key);
     if (!rl.ok) return limited(rl);

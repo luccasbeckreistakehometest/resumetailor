@@ -68,7 +68,7 @@ describe("spend ceiling and the AI gate", () => {
   it("records every call and pauses AI once today's spend reaches the ceiling", async () => {
     await health.probeAi(fake(200));
     setEnv("AI_DAILY_BUDGET_USD", "0.05");
-    expect(aiGate()).toBeNull();
+    expect(aiGate({ ownerKey: "o1" })).toBeNull();
     const ok = await runAi("unit", { ownerKey: "o1", ip: "1.1.1.1" }, async () => ({ costUsd: 0.03, model: "m" }));
     expect(ok.ok).toBe(true);
     expect(spend.spentToday()).toBeCloseTo(0.03, 5);
@@ -82,7 +82,37 @@ describe("spend ceiling and the AI gate", () => {
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.reply).toMatchObject({ status: 503, body: { error: "ai_busy" } });
     setEnv("AI_DAILY_BUDGET_USD", "1000");
-    expect(aiGate()).toBeNull();
+    expect(aiGate({ ownerKey: "o1" })).toBeNull();
+  });
+
+  it("anonymous visitors stop at their own slice of the budget; signed-in people keep the rest", async () => {
+    await health.probeAi(fake(200));
+    getDb().prepare("DELETE FROM ai_usage").run();
+    setEnv("AI_DAILY_BUDGET_USD", "1");
+    setEnv("AI_ANON_DAILY_BUDGET_USD", undefined);
+    expect(spend.anonDailyBudget()).toBeCloseTo(0.2, 5);          // a fifth of the ceiling by default
+    const anon = { ownerKey: "anon_abc123", ip: "9.9.9.9" };
+    for (let i = 0; i < 4; i++) expect((await runAi("fit", anon, async () => ({ costUsd: 0.05 }))).ok).toBe(true);
+    // 0.20 spent by visitors without an account: they are paused, a signed-in user is not.
+    expect(aiGate(anon)).toMatchObject({ status: 503, body: { error: "ai_busy" } });
+    expect(aiGate({ ownerKey: "anon_someone_else" })).toMatchObject({ status: 503 });
+    expect(aiGate({})).toMatchObject({ status: 503 });
+    expect(aiGate({ ownerKey: "usr_paying" })).toBeNull();
+    expect(spend.spentTodayAnonymous()).toBeCloseTo(0.2, 5);
+    expect((await runAi("generate", { ownerKey: "usr_paying" }, async () => ({ costUsd: 0.5 }))).ok).toBe(true);
+    expect(spend.spentTodayAnonymous()).toBeCloseTo(0.2, 5);      // signed-in spend is not in the anonymous slice
+    // The overall ceiling still applies to everyone.
+    expect((await runAi("generate", { ownerKey: "usr_paying" }, async () => ({ costUsd: 0.3 }))).ok).toBe(true);
+    expect(aiGate({ ownerKey: "usr_paying" })).toMatchObject({ status: 503, body: { error: "ai_busy" } });
+    // An explicit slice is honoured, never above the ceiling; a negative one removes it.
+    setEnv("AI_ANON_DAILY_BUDGET_USD", "5");
+    expect(spend.anonDailyBudget()).toBe(1);
+    setEnv("AI_ANON_DAILY_BUDGET_USD", "-1");
+    setEnv("AI_DAILY_BUDGET_USD", "100");
+    expect(aiGate(anon)).toBeNull();
+    // Company-search costs are recorded with the insights call.
+    const { tavilyCost } = await import("@/lib/ai/insights");
+    expect(tavilyCost(3)).toBeCloseTo(0.024, 5);
   });
 
   it("a dead key answers ai_unavailable without calling the model", async () => {

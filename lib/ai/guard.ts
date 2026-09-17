@@ -1,16 +1,28 @@
 import { aiConfigured, classifyAiError } from "@/lib/ai/client";
 import { aiReady, noteAiFailure, noteAiSuccess } from "@/lib/ai/health";
-import { overBudget, recordUsage } from "@/lib/server/spend";
+import { isAnonymousKey, overBudget, recordUsage } from "@/lib/server/spend";
 import { bad, type Reply } from "@/lib/server/http";
 
-let budgetWarnedDay = "";
+const warnedDay: Record<"all" | "anon", string> = { all: "", anon: "" };
+const warnOnce = (which: "all" | "anon", message: string) => {
+  const day = new Date().toISOString().slice(0, 10);
+  if (warnedDay[which] !== day) { warnedDay[which] = day; console.error(message); }
+};
 
-/** Can an AI call be attempted right now? A reply to send back when not. */
-export function aiGate(): Reply | null {
+export interface AiCaller { ownerKey?: string | null; ip?: string | null }
+
+/**
+ * Can an AI call be attempted right now, for this caller? A reply to send back when not.
+ * Anonymous callers (no account) also stop at their own slice of the daily budget.
+ */
+export function aiGate(caller: AiCaller): Reply | null {
   if (!aiConfigured() || !aiReady()) return bad("ai_unavailable", 503);
   if (overBudget()) {
-    const day = new Date().toISOString().slice(0, 10);
-    if (budgetWarnedDay !== day) { budgetWarnedDay = day; console.error("[ai-budget] daily AI spend ceiling reached — AI features paused until 00:00 UTC (AI_DAILY_BUDGET_USD)"); }
+    warnOnce("all", "[ai-budget] daily AI spend ceiling reached — AI features paused until 00:00 UTC (AI_DAILY_BUDGET_USD)");
+    return bad("ai_busy", 503);
+  }
+  if (isAnonymousKey(caller.ownerKey) && overBudget({ anonymous: true })) {
+    warnOnce("anon", "[ai-budget] anonymous slice of the daily AI budget used up — visitors without an account paused until 00:00 UTC (AI_ANON_DAILY_BUDGET_USD)");
     return bad("ai_busy", 503);
   }
   return null;
@@ -21,9 +33,9 @@ export function aiGate(): Reply | null {
  * gets a neutral error code to send; the operator detail goes to the log and to ai_usage.
  */
 export async function runAi<T extends { costUsd: number; model?: string }>(
-  feature: string, ctx: { ownerKey?: string | null; ip?: string | null }, fn: () => Promise<T>,
+  feature: string, ctx: AiCaller, fn: () => Promise<T>,
 ): Promise<{ ok: true; value: T } | { ok: false; reply: Reply }> {
-  const gate = aiGate();
+  const gate = aiGate(ctx);
   if (gate) return { ok: false, reply: gate };
   try {
     const value = await fn();

@@ -81,7 +81,9 @@ const DEFAULTS = {
   GENERATE_OWNER_HOUR: [12, 3600],
   GENERATE_USER_DAY: [40, 86_400],
   FIT_IP_HOUR: [30, 3600],
+  FIT_IP_DAY: [30, 86_400],
   VOICE_IP_HOUR: [80, 3600],
+  VOICE_IP_DAY: [200, 86_400],
   VOICE_OWNER_HOUR: [50, 3600],
   SPEAK_IP_DAY: [300, 86_400],
   SPEAK_OWNER_DAY: [80, 86_400],
@@ -90,6 +92,7 @@ const DEFAULTS = {
   INSIGHTS_IP_HOUR: [15, 3600],
   INSIGHTS_OWNER_DAY: [15, 86_400],
   KIT_EXTRAS_OWNER_HOUR: [30, 3600],
+  KIT_EXTRAS_IP_HOUR: [40, 3600],
   REGISTER_IP_HOUR: [5, 3600],
   REGISTER_IP_DAY: [15, 86_400],
   LOGIN_FAIL_IP_15M: [20, 900],
@@ -112,6 +115,15 @@ export function rule(name: LimitName): { max: number; windowSec: number } {
 export function take(name: LimitName, key: string): LimitResult {
   const r = rule(name);
   return hit(name, key, r.max, r.windowSec);
+}
+
+/**
+ * A short lease: at most one slow step at a time for `key` (e.g. one AI call per kit variant).
+ * Stored in SQLite so every route bundle of the process sees it; it lapses with its window if the
+ * process dies mid-call. Release it in a `finally`.
+ */
+export function lease(bucket: string, key: string, seconds = 300): Reservation {
+  return reserveSpecs([{ bucket, key, max: 1, windowSec: seconds }]);
 }
 
 /** Reserves one attempt against named rules (see reserveSpecs). */

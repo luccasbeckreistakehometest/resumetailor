@@ -13,18 +13,23 @@ const schema = z.object({
   priorSummary: z.string().max(2000).optional(), briefingId: z.string().max(64).optional(),
 });
 
-/** The listener sends each turn's transcript; the reply says what was understood and what to ask next. */
+/**
+ * The listener sends each turn's transcript; the reply says what was understood and what to ask
+ * next. Only for visitors the app already knows (the pages set the visitor cookie first), capped
+ * per IP per hour and per day and per owner per hour.
+ */
 export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
   return withOwner(async (owner) => {
     if (!parsed.success) return bad("answer_short");
+    if (owner.isNewAnon) return bad("forbidden", 403);
     const db = getDb();
     // A briefing can only be continued by whoever started it; someone else's id is refused.
     const existing = parsed.data.briefingId
       ? db.prepare("SELECT ownerId, transcript FROM voice_briefings WHERE id = ?").get(parsed.data.briefingId) as { ownerId: string; transcript: string } | undefined
       : undefined;
     if (parsed.data.briefingId && existing && existing.ownerId !== owner.key && existing.ownerId !== owner.anonId) return bad("not_found", 404);
-    const over = takeAll([["VOICE_IP_HOUR", owner.ip], ["VOICE_OWNER_HOUR", owner.key]]);
+    const over = takeAll([["VOICE_IP_HOUR", owner.ip], ["VOICE_IP_DAY", owner.ip], ["VOICE_OWNER_HOUR", owner.key]]);
     if (over) return limited(over);
     const ran = await runAi("voice_extract", { ownerKey: owner.key, ip: owner.ip }, () => extractBriefing(parsed.data));
     if (!ran.ok) return ran.reply;

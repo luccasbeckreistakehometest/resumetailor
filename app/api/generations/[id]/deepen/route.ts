@@ -20,7 +20,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
     if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
     if (row.mode !== "tailor") return bad("kit_not_tailored", 409);
     if (row.deepened >= DEEPEN_MAX) return { body: { error: "limit" }, status: 429 };
-    const gate = aiGate();
+    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
     const input = JSON.parse(row.input) as { jobDescription?: string; resume?: string };
     const kit = JSON.parse(row.result) as Kit;

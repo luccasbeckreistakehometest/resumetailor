@@ -4,7 +4,7 @@ import { cacheKey, isAppPrompt, readCached, synthesise, ttsProvider, writeCached
 import { anonId, currentUser } from "@/lib/server/session";
 import { requestIp } from "@/lib/server/http";
 import { take } from "@/lib/server/ratelimit";
-import { overBudget, recordUsage, ttsCost } from "@/lib/server/spend";
+import { isAnonymousKey, overBudget, recordUsage, ttsCost } from "@/lib/server/spend";
 
 export const runtime = "nodejs";
 
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const ip = await requestIp();
   const ownerKey = owner.userId ?? owner.anonId;
   if (!take("SPEAK_IP_DAY", ip).ok || !take("SPEAK_OWNER_DAY", ownerKey).ok) return silent();
-  if (overBudget()) return silent();
+  if (overBudget({ anonymous: isAnonymousKey(owner.userId) })) return silent();
   try {
     const buf = await synthesise(text, lang);
     if (!buf) return silent();

@@ -41,7 +41,7 @@ export async function POST(_: Request, ctx: Ctx) {
     if (row.unlocked !== 1) return bad("unlock_first", 409);
     const cached = getVariant(id, KIND);
     if (cached) return { body: view(row, cached, true) };
-    const gate = aiGate();
+    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
     if (gate) return gate;
     const rl = take("KIT_EXTRAS_OWNER_HOUR", owner.key);
     if (!rl.ok) return limited(rl);

@@ -25,10 +25,36 @@ export function spentToday(now = Date.now()): number {
 
 export const dailyBudget = () => envNumber("AI_DAILY_BUDGET_USD", 25);
 
-/** True once today's recorded spend reached the ceiling: the kill switch for every AI and TTS call. */
-export function overBudget(now = Date.now()): boolean {
+/**
+ * The share of the daily ceiling anonymous visitors may use (default: a fifth of it). Anonymous
+ * endpoints need no account, so without their own slice one address could spend the whole day's
+ * budget and switch AI off for paying customers. A negative value removes the slice.
+ */
+export const anonDailyBudget = () => {
+  const total = dailyBudget();
+  const slice = envNumber("AI_ANON_DAILY_BUDGET_USD", Math.round(total * 20) / 100);
+  return slice < 0 || total < 0 ? slice : Math.min(slice, total);
+};
+
+/** Anonymous owner keys are the visitor cookie (anon_…); a missing key counts as anonymous too. */
+export const isAnonymousKey = (ownerKey: string | null | undefined) => !ownerKey || ownerKey.startsWith("anon_");
+
+export function spentTodayAnonymous(now = Date.now()): number {
+  const row = getDb().prepare("SELECT COALESCE(SUM(costUsd), 0) c FROM ai_usage WHERE createdAt >= ? AND (ownerKey IS NULL OR ownerKey LIKE 'anon\\_%' ESCAPE '\\')").get(dayStart(now)) as { c: number };
+  return row.c;
+}
+
+/**
+ * True once today's recorded spend reached the ceiling: the kill switch for every AI and TTS call.
+ * Anonymous calls also stop once the anonymous slice is used up, which leaves the rest of the
+ * budget to signed-in (and paying) people.
+ */
+export function overBudget(opts: { anonymous?: boolean } = {}, now = Date.now()): boolean {
   const budget = dailyBudget();
-  return budget >= 0 && spentToday(now) >= budget;
+  if (budget >= 0 && spentToday(now) >= budget) return true;
+  if (!opts.anonymous) return false;
+  const slice = anonDailyBudget();
+  return slice >= 0 && spentTodayAnonymous(now) >= slice;
 }
 
 /** Estimated TTS cost (providers bill per character). */

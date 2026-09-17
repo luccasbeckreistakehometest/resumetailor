@@ -1,11 +1,14 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { EXTRACT_MODEL, aiMock, costOf, getClient } from "@/lib/ai/client";
-import { secretEnv } from "@/lib/server/env";
+import { envNumber, secretEnv } from "@/lib/server/env";
 
 /** Company insights exist only with a real search key; the copy that promises them hides too. */
 export const insightsEnabled = () => !!secretEnv("TAVILY_API_KEY") || (aiMock() && process.env.AI_MOCK_INSIGHTS === "1");
 type Hit = { title: string; url: string; content: string };
+
+/** Tavily bills per search (basic depth = 1 credit); recorded with the model cost in ai_usage. */
+export const tavilyCost = (searches: number) => searches * envNumber("TAVILY_COST_PER_SEARCH_USD", 0.008);
 
 async function tavily(query: string): Promise<Hit[]> {
   try {
@@ -43,9 +46,9 @@ export async function companyInsights(jobDescription: string): Promise<{ insight
   let costUsd = costOf(ex.usage, EXTRACT_MODEL);
   if (!company) return { insights: { enabled: true, found: false }, costUsd, model: EXTRACT_MODEL };
 
-  const all = (await Promise.all([
-    tavily(`${company} company what they do overview`), tavily(`${company} engineering tech stack tools`), tavily(`${company} interview hiring process candidates`),
-  ])).flat();
+  const queries = [`${company} company what they do overview`, `${company} engineering tech stack tools`, `${company} interview hiring process candidates`];
+  const all = (await Promise.all(queries.map(tavily))).flat();
+  costUsd += tavilyCost(queries.length);
   if (!all.length) return { insights: { enabled: true, found: false, company }, costUsd, model: EXTRACT_MODEL };
   const context = all.map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\n${(r.content || "").slice(0, 700)}`).join("\n\n");
 

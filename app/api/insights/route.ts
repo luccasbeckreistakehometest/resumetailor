@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const db = getDb();
     const cached = db.prepare("SELECT result FROM insights_cache WHERE hash = ?").get(hash) as { result: string } | undefined;
     if (cached) return { body: JSON.parse(cached.result) };
-    if (aiGate()) return { body: { enabled: true, found: false } };
+    if (aiGate({ ownerKey: owner.key, ip: owner.ip })) return { body: { enabled: true, found: false } };
     if (takeAll([["INSIGHTS_IP_HOUR", owner.ip], ["INSIGHTS_OWNER_DAY", owner.key]])) return { body: { enabled: true, found: false } };
     const ran = await runAi("insights", { ownerKey: owner.key, ip: owner.ip }, () => companyInsights(parsed.data.jobDescription));
     if (!ran.ok) return { body: { enabled: true, found: false } };
