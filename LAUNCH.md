@@ -14,4 +14,4 @@ Veja **DEPLOY.md** (Hostinger VPS, Docker, HTTPS, webhooks). Este arquivo só li
 - [ ] `AI_DAILY_BUDGET_USD` definido; conferir /admin → IA "funcionando"
 - [ ] Teste real de reembolso (MP) → créditos saem do saldo
 
-Local: `npm run dev` · testes: `npm test` (unit) e `npm run e2e` (Playwright, IA mockada).
+Local: `npm run dev` · testes: `npm test` (unit) e `npm run e2e` (Playwright sobre um build de produção — `scripts/e2e-server.sh` — IA e pagamentos mockados; projetos `chromium` e `mobile`).

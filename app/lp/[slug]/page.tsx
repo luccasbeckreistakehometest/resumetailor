@@ -5,7 +5,8 @@ import { LpView } from "./LpView";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const dynamicParams = false;
+// Unknown slugs render on demand and hit notFound() below (dynamicParams=false made Next log an
+// internal NoFallbackError for every stray URL).
 export function generateStaticParams() {
   return ANGLES.map((slug) => ({ slug }));
 }
