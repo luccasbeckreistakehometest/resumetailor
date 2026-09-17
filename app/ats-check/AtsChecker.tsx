@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { Eyebrow, Stamp } from "@/components/ui";
+import { ImportableTextarea } from "@/components/FileDrop";
 import { atsCheck, decodeShare, encodeShare, wordCount, type AtsResult, type Check, type Lang } from "@/lib/ats/check";
 import { ATS_COPY } from "./copy";
 
@@ -134,7 +135,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
       <div className="card p-6 sm:p-8" data-tour="ats-check">
         <Eyebrow>{A.eyebrow}</Eyebrow>
         <label className="mt-3 block text-sm font-medium text-ink-2">{A.resumeLabel}</label>
-        <textarea className="field mt-2" rows={12} value={resume} onChange={(e) => setResume(e.target.value)} placeholder={A.resumePh} data-testid="ats-resume" />
+        <div className="mt-2"><ImportableTextarea value={resume} onChange={setResume} rows={12} placeholder={A.resumePh} testId="ats-resume" importTestId="import" tour="import" /></div>
         <label className="mt-5 block text-sm font-medium text-ink-2">{A.postingLabel}</label>
         <textarea className="field mt-2" rows={6} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={A.postingPh} data-testid="ats-posting" />
         <div className="mt-5 flex flex-wrap items-center gap-4">

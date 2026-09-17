@@ -51,6 +51,7 @@ const en = {
       { t: "Free ATS check", b: "Paste any résumé and see what the filtering software sees — a score, the fixes in order, and the posting's missing keywords. No account needed." },
       { t: "Track every application", b: "A board for the jobs you're chasing: saved, applied, interview, offer. Move cards, set next steps, and watch your interview rate." },
       { t: "Rehearse the interview", b: "Every kit comes with a mock interview: questions from the kit, answers by voice, scored and coached — with a summary of what to rehearse." },
+      { t: "Import your PDF or Word file", b: "No more copy-pasting: drop your résumé on any résumé box and the text is read right here in your browser. Nothing is uploaded." },
     ],
   },
   library: { open: "Open", print: "Print / PDF", locked: "Preview", unlocked: "Unlocked", voice: "by voice", empty: "Nothing here yet — your kits will appear the moment you make one." },
@@ -174,6 +175,20 @@ const en = {
     deepenedTimes: (n: number) => `deepened ${n}×`,
     honest: "Deepening only adds a term where your real background supports it — the AI never invents experience.",
   },
+  importer: {
+    drop: "Drop your PDF or DOCX here",
+    choose: "or choose a file",
+    privacy: "Read in your browser — the file is never uploaded.",
+    reading: (name: string) => `Reading ${name}…`,
+    imported: (n: number, name: string) => `${n} words imported from ${name}. Check the text and fix anything the file scrambled.`,
+    buildHint: "Have an old draft or a LinkedIn PDF export? Import it and we'll place the text under Experience for you to trim.",
+    errors: {
+      unsupported: "That file type isn't supported. Use a PDF, a Word .docx or a .txt.",
+      too_large: "That file is too large (over 15 MB). Export a lighter version.",
+      scanned: "This PDF looks scanned — it has no text layer. Open it, select all, copy and paste here, or export it again from the original document.",
+      failed: "Couldn't read that file. Open it, copy the text and paste it here.",
+    },
+  },
   footer: "Secure payments by Stripe · No subscription",
 };
 
@@ -225,6 +240,7 @@ const pt: typeof en = {
       { t: "Teste de ATS grátis", b: "Cola qualquer currículo e vê o que o robô da Gupy enxerga — nota, o que arrumar por ordem e as palavras-chave da vaga que faltam. Sem precisar de conta." },
       { t: "Acompanha cada candidatura", b: "Um quadro com as vagas que você está correndo atrás: salva, aplicada, entrevista, proposta. Move os cartões, marca o próximo passo e vê sua taxa de entrevista." },
       { t: "Ensaia a entrevista", b: "Todo kit vem com uma entrevista simulada: perguntas do kit, respostas por voz, nota e orientação — e um resumo do que ensaiar." },
+      { t: "Importa seu PDF ou Word", b: "Chega de copiar e colar: solta o arquivo do currículo em qualquer campo de currículo e o texto é lido aqui mesmo, no seu navegador. Nada é enviado." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Prévia", unlocked: "Liberado", voice: "por voz", empty: "Nada aqui ainda — seus kits aparecem assim que você fizer o primeiro." },
@@ -350,6 +366,20 @@ const pt: typeof en = {
     deepenedTimes: (n: number) => `aprofundado ${n}×`,
     honest: "O aprofundamento só adiciona um termo quando sua experiência real sustenta — a IA nunca inventa experiência.",
   },
+  importer: {
+    drop: "Arrasta seu PDF ou DOCX aqui",
+    choose: "ou escolhe o arquivo",
+    privacy: "Lido no seu navegador — o arquivo nunca sai do seu computador.",
+    reading: (name: string) => `Lendo ${name}…`,
+    imported: (n: number, name: string) => `${n} palavras importadas de ${name}. Dá uma conferida e conserta o que o arquivo bagunçou.`,
+    buildHint: "Tem um rascunho antigo ou o PDF exportado do LinkedIn? Importa que a gente coloca o texto em Experiência pra você enxugar.",
+    errors: {
+      unsupported: "Esse tipo de arquivo não rola. Usa PDF, Word (.docx) ou .txt.",
+      too_large: "Arquivo grande demais (passou de 15 MB). Exporta uma versão mais leve.",
+      scanned: "Esse PDF parece escaneado — não tem camada de texto. Abre ele, seleciona tudo, copia e cola aqui, ou exporta de novo a partir do documento original.",
+      failed: "Não consegui ler esse arquivo. Abre ele, copia o texto e cola aqui.",
+    },
+  },
   footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
@@ -401,6 +431,7 @@ const es: typeof en = {
       { t: "Test ATS gratis", b: "Pega cualquier CV y mira lo que ve el software que filtra — un puntaje, los arreglos en orden y las palabras clave de la oferta que faltan. Sin cuenta." },
       { t: "Sigue cada postulación", b: "Un tablero con los empleos que persigues: guardado, postulado, entrevista, oferta. Mueve tarjetas, marca el próximo paso y mira tu tasa de entrevistas." },
       { t: "Ensaya la entrevista", b: "Cada kit trae una entrevista simulada: preguntas del kit, respuestas por voz, puntaje y coaching — con un resumen de qué ensayar." },
+      { t: "Importa tu PDF o Word", b: "Se acabó el copiar y pegar: suelta el archivo de tu CV en cualquier campo de CV y el texto se lee aquí mismo, en tu navegador. No se sube nada." },
     ],
   },
   library: { open: "Abrir", print: "Imprimir / PDF", locked: "Vista previa", unlocked: "Desbloqueado", voice: "por voz", empty: "Nada aún — tus kits aparecen en cuanto hagas el primero." },
@@ -523,6 +554,20 @@ const es: typeof en = {
     deepen: "Profundizar para esta oferta", deepening: "Reescribiendo con los requisitos…", limit: "Límite de profundizaciones de este kit alcanzado.",
     deepenedTimes: (n: number) => `profundizado ${n}×`,
     honest: "Profundizar solo agrega un término cuando tu experiencia real lo respalda — la IA nunca inventa experiencia.",
+  },
+  importer: {
+    drop: "Arrastra tu PDF o DOCX aquí",
+    choose: "o elige un archivo",
+    privacy: "Se lee en tu navegador — el archivo nunca se sube.",
+    reading: (name: string) => `Leyendo ${name}…`,
+    imported: (n: number, name: string) => `${n} palabras importadas de ${name}. Revisa el texto y corrige lo que el archivo haya desordenado.`,
+    buildHint: "¿Tienes un borrador viejo o el PDF exportado de LinkedIn? Impórtalo y ponemos el texto en Experiencia para que lo recortes.",
+    errors: {
+      unsupported: "Ese tipo de archivo no está soportado. Usa un PDF, un Word .docx o un .txt.",
+      too_large: "El archivo es demasiado grande (más de 15 MB). Exporta una versión más liviana.",
+      scanned: "Este PDF parece escaneado — no tiene capa de texto. Ábrelo, selecciona todo, copia y pega aquí, o expórtalo de nuevo desde el documento original.",
+      failed: "No pude leer ese archivo. Ábrelo, copia el texto y pégalo aquí.",
+    },
   },
   footer: "Pagos seguros con Stripe · Sin suscripción",
 };

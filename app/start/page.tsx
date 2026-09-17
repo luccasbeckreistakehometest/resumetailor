@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
 import { VoiceBriefing } from "@/components/VoiceBriefing";
+import { ImportDrop, ImportableTextarea } from "@/components/FileDrop";
 import { Container, Eyebrow } from "@/components/ui";
 import type { Briefing } from "@/lib/ai/voice";
 import type { GenerationView } from "@/lib/server/generations";
@@ -200,7 +201,7 @@ function StartInner() {
               <>
                 <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.resume.title}</h1>
                 <p className="mt-1 text-sm text-muted">{pasteNeeded?.resume ? x.voice.resumeNeeded : d.quiz.resume.subtitle}</p>
-                <textarea className="field mt-6" rows={11} value={resume} onChange={(e) => setResume(e.target.value)} placeholder={d.quiz.resume.placeholder} data-testid="resume" />
+                <div className="mt-6"><ImportableTextarea value={resume} onChange={setResume} rows={11} placeholder={d.quiz.resume.placeholder} testId="resume" importTestId="import" /></div>
               </>
             )}
 
@@ -208,6 +209,7 @@ function StartInner() {
               <>
                 <h1 className="font-display mt-2 text-3xl text-ink">{d.quiz.build.title}</h1>
                 <p className="mt-1 text-sm text-muted">{d.quiz.build.subtitle}</p>
+                <ImportDrop className="mt-5" hint={x.importer.buildHint} testId="import" onText={(text) => setExperience((cur) => (cur.trim() ? `${cur.trim()}\n\n${text}` : text))} />
                 <div className="mt-6 space-y-4">
                   {([["edu", education, setEducation], ["exp", experience, setExperience], ["skills", skills, setSkills], ["ach", achievements, setAchievements]] as const).map(([k, v, set]) => (
                     <div key={k}>
