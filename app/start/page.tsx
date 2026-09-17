@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { MatchScore } from "@/components/MatchScore";
 import { CompanyInsights } from "@/components/CompanyInsights";
+import { PersonalisationMeter } from "@/components/PersonalisationMeter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
@@ -241,6 +242,7 @@ function StartInner() {
               <button onClick={reset} className="text-sm text-muted hover:text-ink">{d.quiz.result.startOver}</button>
             </div>
             <MatchScore before={gen.matchBefore} after={gen.matchAfter} keywords={gen.keywords} addedLabel={d.quiz.result.added} />
+            {gen.mode === "tailor" && <PersonalisationMeter gen={gen} onUpdate={setGen} />}
             {gen.mode === "tailor" && jobDescription && <CompanyInsights jobDescription={jobDescription} />}
 
             {gen.kit ? (

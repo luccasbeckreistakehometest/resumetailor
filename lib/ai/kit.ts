@@ -24,7 +24,15 @@ export const KitSchema = z.object({
 });
 export type Kit = z.infer<typeof KitSchema> & { mode: Mode };
 
-export interface KitInput { mode: Mode; targetRole: string; jobDescription?: string; resume?: string; profile?: string; lang: Lang }
+export interface KitInput {
+  mode: Mode; targetRole: string; jobDescription?: string; resume?: string; profile?: string; lang: Lang;
+  /** A second pass over a tailored kit: the posting's must-haves the first draft missed. */
+  deepen?: { mustHaves: string[] };
+}
+
+const deepenBlock = (i: KitInput) => i.deepen?.mustHaves.length ? `
+DEEPEN PASS — the previous draft read generic for this posting. These must-haves from the posting were missing or buried: ${i.deepen.mustHaves.slice(0, 12).join(", ")}.
+Rewrite so that each one the candidate's real background genuinely supports appears explicitly — in the summary, in Skills, and in at least one quantified bullet using the posting's exact wording. Where the background does NOT support a term, leave it out and say so in matchNotes; never fake it. Prefer fewer, sharper, evidence-backed bullets over volume.` : "";
 
 const LANG_NAME: Record<Lang, string> = { en: "English", pt: "Brazilian Portuguese", es: "Spanish" };
 
@@ -62,7 +70,7 @@ ${RULES}`,
     system: `You are an expert career coach, resume writer, ATS specialist, and interview coach. Given a JOB DESCRIPTION and the candidate's CURRENT RESUME, tailor the resume tightly to the job (mirror key keywords, lead with relevant quantified impact, ATS-friendly). Also write a compelling cover letter for this role, a LinkedIn About, what the candidate should EMPHASIZE for this specific job, and concrete INTERVIEW PREP for this exact role (technical topics if applicable, likely behavioral questions, talking points grounded in their real background, and smart questions to ask).
 For scoring: matchBefore = % of the job's important keywords/requirements genuinely present in the ORIGINAL resume. matchAfter = after tailoring. keywords = the 8-12 most important keywords/requirements from the JD, each marked present-before / present-after.
 ${langLine}
-${RULES}`,
+${RULES}${deepenBlock(i)}`,
     user: `JOB DESCRIPTION:\n${(i.jobDescription || "").slice(0, 6000)}\n\nCURRENT RESUME:\n${(i.resume || "").slice(0, 8000)}`,
   };
 }
@@ -86,8 +94,12 @@ function normalise(p: z.infer<typeof KitSchema>, mode: Mode): Kit {
 /** A believable kit for e2e runs and keyless demos; clearly labelled so nobody ships it as real. */
 export function mockKit(i: KitInput): Kit {
   const role = i.targetRole || "Marketing Manager";
+  // The deepened fixture addresses every must-have with a figure, so the personalisation meter visibly rises.
+  const deeper = i.deepen?.mustHaves.length
+    ? `\n\n## Tailored for this posting [demo]\n${i.deepen.mustHaves.slice(0, 12).map((m, n) => `- ${m}: hands-on for ${2 + (n % 4)} years, with results up ${12 + n * 3}%`).join("\n")}`
+    : "";
   return normalise({
-    resume: `# Alex Ribeiro\n${role} · alex@example.com · São Paulo\n\n## Summary\n${role} with 6 years driving measurable growth. [demo output]\n\n## Experience\n**Growth Lead — Acme** (2021–2026)\n- Grew qualified pipeline 38% YoY through lifecycle campaigns\n- Led a team of 4 across paid, CRM and content\n\n## Skills\nHubSpot · SQL · A/B testing · Copywriting`,
+    resume: `# Alex Ribeiro\n${role} · alex@example.com · São Paulo\n\n## Summary\n${role} with 6 years driving measurable growth. [demo output]\n\n## Experience\n**Growth Lead — Acme** (2021–2026)\n- Grew qualified pipeline 38% YoY through lifecycle campaigns\n- Led a team of 4 across paid, CRM and content\n\n## Skills\nHubSpot · SQL · A/B testing · Copywriting${deeper}`,
     coverLetter: `Dear Hiring Team,\n\nI'm applying for the ${role} role. [demo output] Over six years I've built lifecycle programmes that grew pipeline by 38% and led a four-person team.\n\nBest regards,\nAlex Ribeiro`,
     linkedinAbout: `I'm a ${role} who turns funnels into predictable growth. [demo output] Six years, three markets, one habit: measure everything.`,
     matchBefore: i.mode === "build" ? 0 : 41, matchAfter: 89,
@@ -104,7 +116,7 @@ export function mockKit(i: KitInput): Kit {
       behavioral: ["A campaign that failed and what you changed", "Managing a disagreement with sales"],
       questionsToAsk: ["How is marketing pipeline attributed today?", "What does success look like at 90 days?"],
     },
-    matchNotes: "Demo mode: this kit is a fixture, not an AI result.",
+    matchNotes: i.deepen ? "Demo mode: deepened fixture, not an AI result." : "Demo mode: this kit is a fixture, not an AI result.",
   }, i.mode);
 }
 

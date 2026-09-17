@@ -64,6 +64,7 @@ function migrate(d: Database.Database): void {
       unlockedAt TEXT,
       model TEXT NOT NULL DEFAULT '',
       costUsd REAL NOT NULL DEFAULT 0,
+      deepened INTEGER NOT NULL DEFAULT 0,         -- how many "go deeper" passes replaced the kit
       createdAt TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_gen_user ON generations(userId, createdAt DESC);
@@ -152,4 +153,11 @@ function migrate(d: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_app_user ON applications(userId, updatedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_app_anon ON applications(anonId, updatedAt DESC);
   `);
+  addColumn(d, "generations", "deepened", "INTEGER NOT NULL DEFAULT 0");
+}
+
+/** CREATE TABLE IF NOT EXISTS never touches an existing table; columns added later go through here. */
+function addColumn(d: Database.Database, table: string, column: string, ddl: string): void {
+  const cols = d.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!cols.some((c) => c.name === column)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
 }

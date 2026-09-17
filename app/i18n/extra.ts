@@ -163,6 +163,17 @@ const en = {
     cardFrom: "Someone shared their ATS check", cardCta: "Check yours — free, no signup",
     cta: { title: "Want the fixes done for you?", body: "The full kit rewrites your résumé for the exact posting — the missing keywords where they're true, quantified bullets, an ATS-safe layout — plus cover letter, LinkedIn About and interview prep.", button: "Tailor my résumé →" },
   },
+  personalisation: {
+    title: "Personalisation", hint: "vs. the posting",
+    breakdown: (c: number, s: number, b: number) => `${c}% of the posting's key terms used · ${s} of ${b} bullets make a specific claim`,
+    generic: "This reads like a template — recruiters are drowning in these. Go deeper before you send it.",
+    okay: "Decent engagement with the posting. One more pass would make it unmistakably for this role.",
+    strong: "Clearly written for this posting: its own words, backed by specifics.",
+    missing: "Posting terms not yet in the résumé",
+    deepen: "Go deeper on this posting", deepening: "Rewriting with the must-haves…", limit: "Deepening limit reached for this kit.",
+    deepenedTimes: (n: number) => `deepened ${n}×`,
+    honest: "Deepening only adds a term where your real background supports it — the AI never invents experience.",
+  },
   footer: "Secure payments by Stripe · No subscription",
 };
 
@@ -328,6 +339,17 @@ const pt: typeof en = {
     cardFrom: "Alguém compartilhou o teste de ATS", cardCta: "Testa o seu — grátis, sem cadastro",
     cta: { title: "Quer que a gente arrume isso pra você?", body: "O kit completo reescreve seu currículo pra vaga exata — as palavras-chave que faltam (só as verdadeiras), tópicos com número, layout que passa no robô — mais carta, Sobre do LinkedIn e preparação pra entrevista.", button: "Personalizar meu currículo →" },
   },
+  personalisation: {
+    title: "Personalização", hint: "em relação à vaga",
+    breakdown: (c: number, s: number, b: number) => `${c}% dos termos-chave da vaga usados · ${s} de ${b} tópicos com afirmação concreta`,
+    generic: "Isso está com cara de modelo — recrutador recebe isso aos montes. Aprofunda antes de mandar.",
+    okay: "Conversa razoavelmente com a vaga. Mais uma passada deixa claro que foi feito pra ela.",
+    strong: "Claramente escrito pra essa vaga: as palavras dela, com evidência concreta.",
+    missing: "Termos da vaga que ainda não estão no currículo",
+    deepen: "Aprofundar pra essa vaga", deepening: "Reescrevendo com os requisitos…", limit: "Limite de aprofundamentos deste kit atingido.",
+    deepenedTimes: (n: number) => `aprofundado ${n}×`,
+    honest: "O aprofundamento só adiciona um termo quando sua experiência real sustenta — a IA nunca inventa experiência.",
+  },
   footer: "Pagamento seguro pelo Mercado Pago (Pix, boleto, cartão) · Sem assinatura",
 };
 
@@ -490,6 +512,17 @@ const es: typeof en = {
     share: { title: "Comparte tu resultado", text: (s: number) => `Mi CV sacó ${s}/100 en el test ATS gratis. Revisa el tuyo:`, copy: "Copiar link", copied: "Copiado ✓", image: "Descargar imagen", native: "Compartir" },
     cardFrom: "Alguien compartió su test ATS", cardCta: "Revisa el tuyo — gratis, sin registro",
     cta: { title: "¿Quieres que lo arreglemos por ti?", body: "El kit completo reescribe tu CV para la oferta exacta — las palabras clave que faltan donde sean ciertas, logros con números, un diseño que pasa el parser — más carta, About de LinkedIn y preparación de entrevista.", button: "Adaptar mi CV →" },
+  },
+  personalisation: {
+    title: "Personalización", hint: "frente a la oferta",
+    breakdown: (c: number, s: number, b: number) => `${c}% de los términos clave de la oferta usados · ${s} de ${b} viñetas con una afirmación concreta`,
+    generic: "Esto se lee como una plantilla — los reclutadores reciben cientos. Profundiza antes de enviarlo.",
+    okay: "Dialoga razonablemente con la oferta. Una pasada más lo haría inconfundible para este puesto.",
+    strong: "Claramente escrito para esta oferta: sus propias palabras, con evidencia concreta.",
+    missing: "Términos de la oferta que aún no están en el CV",
+    deepen: "Profundizar para esta oferta", deepening: "Reescribiendo con los requisitos…", limit: "Límite de profundizaciones de este kit alcanzado.",
+    deepenedTimes: (n: number) => `profundizado ${n}×`,
+    honest: "Profundizar solo agrega un término cuando tu experiencia real lo respalda — la IA nunca inventa experiencia.",
   },
   footer: "Pagos seguros con Stripe · Sin suscripción",
 };

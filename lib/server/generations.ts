@@ -1,12 +1,16 @@
 import { getDb, newId, nowIso } from "@/lib/server/db";
 import { moveCredits } from "@/lib/server/users";
 import type { Kit } from "@/lib/ai/kit";
+import { personalisation } from "@/lib/ats/personalisation";
 
 export interface GenerationRow {
   id: string; userId: string | null; anonId: string | null; mode: string; source: string; lang: string; title: string;
   targetRole: string; input: string; result: string; matchBefore: number; matchAfter: number; unlocked: number;
-  unlockedAt: string | null; model: string; costUsd: number; createdAt: string;
+  unlockedAt: string | null; model: string; costUsd: number; deepened: number; createdAt: string;
 }
+
+/** "Go deeper" passes per kit. Each is a full generation, so the count is bounded; override per deployment. */
+export const DEEPEN_MAX = Number(process.env.KIT_DEEPEN_MAX ?? 2);
 
 /** The candidate's name is usually the first line of the resume; that makes a better title than "Resume". */
 export function titleFrom(kit: Kit): string {
@@ -57,6 +61,13 @@ export function unlockGeneration(id: string, userId: string): { ok: true; credit
   })();
 }
 
+/** Replaces the kit in place after a deepening pass. Unlock state and ownership are untouched; no credit moves. */
+export function deepenGeneration(id: string, kit: Kit, model: string, costUsd: number): GenerationRow {
+  getDb().prepare("UPDATE generations SET result = ?, matchBefore = ?, matchAfter = ?, title = ?, model = ?, costUsd = costUsd + ?, deepened = deepened + 1 WHERE id = ?")
+    .run(JSON.stringify(kit), kit.matchBefore, kit.matchAfter, titleFrom(kit), model, costUsd, id);
+  return getGeneration(id)!;
+}
+
 export function renameGeneration(id: string, title: string): void {
   getDb().prepare("UPDATE generations SET title = ? WHERE id = ?").run(title.slice(0, 80), id);
 }
@@ -68,11 +79,15 @@ export function deleteGeneration(id: string): void {
 export function serialise(row: GenerationRow, forAdmin = false) {
   const kit = JSON.parse(row.result) as Kit;
   const open = row.unlocked === 1 || forAdmin;
+  // The meter is computed here, from the stored résumé and posting, so a locked kit can show it without exposing the text.
+  const input = row.mode === "tailor" ? (JSON.parse(row.input) as { jobDescription?: string }) : null;
   return {
     id: row.id, mode: row.mode, source: row.source, lang: row.lang, title: row.title, targetRole: row.targetRole,
     matchBefore: row.matchBefore, matchAfter: row.matchAfter, unlocked: row.unlocked === 1, createdAt: row.createdAt,
     keywords: kit.keywords, matchNotes: kit.matchNotes, emphasis: kit.emphasis,
     coverLetterPreview: kit.coverLetter.split("\n").slice(0, 4).join("\n"),
+    personalisation: input ? personalisation(kit.resume, input.jobDescription ?? "") : null,
+    deepened: row.deepened ?? 0, deepenLeft: Math.max(0, DEEPEN_MAX - (row.deepened ?? 0)),
     kit: open ? kit : null,
   };
 }
