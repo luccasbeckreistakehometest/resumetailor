@@ -65,4 +65,14 @@ test.describe("voice briefing keeps what was said", () => {
     expect(ninth.status()).toBe(429);
     expect((await ninth.json()).error).toBe("voice_turns_limit");
   });
+
+  test("leaving out the briefing id does not reset the cap: 6 new briefings a day per visitor", async ({ page }) => {
+    await page.goto("/");
+    await skipTour(page);
+    const statuses: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      statuses.push((await page.request.post("/api/voice/extract", { data: { transcript: `a brand new story number ${i}`, lang: "en" } })).status());
+    }
+    expect(statuses).toEqual([200, 200, 200, 200, 200, 200, 429]);
+  });
 });
