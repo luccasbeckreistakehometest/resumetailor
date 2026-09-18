@@ -275,3 +275,91 @@ because paper does.
 
 Uniform `rounded-2xl` on every surface is banned (§13). If two adjacent objects have the same radius
 and the same border, one of them is wrong.
+
+---
+
+## 6. Colour
+
+One idea: **the page is paper, the type is ink, and the only colour is a mark made on the page.**
+Red is not the button colour — it is the proofreader's pencil. That frees the palette to carry the
+product's real semantics, which are about a document being checked:
+
+| Meaning | Name | Where it appears |
+|---|---|---|
+| The tool speaks / press this | **ink** | Primary buttons, the wordmark's first half, every heading |
+| A mark on the document: unverified, invalid, removed, needs you | **mark** (oxblood) | Truth-check flags, invalid fields, destructive confirms, the wordmark's second half, the seal |
+| Verified, kept, added and true | **kept** (moss) | Confirmed claims, added keywords, success |
+| An open question, awaiting an answer | **query** (ochre) | Unanswered quantify prompts, pending payments, "we need a number here" |
+
+There is no fifth colour. "Info blue" does not exist; informational text is ink.
+
+### 6.1 Light — *Paper* (default)
+
+Every ratio below is measured with the WCAG 2.x formula against the stated background
+(`scratchpad/design/contrast.mjs`).
+
+| Token | Value | On `page` | On `sheet` | Use |
+|---|---|---|---|---|
+| `--sheet` | `#FFFDF8` | 1.06 | — | The document surface. Nothing else uses it. |
+| `--page` | `#FAF6EE` | — | 1.06 | App and marketing ground |
+| `--sunken` | `#F2ECE0` | 1.09 | 1.16 | Inset wells, code/extract blocks, disabled fields |
+| `--zebra` | `#EDE6D8` | 1.15 | 1.22 | Table row banding |
+| `--rule-hairline` | `#E2D9C7` | 1.30 | 1.38 | Decorative separators inside a panel |
+| `--rule` | `#D3C8B2` | 1.54 | 1.63 | Structural rules, table rules, panel edges |
+| `--rule-field` | `#968970` | **3.19** | **3.38** | Every interactive edge — input, button outline, checkbox. Passes WCAG 1.4.11 (3:1). |
+| `--ink-40` | `#8A7E68` | 3.70 | 3.92 | Placeholder and disabled text **only**. Never body copy. |
+| `--ink-muted` | `#756A56` | **4.93** | **5.23** | Metadata, help, captions, source lines. AA at any size. |
+| `--ink-2` | `#514839` | 8.34 | 8.84 | Secondary body, table cell prose |
+| `--ink` | `#1C1913` | **16.26** | **17.25** | Primary text, primary button ground |
+| `--mark` | `#8E2433` | 7.95 | 8.43 | White on it: **8.57** |
+| `--mark-deep` | `#6E1B27` | 10.54 | 11.17 | Hover / pressed on a mark ground |
+| `--mark-wash` | `#F6E7E6` | 1.11 | — | Flagged-row ground. ink on it 14.60, mark on it 7.14 |
+| `--kept` | `#2C5A4A` | 7.30 | 7.74 | |
+| `--kept-wash` | `#E6EFE9` | 1.09 | — | ink on it 14.93, kept on it 6.70 |
+| `--query` | `#8A6318` | 5.02 | 5.33 | |
+| `--query-wash` | `#F7EDD8` | 1.08 | — | ink on it 15.08, query on it 4.66 |
+| `--select` | `#F0DFA8` | — | — | `::selection` ground; ink on it 13.21 |
+
+### 6.2 Dark — *Desk lamp*
+
+The chrome inverts. **The sheet never inverts** — a résumé is a printed artefact, and white-on-black
+body text is not what the recruiter will see. The sheet only dims, from `#FFFDF8` to `#EDE7D9`,
+as if lit by a lamp; `@media print` always restores pure white.
+
+| Token | Value | On `desk` | On `raised` | Use |
+|---|---|---|---|---|
+| `--desk` | `#14120E` | — | 1.08 | App ground |
+| `--desk-raised` | `#1D1A15` | 1.08 | — | Panels, header, popovers |
+| `--desk-sunken` | `#0E0C09` | 1.04 | 1.13 | Wells, extract blocks |
+| `--sheet` | `#EDE7D9` | 15.17 | — | The dimmed sheet. ink on it **14.22** |
+| `--rule-hairline` | `#2A251D` | 1.23 | 1.14 | |
+| `--rule` | `#3A3327` | 1.50 | 1.39 | |
+| `--rule-field` | `#786D57` | **3.67** | **3.41** | Interactive edges. Passes 3:1. |
+| `--ink-40` | `#8A806C` | 4.80 | 4.45 | Placeholder / disabled |
+| `--ink-muted` | `#A0957F` | 6.32 | **5.86** | Metadata, help |
+| `--ink-2` | `#C0B6A0` | 9.30 | 8.62 | Secondary body |
+| `--ink` | `#F2EDE1` | **16.01** | 14.85 | Primary text; also the primary button ground (desk on it 16.01) |
+| `--mark` | `#E08A93` | **7.33** | 6.79 | |
+| `--mark-wash` | `#2A1418` | 1.08 | — | ink on it 14.84, mark on it 6.79 |
+| `--kept` | `#7FC4AC` | 9.26 | 8.58 | |
+| `--kept-wash` | `#132520` | 1.17 | — | ink on it 13.69, kept on it 7.92 |
+| `--query` | `#D8A94A` | 8.64 | 8.01 | |
+| `--query-wash` | `#241B0E` | 1.10 | — | ink on it 14.52, query on it 7.83 |
+
+**Sheet-scoped override.** Inside `.sheet` in dark mode, `--ink-muted` becomes `#6A5F4D` (5.07 on
+the dimmed sheet; `#756A56` would drop to 4.31 and fail) and `--rule-field` becomes `#7E7259`. The
+sheet carries its own small token block rather than inheriting the desk's.
+
+### 6.3 Rules
+
+- **Theme switching.** Tokens are declared on `:root` (light) and redefined under
+  `@media (prefers-color-scheme: dark)` guarded as `:root:not([data-theme="light"])`, then again
+  under `:root[data-theme="dark"]`. No colour gets its only definition inside a media query.
+- **The accent is rationed.** On any one screen, `--mark` may ink at most: one seal, the flagged
+  rows, and one text link. If a screen has a red button and a red heading and red bullets, it is
+  wrong. The landing's full-bleed oxblood CTA band is deleted.
+- **No gradient carries meaning.** The one permitted gradient is the 1px ink→transparent hairline
+  that fades a rule out at the edge of the sheet. No colour-to-colour gradients anywhere (§13).
+- **Grain stays, at half strength.** The paper texture is part of the identity, but at
+  `rgba(28,25,19,.022)` on a 3px grid — currently `.035`, which visibly dithers text edges at 13px.
+  It is disabled inside `.sheet` (the document is clean paper) and under `print`.
