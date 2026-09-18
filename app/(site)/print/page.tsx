@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import type { GenerationView } from "@/lib/server/generations";
 import { fileBase } from "@/lib/resume/export";
+import { Button, Chip, EmptyState } from "@/components/ui";
 
 type Template = "ats" | "modern" | "elegant" | "compact" | "bold";
 const TEMPLATES: Template[] = ["ats", "modern", "elegant", "compact", "bold"];
@@ -44,31 +44,35 @@ function PrintInner() {
   if (gen === undefined) return null;
   if (!gen || !gen.kit) {
     return (
-      <div className="mx-auto max-w-md px-5 py-20 text-center">
-        <div className="text-4xl">🔒</div>
-        <h1 className="font-display mt-4 text-2xl text-ink">{d.paywall.title}</h1>
-        <p className="mt-2 text-sm text-ink-2">{d.paywall.body}</p>
-        <Link href={gen ? `/start?gen=${gen.id}` : "/start"} className="btn btn-primary mt-6">{gen ? x.credits.unlockWith : d.paywall.cta}</Link>
+      <div className="mx-auto max-w-[var(--measure)] px-[var(--s-5)] py-[var(--s-12)]">
+        <EmptyState title={d.paywall.title} action={<Button href={gen ? `/start?gen=${gen.id}` : "/start"}>{gen ? x.credits.unlockWith : d.paywall.cta}</Button>}>
+          {d.paywall.body}
+        </EmptyState>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper-2">
-      <div className="no-print sticky top-0 z-10 border-b border-edge bg-surface px-4 py-3 sm:px-6">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-ink-2">{d.print.format}:</span>
+    <div className="min-h-screen bg-[var(--page)]">
+      {/* The only chrome on this page, and it prints as nothing. */}
+      <div className="no-print sticky top-0 z-10 border-b border-[var(--rule)] bg-[var(--raised)]">
+        <div className="mx-auto flex max-w-[var(--page-max)] flex-wrap items-center justify-between gap-[var(--s-4)] px-[var(--s-5)] py-[var(--s-4)] sm:px-[var(--s-7)]">
+          <div className="flex flex-wrap items-center gap-[var(--s-3)]">
+            <span className="eyebrow">{d.print.format}</span>
             {TEMPLATES.map((t) => (
-              <button key={t} onClick={() => setTpl(t)} title={d.print.hint[t]} className={"rounded-full border px-3 py-1.5 text-sm font-medium transition " + (tpl === t ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2 hover:border-ink")}>{d.print.templates[t]}</button>
+              <Chip key={t} selected={tpl === t} onClick={() => setTpl(t)}>{d.print.templates[t]}</Chip>
             ))}
           </div>
-          <button onClick={() => window.print()} className="btn btn-primary !py-2 !text-sm" data-testid="print">{d.print.save}</button>
+          <Button size="sm" icon="print" onClick={() => window.print()} data-testid="print">{d.print.save}</Button>
         </div>
-        <p className="mx-auto mt-1.5 max-w-5xl text-xs text-muted">{d.print.hint[tpl]} · {d.print.tip}</p>
+        <p className="mx-auto max-w-[var(--page-max)] px-[var(--s-5)] pb-[var(--s-3)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)] sm:px-[var(--s-7)]">
+          {d.print.hint[tpl]} · {d.print.tip}
+        </p>
       </div>
-      <div className="mx-auto my-6 w-full max-w-[210mm] bg-white p-6 shadow-lg sm:p-[16mm] print:my-0 print:max-w-none print:p-0 print:shadow-none" data-testid="document">
-        <div className={`doc-${tpl}`}><ReactMarkdown>{variantText ?? gen.kit.resume}</ReactMarkdown></div>
+      <div className="px-[var(--s-4)] py-[var(--s-8)] print:p-0">
+        <div className="sheet mx-auto w-full max-w-[816px] p-[var(--s-7)] sm:p-[56px] print:max-w-none print:p-0" data-testid="document">
+          <div className={`doc-${tpl}`}><ReactMarkdown>{variantText ?? gen.kit.resume}</ReactMarkdown></div>
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@
     4. Base: document, focus, selection, grain, print
     5. Type utilities                     .doc-*, .ui-*, .mn-*
     6. Compatibility layer                the old .card/.btn/.field classes, re-cut on new tokens
-    7. Document print themes              .doc-ats and friends (rebuilt in surface 3)
+    7. The document                       .doc-* — one stylesheet for screen and paper
 
   Every colour ratio in the comments was measured with scratchpad/design/contrast.mjs, not guessed.
 */
@@ -547,137 +547,100 @@ textarea.field { line-height: var(--doc-15-lh); resize: vertical; }
 .pulse::before { content: ""; position: absolute; inset: 0; border-radius: var(--r-pill); border: 2px solid var(--mark); animation: pulse-ring 1.4s var(--ease-out) infinite; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   7. The printed document — UNCHANGED, and that is a known defect (D2).
+   7. The document itself (docs/DESIGN.md §14, surface 3).
 
-   Four of these six themes are built on #4f46e5 indigo, which is nobody's brand; the app is ink on
-   paper. They are kept byte-for-byte here (minus the retired Inter reference) so that today's
-   exports keep printing exactly as they did while the foundations land. Surface 3 in
-   docs/DESIGN.md §14 replaces all six with .sheet + three ink-only themes (Plain, Ruled, Ledger)
-   and lands the Playwright parity spec in the same change. Do not extend this section.
+   One stylesheet, shared byte-for-byte by the editor preview, /print and the public web résumé,
+   which is what makes "what you see is what prints" true rather than hoped for
+   (tests/e2e/document-parity.spec.ts fails if the three ever drift).
+
+   Every size is in POINTS, because this object is a page before it is a screen. The four indigo
+   themes are gone: #4f46e5 was nobody's brand, and Arial/Inter is not the face this product sets.
+   What is left are five arrangements of the same two faces and one ink — they differ by STRUCTURE
+   (rule, band, leading, case), which is what actually distinguishes one résumé from another.
+
+     ats      plain    nothing a parser can trip on: no bands, no rules but the section rule
+     modern   ruled    the default — sans section labels over a full-measure rule
+     elegant  book     a serif name at 26pt, small-caps section heads, hairline rules
+     compact  tight    the ruled arrangement at 9.5pt/1.32 to hold one page
+     bold     ledger   the name reversed out of an ink band, section heads on a 3pt ink rule
    ───────────────────────────────────────────────────────────────────────── */
 
-/* ===== Resume print documents (PDF export) ===== */
-/* ATS / plain — maximally parseable */
-.doc-ats {
-  color: #111;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 11pt;
+.doc-ats, .doc-modern, .doc-elegant, .doc-compact, .doc-bold, .doc-designed {
+  --doc-ink: #1c1913;
+  --doc-ink-2: #4a4335;
+  --doc-rule: #b8ad95;
+  color: var(--doc-ink);
+  font-family: var(--font-serif), "Source Serif Pro", Charter, Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-size: 10.5pt;
   line-height: 1.45;
+  /* Source Serif 4's figures are duplexed: columns of dates line up with no tnum needed. */
+  font-variant-numeric: lining-nums;
 }
-.doc-ats h1 { font-size: 20pt; font-weight: 700; margin: 0 0 2pt; }
-.doc-ats h2 {
-  font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-  border-bottom: 1px solid #000; margin: 14pt 0 6pt; padding-bottom: 2pt;
+.doc-ats h1, .doc-modern h1, .doc-elegant h1, .doc-compact h1, .doc-bold h1, .doc-designed h1 {
+  font-size: 22pt; font-weight: 600; letter-spacing: -0.012em; margin: 0 0 2pt;
+  font-variation-settings: "opsz" 32;
 }
-.doc-ats h3 { font-size: 11pt; font-weight: 700; margin: 8pt 0 2pt; }
-.doc-ats p { margin: 4pt 0; }
-.doc-ats ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-ats li { margin: 2pt 0; }
-.doc-ats hr { border: none; border-top: 1px solid #999; margin: 8pt 0; }
-.doc-ats a { color: #111; text-decoration: none; }
-
-/* Modern — clean professional, indigo accents */
-.doc-modern {
-  color: #1e293b;
+/* The contact line right under the name: the one place the interface face appears in the document. */
+.doc-ats h1 + p, .doc-modern h1 + p, .doc-elegant h1 + p, .doc-compact h1 + p, .doc-bold h1 + p, .doc-designed h1 + p {
   font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
+  font-size: 9pt; color: var(--doc-ink-2); margin: 0 0 10pt;
 }
-.doc-modern h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
-.doc-modern h2 {
-  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
-  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
-}
-.doc-modern h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
-.doc-modern h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-modern p { margin: 4pt 0; }
-.doc-modern ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-modern li { margin: 3pt 0; }
-.doc-modern li::marker { color: #6366f1; }
-.doc-modern hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-modern a { color: #4f46e5; text-decoration: none; }
-
-/* Elegant — serif headings, refined */
-.doc-elegant {
-  color: #1f2937;
+.doc-ats h2, .doc-modern h2, .doc-elegant h2, .doc-compact h2, .doc-bold h2, .doc-designed h2 {
   font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.55;
+  font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--doc-ink); margin: 15pt 0 5pt; padding-bottom: 2pt;
+  border-bottom: 0.75pt solid var(--doc-rule);
 }
-.doc-elegant h1 { font-family: Georgia, "Times New Roman", serif; font-size: 26pt; font-weight: 700; margin: 0 0 4pt; color: #111827; }
+.doc-ats h3, .doc-modern h3, .doc-elegant h3, .doc-compact h3, .doc-bold h3, .doc-designed h3 {
+  font-size: 10.5pt; font-weight: 600; margin: 9pt 0 1pt;
+}
+.doc-ats p, .doc-modern p, .doc-elegant p, .doc-compact p, .doc-bold p, .doc-designed p { margin: 3pt 0; }
+.doc-ats ul, .doc-modern ul, .doc-elegant ul, .doc-compact ul, .doc-bold ul, .doc-designed ul {
+  margin: 3pt 0; padding-left: 13pt; list-style: disc;
+}
+.doc-ats li, .doc-modern li, .doc-elegant li, .doc-compact li, .doc-bold li, .doc-designed li { margin: 2pt 0; }
+.doc-ats li::marker, .doc-modern li::marker, .doc-elegant li::marker, .doc-compact li::marker,
+.doc-bold li::marker, .doc-designed li::marker { color: var(--doc-rule); }
+.doc-ats hr, .doc-modern hr, .doc-elegant hr, .doc-compact hr, .doc-bold hr, .doc-designed hr {
+  border: none; border-top: 0.75pt solid var(--doc-rule); margin: 8pt 0;
+}
+.doc-ats a, .doc-modern a, .doc-elegant a, .doc-compact a, .doc-bold a, .doc-designed a {
+  color: var(--doc-ink); text-decoration: none;
+}
+.doc-ats strong, .doc-modern strong, .doc-elegant strong, .doc-compact strong, .doc-bold strong,
+.doc-designed strong { font-weight: 600; }
+.doc-ats em, .doc-modern em, .doc-elegant em, .doc-compact em, .doc-bold em, .doc-designed em {
+  font-style: italic; color: var(--doc-ink-2);
+}
+
+/* ats — plain. A parser reads text, not rules: the section head keeps its case and loses its line. */
+.doc-ats h2 { border-bottom: none; letter-spacing: 0.06em; margin-bottom: 3pt; }
+.doc-ats ul { list-style: disc; }
+
+/* elegant — the book. The name is the display size and the heads are small and letterspaced. */
+.doc-elegant h1 { font-size: 26pt; font-variation-settings: "opsz" 44; }
 .doc-elegant h2 {
-  font-family: Georgia, "Times New Roman", serif; font-size: 13pt; font-weight: 700; color: #111827;
-  border-bottom: 1px solid #9ca3af; margin: 16pt 0 6pt; padding-bottom: 3pt; letter-spacing: 0.02em;
+  font-family: var(--font-serif), Georgia, serif; font-size: 11pt; font-weight: 600;
+  text-transform: none; letter-spacing: 0.02em; border-bottom-width: 0.5pt;
 }
-.doc-elegant h3 { font-size: 10.5pt; font-weight: 700; margin: 8pt 0 2pt; }
-.doc-elegant p { margin: 4pt 0; }
-.doc-elegant ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-elegant li { margin: 3pt 0; }
-.doc-elegant hr { border: none; border-top: 1px solid #d1d5db; margin: 10pt 0; }
-.doc-elegant a { color: #111827; text-decoration: underline; }
+.doc-elegant a { text-decoration: underline; text-underline-offset: 2pt; }
 
-/* Compact — tight spacing to fit one page */
-.doc-compact {
-  color: #111827;
-  font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 9.5pt;
-  line-height: 1.32;
-}
-.doc-compact h1 { font-size: 18pt; font-weight: 800; margin: 0 0 1pt; color: #111827; }
-.doc-compact h2 {
-  font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-  color: #4f46e5; border-bottom: 1px solid #e5e7eb; margin: 9pt 0 3pt; padding-bottom: 1pt;
-}
-.doc-compact h3 { font-size: 9.5pt; font-weight: 700; margin: 5pt 0 1pt; }
-.doc-compact p { margin: 2pt 0; }
-.doc-compact ul { margin: 2pt 0; padding-left: 14pt; list-style: disc; }
-.doc-compact li { margin: 1pt 0; }
-.doc-compact hr { border: none; border-top: 1px solid #e5e7eb; margin: 6pt 0; }
-.doc-compact a { color: #111827; text-decoration: none; }
+/* compact — the ruled arrangement, tightened until it holds one page. */
+.doc-compact { font-size: 9.5pt; line-height: 1.32; }
+.doc-compact h1 { font-size: 19pt; }
+.doc-compact h2 { font-size: 8.5pt; margin: 10pt 0 3pt; }
+.doc-compact h3 { font-size: 9.5pt; margin: 6pt 0 1pt; }
+.doc-compact p, .doc-compact li { margin: 1.5pt 0; }
 
-/* Bold — strong colored header band */
-.doc-bold {
-  color: #1e293b;
-  font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
-}
+/* bold — the ledger. The name reverses out of an ink band; the heads sit on a 3pt ink rule. */
 .doc-bold h1 {
-  font-size: 24pt; font-weight: 800; color: #fff; background: #4f46e5;
-  margin: -4pt -8pt 8pt; padding: 14pt 14pt 12pt; border-radius: 8px; letter-spacing: -0.01em;
+  color: #fff; background: var(--doc-ink); margin: -6pt -8pt 8pt; padding: 12pt 10pt 10pt;
+  border-radius: 0; /* paper has square corners */
 }
 .doc-bold h2 {
-  font-size: 11pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;
-  margin: 14pt 0 5pt; border-left: 4px solid #6366f1; padding-left: 8px;
+  border-bottom: none; border-left: 3pt solid var(--doc-ink); padding: 1pt 0 1pt 7pt; margin: 14pt 0 4pt;
 }
-.doc-bold h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-bold p { margin: 4pt 0; }
-.doc-bold ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-bold li { margin: 3pt 0; }
-.doc-bold li::marker { color: #6366f1; }
-.doc-bold hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-bold a { color: #4f46e5; text-decoration: none; }
-
-/* Designed — for printing / handing over in person */
-.doc-designed {
-  color: #1e293b;
-  font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
-}
-.doc-designed h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
-.doc-designed h2 {
-  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
-  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
-}
-.doc-designed h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
-.doc-designed h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-designed p { margin: 4pt 0; }
-.doc-designed ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-designed li { margin: 3pt 0; }
-.doc-designed li::marker { color: #6366f1; }
-.doc-designed hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-designed a { color: #4f46e5; text-decoration: none; }
 
 @media print {
   /* Paper is white and the ink is black; the desk lamp and the grain are a screen idea. */

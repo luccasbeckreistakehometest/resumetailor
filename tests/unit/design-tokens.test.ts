@@ -61,3 +61,28 @@ describe("theme tokens", () => {
     expect(css).not.toMatch(/border-radius:\s*(14|16|24)px/);
   });
 });
+
+/**
+ * Surface 3: the document stylesheet. Four of the six print themes were built on #4f46e5 indigo
+ * and Arial; nothing in this product is either. These assertions are what stops them coming back.
+ */
+describe("the document stylesheet", () => {
+  // From the end of the section comment: the comment itself names the colours it retired.
+  const doc = css.slice(css.indexOf(".doc-ats, .doc-modern"));
+
+  it("has no indigo, no slate and no Arial-first stack left in it", () => {
+    expect(doc).not.toMatch(/#4f46e5|#6366f1|#e0e7ff|#1e293b|#0f172a/i);
+    expect(doc).not.toMatch(/font-family:\s*Arial/i);
+  });
+
+  it("sets the document in the document face and the section head in the interface face", () => {
+    expect(doc).toContain("font-family: var(--font-serif)");
+    expect(doc).toContain("font-family: var(--font-sans), Arial, sans-serif");
+  });
+
+  it("measures the document in points, because it is a page before it is a screen", () => {
+    const body = doc.slice(0, doc.indexOf(".doc-ats h1"));
+    expect(body).toMatch(/font-size:\s*10\.5pt/);
+    expect(body).not.toMatch(/font-size:\s*\d+px/);
+  });
+});
