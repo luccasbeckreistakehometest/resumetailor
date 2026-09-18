@@ -51,7 +51,7 @@ test("a tailored kit shows how generic it is, goes deeper on the posting, and st
   // An unlocked kit's visible action in the library is "Edit résumé"; Open moved into the row
   // menu when each row was cut to one action (docs/DESIGN.md surface 8).
   await page.getByTestId("library-more").first().click();
-  await page.getByRole("link", { name: /^open$|^abrir$/i }).first().click();
+  await page.getByRole("menuitem", { name: /^open$|^abrir$/i }).click();
   await expect(page.getByTestId("personalisation")).toHaveAttribute("data-generic", "0");
   await expect(page.getByTestId("deepen-limit")).toBeVisible();
 });

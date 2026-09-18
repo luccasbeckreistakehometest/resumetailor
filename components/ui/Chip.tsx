@@ -13,7 +13,7 @@ import { Icon, type IconName } from "./Icon";
  */
 
 export function Chip({
-  children, selected = false, icon, onClick, disabled, className = "",
+  children, selected = false, icon, onClick, disabled, className = "", ...rest
 }: {
   children: ReactNode;
   selected?: boolean;
@@ -21,7 +21,7 @@ export function Chip({
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
-}) {
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children" | "onClick" | "disabled">) {
   const base =
     "inline-flex h-6 items-center gap-[var(--s-2)] rounded-[var(--r-1)] border px-[var(--s-3)] " +
     "font-sans text-[length:var(--ui-12)] font-medium leading-none " +
@@ -32,9 +32,9 @@ export function Chip({
   const interactive = onClick && !disabled ? "cursor-pointer hover:bg-[var(--zebra)] hover:border-[var(--rule)]" : "";
   const off = disabled ? "cursor-not-allowed border-[var(--rule)] bg-[var(--sunken)] text-[color:var(--ink-40)]" : "";
 
-  if (!onClick) return <span className={`${base} ${look} ${off} ${className}`}>{icon && <Icon name={icon} size={16} />}{children}</span>;
+  if (!onClick) return <span className={`${base} ${look} ${off} ${className}`} {...(rest as React.HTMLAttributes<HTMLSpanElement>)}>{icon && <Icon name={icon} size={16} />}{children}</span>;
   return (
-    <button type="button" aria-pressed={selected} disabled={disabled} onClick={onClick} className={`${base} ${look} ${interactive} ${off} ${className}`}>
+    <button type="button" aria-pressed={selected} disabled={disabled} onClick={onClick} className={`${base} ${look} ${interactive} ${off} ${className}`} {...rest}>
       {icon && <Icon name={icon} size={16} />}
       {children}
     </button>

@@ -39,6 +39,12 @@ export type Column<T> = {
   width?: string;
   /** Sets the whole column in the machine's voice. */
   mono?: boolean;
+  /**
+   * The cell holds controls, not text: render it as given. The truncating wrapper is
+   * `overflow: hidden`, which clips anything positioned out of the cell — a row's overflow menu
+   * rendered inside one is invisible, which is how the library's menu vanished.
+   */
+  raw?: boolean;
 };
 
 export function Table<T>({
@@ -117,9 +123,11 @@ export function Table<T>({
                     {/* The clamp lives on an inner block, never on the cell: overflow:hidden on a
                         td clips its own bottom border, so the row's rule sits half a pixel out of
                         line with its neighbours and the text stops centring. Seen at 3×. */}
-                    <span className={c.clamp === 2 ? "block overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]" : "block truncate"}>
-                      {value}
-                    </span>
+                    {c.raw ? value : (
+                      <span className={c.clamp === 2 ? "block overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]" : "block truncate"}>
+                        {value}
+                      </span>
+                    )}
                   </td>
                 );
               })}

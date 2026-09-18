@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/components/AuthProvider";
 import { useDialog } from "@/components/useDialog";
+import { Portal } from "@/components/Portal";
 import { Badge, Button, Container, EmptyState, Icon, Input, SkeletonRows, Table, type Column } from "@/components/ui";
 import type { GenerationView } from "@/lib/server/generations";
 import type { SessionView } from "@/lib/server/interviews";
@@ -47,6 +48,7 @@ export default function LibraryPage() {
   const columns: Column<GenerationView>[] = [
     {
       key: "title",
+      raw: true,
       header: d.library.title,
       width: "40%",
       clamp: 2,
@@ -73,7 +75,7 @@ export default function LibraryPage() {
       ),
     },
     {
-      key: "actions", header: "", width: "16%", align: "right", cell: (g) => (
+      key: "actions", header: "", width: "16%", align: "right", raw: true, cell: (g) => (
         <span className="flex items-center justify-end gap-[var(--s-2)]">
           {g.unlocked
             ? <Button size="sm" variant="outline" href={`/edit/${g.id}`} data-testid="library-edit">{r.editor.cta}</Button>
@@ -143,7 +145,7 @@ export default function LibraryPage() {
                       {g.publicResume!.enabled ? x.publish.on : x.library.locked} · {g.publicResume!.views === 0 ? x.publish.noViews : x.publish.views(g.publicResume!.views)}{g.publicResume!.hasPin ? ` · ${x.publish.pinOn}` : ""}
                     </p>
                   </div>
-                  {g.publicResume!.enabled && <Button size="sm" variant="outline" icon="external" iconEnd newTab href={`/cv/${g.publicResume!.slug}`}>{x.publish.open}</Button>}
+                  {g.publicResume!.enabled && <Button size="sm" variant="outline" icon="external" iconEnd newTab href={`/cv/${g.publicResume!.slug}`} label={`${x.publish.open} · ${g.title}`}>{x.publish.open}</Button>}
                   <Button size="sm" variant="quiet" href={`/start?gen=${g.id}`}>{x.library.open}</Button>
                 </li>
               ))}
@@ -206,27 +208,48 @@ export default function LibraryPage() {
   );
 }
 
-/** Everything else a kit can do, one click deeper — so each row has exactly one visible action. */
+/**
+ * Everything else a kit can do, one click deeper — so each row has exactly one visible action.
+ *
+ * The panel goes through a portal, fixed to the button's own rectangle. Inside the table it was
+ * absolutely positioned, and the table's sideways-scrolling pane (`overflow-x: auto`, which makes
+ * the other axis `auto` too) clipped it: the menu was in the DOM and invisible.
+ */
 function RowMenu({ g, onRename, onRemove }: { g: GenerationView; onRename: () => void; onRemove: () => void }) {
   const { d, x, r, l } = useI18n();
   const [open, setOpen] = useState(false);
+  const [at, setAt] = useState<{ top: number; right: number } | null>(null);
+  const anchor = useRef<HTMLSpanElement>(null);
   const ref = useDialog<HTMLDivElement>(() => setOpen(false));
   const item = "flex w-full items-center justify-between gap-[var(--s-5)] px-[var(--s-5)] py-[var(--s-3)] text-left font-sans text-[length:var(--ui-13)] text-[color:var(--ink-2)] hover:bg-[var(--sunken)] hover:text-[color:var(--ink)]";
+  const toggle = () => {
+    if (open) return setOpen(false);
+    const box = anchor.current?.getBoundingClientRect();
+    if (box) setAt({ top: box.bottom + 4, right: Math.max(8, window.innerWidth - box.right) });
+    setOpen(true);
+  };
   return (
-    <span className="relative">
-      <Button size="sm" variant="quiet" icon="menu" label={l.menu.more} onClick={() => setOpen(!open)} aria-expanded={open} data-testid="library-more" />
-      {open && (
-        <div ref={ref} role="menu" className="absolute right-0 top-[calc(100%+4px)] z-40 w-[230px] rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] py-[var(--s-2)] text-left" style={{ boxShadow: "var(--shadow-pop)" }}>
-          <Link href={`/start?gen=${g.id}`} className={item} role="menuitem">{x.library.open}</Link>
-          <Link href={`/interview/${g.id}`} className={item} role="menuitem" data-testid="library-practice">{x.interview.practice}</Link>
-          <Link href={`/pitch/${g.id}`} className={item} role="menuitem" data-testid="library-pitch">{r.pitch.cta}</Link>
-          {g.unlocked && <Link href={`/linkedin/${g.id}`} className={item} role="menuitem" data-testid="library-linkedin">{x.linkedin.cta}</Link>}
-          {g.unlocked && <Link href={`/print?id=${g.id}`} target="_blank" className={item} role="menuitem">{x.library.print}</Link>}
-          {g.unlocked && <Link href={`/start?new=tailor&base=kit&kit=${g.id}`} className={item} role="menuitem" title={r.profile.newJobHint} data-testid="library-new-job">{r.profile.newJob}</Link>}
-          <hr className="my-[var(--s-2)] h-px border-0 bg-[var(--rule-hairline)]" />
-          <button type="button" role="menuitem" className={item} onClick={() => { setOpen(false); onRename(); }}>{d.library.rename}</button>
-          <button type="button" role="menuitem" className={`${item} text-[color:var(--mark)]`} onClick={() => { setOpen(false); onRemove(); }}>{d.library.delete}</button>
-        </div>
+    <span className="relative" ref={anchor}>
+      <Button size="sm" variant="quiet" icon="menu" label={l.menu.more} onClick={toggle} aria-expanded={open} data-testid="library-more" />
+      {open && at && (
+        <Portal>
+          <div
+            ref={ref}
+            role="menu"
+            className="fixed z-50 w-[230px] rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] py-[var(--s-2)] text-left"
+            style={{ top: at.top, right: at.right, boxShadow: "var(--shadow-pop)" }}
+          >
+            <Link href={`/start?gen=${g.id}`} className={item} role="menuitem">{x.library.open}</Link>
+            <Link href={`/interview/${g.id}`} className={item} role="menuitem" data-testid="library-practice">{x.interview.practice}</Link>
+            <Link href={`/pitch/${g.id}`} className={item} role="menuitem" data-testid="library-pitch">{r.pitch.cta}</Link>
+            {g.unlocked && <Link href={`/linkedin/${g.id}`} className={item} role="menuitem" data-testid="library-linkedin">{x.linkedin.cta}</Link>}
+            {g.unlocked && <Link href={`/print?id=${g.id}`} target="_blank" className={item} role="menuitem">{x.library.print}</Link>}
+            {g.unlocked && <Link href={`/start?new=tailor&base=kit&kit=${g.id}`} className={item} role="menuitem" title={r.profile.newJobHint} data-testid="library-new-job">{r.profile.newJob}</Link>}
+            <hr className="my-[var(--s-2)] h-px border-0 bg-[var(--rule-hairline)]" />
+            <button type="button" role="menuitem" className={item} onClick={() => { setOpen(false); onRename(); }}>{d.library.rename}</button>
+            <button type="button" role="menuitem" className={`${item} text-[color:var(--mark)]`} onClick={() => { setOpen(false); onRemove(); }}>{d.library.delete}</button>
+          </div>
+        </Portal>
       )}
     </span>
   );

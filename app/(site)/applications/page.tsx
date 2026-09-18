@@ -202,7 +202,7 @@ function ApplicationsInner() {
                   ),
                 },
                 {
-                  key: "stage", header: A.stage, width: "16%", cell: (a) => (
+                  key: "stage", header: A.stage, width: "16%", raw: true, cell: (a) => (
                     <Select className="h-8" value={a.stage} onChange={(e) => void patch(a.id, { stage: e.target.value as Stage })} aria-label={A.stage} data-testid="row-stage">
                       {STAGES.map((s) => <option key={s} value={s}>{A.stages[s]}</option>)}
                     </Select>
@@ -212,7 +212,7 @@ function ApplicationsInner() {
                 { key: "days", header: A.upcoming, width: "14%", align: "right", mono: true, cell: (a) => String(daysIn(a.stageChangedAt)) },
                 { key: "kit", header: A.kit, width: "18%", cell: (a) => a.kitTitle ?? A.noKit },
                 {
-                  key: "edit", header: "", width: "8%", align: "right", cell: (a) => (
+                  key: "edit", header: "", width: "8%", align: "right", raw: true, cell: (a) => (
                     <Button size="sm" variant="quiet" onClick={() => { setView("board"); startEdit(a); }} data-testid="row-edit">{A.edit}</Button>
                   ),
                 },
