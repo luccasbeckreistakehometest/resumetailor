@@ -678,3 +678,97 @@ The most important component in the product. `816px` wide, `--r-0`, `--sheet` gr
 - `lang` is already set per route group; add `hyphens: auto` on prose and `text-wrap: pretty` on
   headings so the longer languages break well.
 - The three currency/locale formats come from `Intl`, never from a template string.
+
+---
+
+## 13. Do / Don't
+
+### Banned, because it reads as AI-made
+
+Taken verbatim from the brief and binding on every screen:
+
+> purple-to-blue (or any) decorative gradient, glassmorphism, blurred colour blobs, emoji used as
+> icons or bullets, a hero that is centred text + two buttons + three equal feature cards, uniform
+> rounded-2xl on everything, drop shadows as the only depth cue, stock "AI sparkle" iconography,
+> copy like "✨ Powered by AI", fake dashboards in screenshots, and lorem-style filler.
+
+Where each one currently bites:
+
+| Banned thing | Where it is today | Replaced by |
+|---|---|---|
+| Emoji as icons / bullets | 13 emoji across landing, kit, library, editor, pricing (D7) | The `icons.svg` sprite (§7.4) |
+| Uniform `rounded-2xl` | `.card` radius 14px on every object | The radius ladder (§5.3), `--r-0` for documents |
+| Drop shadow as the only depth cue | `--shadow` on every `.card` | Rule → background step → inset → shadow (§7.2) |
+| Three equal feature cards | 11 of them on the landing, 3 on the library, 3 in the kit's e-mail row | `L-editorial` 7/4 with unequal blocks (§14) |
+| Decorative gradient | the oxblood CTA band and the `-rotate-1` fake paper stack behind the hero demo | Nothing. A rule and a sheet. |
+| A hero that is centred text + buttons | the landing's final CTA section | A left-set closing line in the 7 column with one `primary` |
+| Fake dashboards in screenshots | the "What's new" showcase renders 9 miniature fake UIs | Real, live components at real size |
+
+### Also banned here, specific to this product
+
+- **A red button that is not destructive.** Red is a mark on the document.
+- **A naked percentage.** Every score carries its denominator or its baseline (§9.1).
+- **A second chip language.** Chips and tokens are different things and look different (§11.4).
+- **A number set in a face that cannot align it.** See D1. Check the face before setting a figure.
+- **Placeholder-as-label.** Labels sit above fields and stay visible.
+- **`opacity` as a disabled state.** It silently fails contrast.
+- **A floating circle over content.**
+- **More than one `primary` button per view.**
+- **A centred `max-w-6xl` page of equal cards.** That is the default shape of this codebase and it is
+  the shape we are leaving.
+
+### Do
+
+- Let type carry the hierarchy before colour or a box does.
+- Set the document larger and better than the chrome around it, on every screen where it appears.
+- Prefer a rule to a card, a card to a shadow, and nothing to a rule when whitespace will do.
+- Right-align and tabularise every column of numbers.
+- Design the long value, the empty list and the failed request at the same time as the happy one.
+- State the density of a surface in its file header, and use the tokens for it.
+- Check the contrast number, do not estimate it — the ratios in §6 were measured, and new colours
+  must be measured the same way before they ship.
+
+---
+
+## 14. Surfaces to rebuild, in order
+
+Each step is shippable on its own and leaves the app working. The order is: foundation, then the
+chrome everyone sees, then the thing the customer paid for, then the path to it, then the pages that
+sell it, then the internal tools.
+
+| # | Surface | Files | Why here |
+|---|---|---|---|
+| 1 | **Foundation** — tokens, fonts, resets, print base | `app/globals.css`, `components/RootShell.tsx`, `tailwind` theme block | Nothing else can be built until the scales and tokens exist. Fraunces/Inter out, the three faces in. |
+| 2 | **Primitives** — Button, Field, Chip, Token, Badge, Meter, Table, Panel, Dialog, EmptyState, Skeleton, Stepper, Seal, `icons.svg` | `components/ui.tsx` → `components/ui/*` | Built once, against §11, with every state. Everything after this is assembly. |
+| 3 | **The sheet and the document styles** | `app/globals.css` `.doc-*` → `.sheet` + 3 themes, `app/(site)/print/*`, `lib/resume/export.ts` | Fixes D2. The parity spec lands with it, so nothing downstream can drift. |
+| 4 | **Header, footer, account menu, language switch** | `components/SiteHeader.tsx`, `SiteFooter.tsx`, `LanguageSwitcher.tsx`, `LangPill.tsx` | Fixes D3 on six screens at once; every later screen is measured against the new chrome. |
+| 5 | **Kit delivery** — the result and the unlocked kit | `app/(site)/start/StartView.tsx`, `components/KitChecks.tsx`, `MatchScore`, `PersonalisationMeter`, `RadarStrip`, `RedFlagNotice`, `QuantifyCard`, `LetterStudio`, `DeliveryLine` | The screen the money buys. Fixes D5, D6, D7. The résumé becomes the top of the page in a sheet, with the rail carrying the checks. |
+| 6 | **The `/start` funnel** — choose, steps, voice mode, auth modal | `StartView.tsx`, `components/localized/FormMode.tsx`, `VoiceBriefing.tsx`, `AuthButton.tsx` | Fixes D8. Real stepper, honest totals, `L-document` from step one so the sheet is visible while it fills. |
+| 7 | **Editor** | `app/(site)/edit/[id]`, `components/editor/*`, `components/localized/ResumeEditor.tsx`, `VersionsPanel.tsx` | `L-document` + rail, compact density, the preview promoted to the sheet, balanced columns. |
+| 8 | **Library** | `app/(site)/library/page.tsx`, `BaseResumeCard.tsx`, `ReferralCard.tsx`, `WhatsNew.tsx` | Fixes D4: a compact table of kits with one primary action per row and the rest in an overflow menu. |
+| 9 | **Applications tracker** | `app/(site)/applications/page.tsx` | Fixes D10 and D9: a real table with stage as a column, plus a board view; six KPI cards become one rule-separated summary line. |
+| 10 | **Landing** | `app/(site)/HomeView.tsx`, `FeatureShowcase.tsx`, `LiveMatchDemo.tsx`, `IntlCard.tsx`, `proofStats` | The biggest visible change, but only credible once the components it shows are real. 11 cards become 4 unequal blocks; the donut becomes the Meter; the oxblood band goes. |
+| 11 | **Pricing** | `app/(site)/pricing/PricingView.tsx`, `VoucherField.tsx` | Four equal cards become a price table with the packs as rows, tabular BRL, the saving as a column. |
+| 12 | **Free tools** — ATS check, Am I a fit, Compare, Tools hub, CLT/PJ calculator | `app/(site)/ats-check`, `fit`, `compare`, `tools`, `ToolsHub.tsx`, `CltPjCalculator.tsx`, `CompareView.tsx` | Highest-traffic acquisition pages; each becomes `L-editorial` with its result as a table or a Meter. |
+| 13 | **Interview and pitch studio** | `components/InterviewSession.tsx`, `app/(site)/interview`, `app/(site)/pitch`, `TrendChart.tsx` | Session UI plus the one chart (§9.4). |
+| 14 | **Public web CV** | `app/(site)/cv/[slug]`, `PublishPanel.tsx` | It is the candidate's document in public; must be byte-for-byte the same document styles as §3. |
+| 15 | **Account, contact, legal, success, error and not-found** | `app/(site)/account`, `contact`, `legal`, `success`, `global-error.tsx`, `global-not-found.tsx`, `ErrorScreen.tsx` | Low traffic, high trust. `L-prose`. |
+| 16 | **Admin** | `app/(site)/admin/*` | Internal, so last, but it is where `compact` density and the table rules get their hardest test. Eight stat cards become one figures table. |
+| 17 | **Overlays** — tour, support, what's-new banner | `Tour.tsx`, `SupportChat.tsx`, `WhatsNew.tsx` | Rebuilt against the finished system; the floating circle is deleted here. |
+| 18 | **pt and es routes** | `app/(pt)/*`, `app/(es)/*`, `components/localized/LpRoute.tsx` | Mirrors 10–12 with the pt-BR/es strings, which is where the length budget in §12 is verified. |
+
+**If there is only time for four:** 1, 2, 4 and 5. Foundation, primitives, the chrome on every page,
+and the screen the customer paid for. That is the smallest set that changes the answer to "does this
+look like it was made by a senior".
+
+---
+
+## 15. How to check the work
+
+1. Build for real: `sh scripts/e2e-server.sh` (production build, throwaway `DATA_DIR`, seeded kit).
+2. Screenshot every rebuilt surface at **1440×900** and **390×844**, in **light and dark**.
+3. **Open the PNGs and look at them.** A screen nobody has looked at is not done.
+4. Run the parity spec (§10) and the contrast script (`scratchpad/design/contrast.mjs`) over any new
+   colour.
+5. Tab through the surface with the keyboard: every interactive element must show the ring from §8,
+   in order, with no traps.
