@@ -189,7 +189,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
               </div>
             ) : (
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={listen} disabled={!canListen} className="btn btn-primary" data-testid="answer-voice">🎙 {x.interview.voiceAnswer}</button>
+                <button onClick={listen} disabled={!canListen} className="btn btn-primary" data-testid="answer-voice">{x.interview.voiceAnswer}</button>
                 <button onClick={() => setTyping(true)} className="btn btn-ghost" data-testid="answer-type">{x.interview.typeAnswer}</button>
                 {session.turns.length > 0 && <button onClick={() => void finishEarly()} className="ml-auto text-sm text-muted hover:text-ink" data-testid="answer-finish">{x.interview.finishEarly}</button>}
               </div>

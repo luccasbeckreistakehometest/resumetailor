@@ -130,7 +130,7 @@ export function CompareView() {
 
         <div className="card mt-6 p-4">
           <p className="font-semibold text-ink">{C.resume}</p>
-          {fromProfile && <p className="text-xs text-moss">📄 {C.useSaved}</p>}
+          {fromProfile && <p className="text-xs text-[color:var(--kept)]">{C.useSaved}</p>}
           <div className="mt-2"><ImportableTextarea id="compare-resume" label={C.resume} value={resume} onChange={setResume} rows={6} placeholder={C.resumePh} testId="compare-resume" importTestId="compare-resume-import" /></div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { Icon } from "@/components/ui";
 
 type Insights = {
   enabled: boolean;
@@ -58,7 +59,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
   return (
     <div className="rounded-xl border border-edge bg-gold-2/40 p-5">
       <div className="flex items-center gap-2">
-        <span className="text-base">🔎</span>
+        <span className="text-[color:var(--ink-muted)]"><Icon name="search" size={16} /></span>
         <h3 className="text-sm font-semibold text-ink">
           {d.insights.title}
           {data?.company ? ` · ${data.company}` : ""}

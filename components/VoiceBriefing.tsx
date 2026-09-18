@@ -9,6 +9,7 @@ import type { Briefing } from "@/lib/ai/voice";
 import type { ProfileFacts } from "@/lib/profile/facts";
 import type { Extra } from "@/app/i18n/extra";
 import type { Round3 } from "@/app/i18n/round3";
+import { Icon } from "@/components/ui";
 
 /**
  * The listening flow, hands-free. The AI voice (server TTS — never the browser's synthesiser)
@@ -199,14 +200,14 @@ function VoiceView(p: ViewProps) {
         ) : (
           <>
             <div className={"relative grid h-20 w-20 place-items-center rounded-full " + (phase === "listening" ? "pulse bg-[var(--mark)] text-[color:var(--on-mark)]" : phase === "thinking" ? "bg-[var(--query-wash)] text-[color:var(--ink)]" : "bg-[var(--sunken)] text-[color:var(--ink)]")} aria-hidden>
-              <span className="text-2xl">{phase === "listening" ? "🎙" : phase === "thinking" ? "…" : phase === "paused" ? "⏸" : "🔊"}</span>
+              <Icon name={phase === "listening" ? "mic" : phase === "paused" ? "play" : "play"} />
             </div>
             <p className="text-sm font-medium text-[color:var(--ink-2)]" role="status" data-testid={phase === "thinking" ? "voice-thinking" : "voice-status"}>{label}</p>
             {phase === "listening" && <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{p.speech.interim || V.autoHint}</p>}
             <div className="flex flex-wrap justify-center gap-2">
-              {phase === "listening" && <button onClick={p.onDone} className="btn btn-ink" data-testid="voice-stop">■ {V.done}</button>}
-              {phase === "speaking" && <button onClick={p.onTalkNow} className="btn btn-ink" data-testid="voice-talk-now">🎙 {V.talkNow}</button>}
-              {phase === "paused" ? <button onClick={p.onResume} className="btn btn-primary" data-testid="voice-resume">▶ {V.resume}</button>
+              {phase === "listening" && <button onClick={p.onDone} className="btn btn-ink" data-testid="voice-stop">{V.done}</button>}
+              {phase === "speaking" && <button onClick={p.onTalkNow} className="btn btn-ink" data-testid="voice-talk-now">{V.talkNow}</button>}
+              {phase === "paused" ? <button onClick={p.onResume} className="btn btn-primary" data-testid="voice-resume">{V.resume}</button>
                 : live && <button onClick={p.onPause} className="btn btn-ghost" data-testid="voice-pause">⏸ {V.pause}</button>}
             </div>
           </>
