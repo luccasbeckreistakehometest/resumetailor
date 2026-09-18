@@ -54,10 +54,10 @@ export function LegalView({ doc, forced, identity }: { doc: LegalDocKey; forced:
                 {identity.document && <><dt className="text-muted">{L.document}</dt><dd className="text-ink">{identity.document}</dd></>}
                 {identity.address && <><dt className="text-muted">{L.address}</dt><dd className="text-ink">{identity.address}</dd></>}
                 {identity.email && <><dt className="text-muted">{L.email}</dt><dd className="break-all text-ink"><a className="underline" href={`mailto:${identity.email}`}>{identity.email}</a></dd></>}
-                <dt className="text-muted">{L.contact}</dt><dd><Link href="/contact?topic=privacy" className="text-oxblood underline">/contact</Link></dd>
+                <dt className="text-muted">{L.contact}</dt><dd><Link href="/contact?topic=privacy" className="text-[color:var(--ink)] decoration-[var(--rule-field)] underline">/contact</Link></dd>
               </dl>
             ) : (
-              <p className="mt-2 text-sm text-ink-2">{L.noIdentity} <Link href="/contact?topic=privacy" className="font-medium text-oxblood underline">{l.footer.contact} →</Link></p>
+              <p className="mt-2 text-sm text-ink-2">{L.noIdentity} <Link href="/contact?topic=privacy" className="font-medium text-[color:var(--ink)] decoration-[var(--rule-field)] underline">{l.footer.contact} →</Link></p>
             )}
           </section>
 

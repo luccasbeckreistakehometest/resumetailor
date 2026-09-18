@@ -54,7 +54,7 @@ export function VouchersPanel() {
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button type="button" onClick={() => void create()} className="btn btn-ink !py-1.5 !text-sm" data-testid="voucher-create">{A.create}</button>
-          {csv && mode === "batch" && <a href={csv} download={`codes-${form.campaign || "batch"}.csv`} className="text-sm font-semibold text-oxblood" data-testid="voucher-csv">⬇ {A.csv}</a>}
+          {csv && mode === "batch" && <a href={csv} download={`codes-${form.campaign || "batch"}.csv`} className="text-sm font-semibold text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" data-testid="voucher-csv">⬇ {A.csv}</a>}
           {note && <span className="text-sm text-moss" role="status">{note}</span>}
         </div>
       </div>
@@ -66,7 +66,7 @@ export function VouchersPanel() {
               <tr key={v.code} className="border-b border-edge/60" data-testid="voucher-row">
                 <td className="py-1.5 pr-3 font-mono">{v.code}</td><td className="pr-3">{v.credits}</td><td className="pr-3">{v.redeemed}/{v.maxRedemptions}</td>
                 <td className="pr-3">{v.campaign || "—"}</td><td className="pr-3">{fmt(v.expiresAt)}</td><td className="pr-3">{v.disabled ? A.off : A.active}</td>
-                <td><button type="button" onClick={() => void toggle(v)} className="text-xs text-oxblood">{v.disabled ? A.enable : A.disable}</button></td>
+                <td><button type="button" onClick={() => void toggle(v)} className="text-xs font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{v.disabled ? A.enable : A.disable}</button></td>
               </tr>
             ))}</tbody>
           </table>

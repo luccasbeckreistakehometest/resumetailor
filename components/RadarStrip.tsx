@@ -50,12 +50,12 @@ export function RadarStrip({ alerts, items, onSent }: { alerts: RadarItem[]; ite
                 {al.message && <p className="mt-1 text-xs text-moss">✓ {R.fromKit}</p>}
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-semibold">
                   {tpl && <button type="button" data-testid="radar-copy" className="rounded-full bg-ink px-3 py-1 text-paper" onClick={() => { void navigator.clipboard.writeText(text).then(() => { setCopied(al.appId); window.setTimeout(() => setCopied(null), 1500); }).catch(() => {}); }}>{copied === al.appId ? `✓ ${R.copied}` : R.copy}</button>}
-                  {tpl && <a href={mail} className="text-oxblood" data-testid="radar-mail">{R.email}</a>}
-                  {tpl && <a href={wa} target="_blank" rel="noopener noreferrer" className="text-oxblood">{R.whatsapp}</a>}
-                  {al.kind === "prep" && <Link href={`/brief/${app.id}`} className="text-oxblood" data-testid="radar-brief">{R.brief}</Link>}
-                  {al.kind === "prep" && app.interviewAtTime && <a href={`/api/applications/${app.id}/ics?kind=interview&lang=${lang}`} className="text-oxblood">{R.calendar}</a>}
-                  {al.kind === "offer" && lang === "pt" && <Link href={`${to("calculator")}?${app.offerType === "pj" ? "pj" : "clt"}=${app.offerAmount ?? ""}`} className="text-oxblood" data-testid="radar-compare">{R.compare}</Link>}
-                  {al.kind === "followup" && <a href={`/api/applications/${app.id}/ics?kind=followup&lang=${lang}`} className="text-oxblood">{R.calendar}</a>}
+                  {tpl && <a href={mail} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" data-testid="radar-mail">{R.email}</a>}
+                  {tpl && <a href={wa} target="_blank" rel="noopener noreferrer" className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]">{R.whatsapp}</a>}
+                  {al.kind === "prep" && <Link href={`/brief/${app.id}`} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" data-testid="radar-brief">{R.brief}</Link>}
+                  {al.kind === "prep" && app.interviewAtTime && <a href={`/api/applications/${app.id}/ics?kind=interview&lang=${lang}`} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]">{R.calendar}</a>}
+                  {al.kind === "offer" && lang === "pt" && <Link href={`${to("calculator")}?${app.offerType === "pj" ? "pj" : "clt"}=${app.offerAmount ?? ""}`} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" data-testid="radar-compare">{R.compare}</Link>}
+                  {al.kind === "followup" && <a href={`/api/applications/${app.id}/ics?kind=followup&lang=${lang}`} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]">{R.calendar}</a>}
                   {al.kind !== "prep" && al.kind !== "offer" && <button type="button" onClick={() => void sent(app.id, al.kind)} className="ml-auto text-muted hover:text-ink" data-testid="radar-sent">✓ {R.sent}</button>}
                 </div>
               </li>

@@ -46,14 +46,14 @@ export default function BriefPage() {
         {when && (
           <div className="card mt-5 flex flex-wrap items-center justify-between gap-2 p-4">
             <p className="text-sm"><span className="eyebrow mr-2">{B.briefSections.when}</span><span className="font-semibold capitalize text-ink" data-testid="brief-when">{when}</span></p>
-            <a href={`/api/applications/${app.id}/ics?kind=interview&lang=${lang}`} className="text-sm font-semibold text-oxblood no-print">📅 {B.calendar}</a>
+            <a href={`/api/applications/${app.id}/ics?kind=interview&lang=${lang}`} className="text-sm font-semibold text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)] no-print">📅 {B.calendar}</a>
           </div>
         )}
 
         {!kit ? (
           <section className="card mt-5 p-5" data-testid="brief-generic">
             <p className="text-sm text-muted">{B.briefNoKit}</p>
-            <ul className="mt-3 space-y-2">{B.briefGeneric.map((t) => <li key={t} className="flex gap-2 text-ink"><span className="text-oxblood">□</span>{t}</li>)}</ul>
+            <ul className="mt-3 space-y-2">{B.briefGeneric.map((t) => <li key={t} className="flex gap-2 text-ink"><span className="text-[color:var(--ink-40)]">□</span>{t}</li>)}</ul>
           </section>
         ) : (
           <>
@@ -89,6 +89,6 @@ export default function BriefPage() {
 const Block = ({ title, items, testId }: { title: string; items: string[]; testId: string }) => (
   <section className="card mt-5 p-5" data-testid={testId}>
     <p className="eyebrow">{title}</p>
-    <ol className="mt-2 space-y-2">{items.map((t, i) => <li key={t} className="flex gap-3 text-ink"><span className="font-display text-xl text-oxblood">{i + 1}</span><span>{t}</span></li>)}</ol>
+    <ol className="mt-2 space-y-2">{items.map((t, i) => <li key={t} className="flex gap-3 text-ink"><span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-40)]">{String(i + 1).padStart(2, "0")}</span><span>{t}</span></li>)}</ol>
   </section>
 );

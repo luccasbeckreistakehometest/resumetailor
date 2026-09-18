@@ -26,18 +26,18 @@ export function AiPanel({ ai, config }: { ai: AiInfo; config: { payments: { stri
   const A = l.admin;
   const pct = ai.budget > 0 ? Math.min(100, (ai.spentToday / ai.budget) * 100) : 100;
   return (
-    <div className="card mt-6 p-5" data-testid="admin-ai">
+    <div className="mt-[var(--s-8)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="admin-ai">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="eyebrow">{A.ai}</p>
-        <span className={"rounded-full px-3 py-1 text-xs font-semibold " + (ai.ready ? "bg-moss-2 text-moss" : "bg-gold-2 text-oxblood")} data-testid="admin-ai-status">{ai.ready ? A.aiReady : A.aiDown}</span>
+        <span className={"inline-block border-y px-[var(--s-2)] py-[2px] font-sans text-[length:var(--ui-11c)] font-bold uppercase tracking-[var(--ui-11c-ls)] " + (ai.ready ? "border-[var(--kept)] text-[color:var(--kept)]" : "border-[var(--mark)] text-[color:var(--mark)]")} data-testid="admin-ai-status">{ai.ready ? A.aiReady : A.aiDown}</span>
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-3">
-        <div><p className="text-xs text-muted">{A.spentToday}</p><p className="font-display text-2xl text-ink" data-testid="admin-spend">${ai.spentToday.toFixed(2)}</p></div>
-        <div><p className="text-xs text-muted">{A.budget} (AI_DAILY_BUDGET_USD)</p><p className="font-display text-2xl text-ink">${ai.budget.toFixed(2)}</p></div>
+        <div><p className="text-xs text-muted">{A.spentToday}</p><p className="font-mono text-[length:var(--mn-24)] font-medium tabular-nums text-[color:var(--ink)]" data-testid="admin-spend">${ai.spentToday.toFixed(2)}</p></div>
+        <div><p className="text-xs text-muted">{A.budget} (AI_DAILY_BUDGET_USD)</p><p className="font-mono text-[length:var(--mn-24)] font-medium tabular-nums text-[color:var(--ink)]">${ai.budget.toFixed(2)}</p></div>
         <div><p className="text-xs text-muted">{A.configured}</p><p className="text-sm text-ink-2">Stripe {config.payments.stripe ? A.yes : A.no} · Mercado Pago {config.payments.mercadopago ? A.yes : A.no} · Tavily {config.insights ? A.yes : A.no} · TTS {config.voice ?? A.no}</p></div>
       </div>
-      {config.sellerMissing.length > 0 && <p className="mt-3 rounded-lg bg-gold-2 px-3 py-2 text-sm text-oxblood" data-testid="admin-seller-missing">{A.sellerMissing} {config.sellerMissing.join(", ")}</p>}
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper-2"><div className="h-full bg-oxblood" style={{ width: `${pct}%` }} /></div>
+      {config.sellerMissing.length > 0 && <p className="mt-[var(--s-4)] bg-[var(--mark-wash)] px-[var(--s-4)] py-[var(--s-2)] font-sans text-[length:var(--ui-13)] text-[color:var(--mark)]" data-testid="admin-seller-missing">{A.sellerMissing} {config.sellerMissing.join(", ")}</p>}
+      <div className="mt-[var(--s-4)] h-1 bg-[var(--sunken)]"><div className="h-full" style={{ width: `${pct}%`, background: pct > 80 ? "var(--mark)" : "var(--ink)" }} /></div>
       {ai.probe && <p className="mt-3 text-xs text-muted">{A.probe}: {ai.probe.ok ? "OK" : ai.probe.reason} · {new Date(ai.probe.checkedAt).toLocaleString()}</p>}
       {ai.lastFailure && <p className="mt-1 text-xs text-oxblood">{A.lastFailure}: {ai.lastFailure.kind} — {ai.lastFailure.detail} · {new Date(ai.lastFailure.at).toLocaleString()}</p>}
       {ai.byFeature.length > 0 && <p className="mt-3 text-xs text-ink-2">{A.byFeature}: {ai.byFeature.map((f) => `${f.feature} ${f.calls}× $${f.costUsd.toFixed(3)}`).join(" · ")}</p>}
@@ -88,7 +88,7 @@ export function UserLookup({ onChanged }: { onChanged: () => void }) {
   }
 
   return (
-    <div className="card mt-6 p-5" data-testid="admin-lookup">
+    <div className="mt-[var(--s-8)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="admin-lookup">
       <p className="eyebrow">{A.lookup}</p>
       <form className="mt-3 flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); void search(q); }}>
         <label htmlFor="admin-q" className="sr-only">{A.lookup}</label>
@@ -102,13 +102,13 @@ export function UserLookup({ onChanged }: { onChanged: () => void }) {
               <td className="py-2 pr-3 text-ink">{u.email}</td>
               <td className="py-2 pr-3 text-ink-2">{x.credits.badge(Number(u.credits))}</td>
               <td className="py-2 pr-3 text-ink-2">{u.disabledAt ? A.disabled : A.active}</td>
-              <td className="py-2 text-right"><button className="text-sm font-medium text-oxblood underline" onClick={() => { setOpen(String(u.id)); setTemp(null); setNote(""); void load(String(u.id)); }} data-testid={`admin-open-${u.email}`}>{A.open}</button></td>
+              <td className="py-2 text-right"><button className="text-sm font-medium text-[color:var(--ink)] underline underline-offset-[3px]" onClick={() => { setOpen(String(u.id)); setTemp(null); setNote(""); void load(String(u.id)); }} data-testid={`admin-open-${u.email}`}>{A.open}</button></td>
             </tr>
           ))}</tbody>
         </table>
       </div>
       {open && detail && (
-        <div className="mt-5 rounded-xl border border-edge bg-paper p-4" data-testid="admin-user">
+        <div className="mt-[var(--s-5)] border border-[var(--rule)] p-[var(--s-5)]" data-testid="admin-user">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-semibold text-ink">{detail.user.email}</p>
@@ -126,13 +126,13 @@ export function UserLookup({ onChanged }: { onChanged: () => void }) {
             </div>
           )}
           {note && <p className="mt-2 text-xs text-muted" role="status">{note}</p>}
-          {temp && <p className="mt-3 rounded-lg bg-gold-2 p-3 text-sm text-ink" data-testid="admin-temp">{A.tempPassword} <code className="select-all font-mono text-base font-semibold" data-testid="admin-temp-value">{temp}</code></p>}
+          {temp && <p className="mt-[var(--s-4)] bg-[var(--query-wash)] p-[var(--s-4)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink)]" data-testid="admin-temp">{A.tempPassword} <code className="select-all font-mono text-base font-semibold" data-testid="admin-temp-value">{temp}</code></p>}
           <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">{A.publicPages}</p>
           <ul className="mt-1 space-y-1 text-sm">{detail.publicResumes.map((p) => (
             <li key={p.slug} className="flex flex-wrap items-center gap-2" data-testid={`admin-page-${p.slug}`}>
               <a className="text-ink underline" href={`/cv/${p.slug}`} target="_blank" rel="noreferrer">/cv/{p.slug}</a>
               <span className="text-muted">{p.takenDownAt ? A.takenDown : p.enabled ? A.live : A.off} · {p.views}</span>
-              <button className="text-xs font-medium text-oxblood underline" onClick={() => void takedown(p.slug, !p.takenDownAt)} data-testid={`admin-takedown-${p.slug}`}>{p.takenDownAt ? A.restore : A.takeDown}</button>
+              <button className="text-xs font-medium text-[color:var(--ink)] underline underline-offset-[3px]" onClick={() => void takedown(p.slug, !p.takenDownAt)} data-testid={`admin-takedown-${p.slug}`}>{p.takenDownAt ? A.restore : A.takeDown}</button>
             </li>
           ))}</ul>
           <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">{l.account.payments}</p>
@@ -161,7 +161,7 @@ export function Messages() {
   return (
     <ul className="space-y-3" data-testid="admin-messages">
       {items.map((m) => (
-        <li key={String(m.id)} className="rounded-xl border border-edge bg-surface p-4">
+        <li key={String(m.id)} className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-ink"><strong>{m.email}</strong>{m.name ? ` · ${m.name}` : ""} · {A.topic}: {m.topic} · {String(m.lang)}</p>
             <label className="text-xs text-muted">

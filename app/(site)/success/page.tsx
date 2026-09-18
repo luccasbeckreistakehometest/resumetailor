@@ -76,7 +76,7 @@ function SuccessInner() {
           {status === "checking" && <p className="text-ink-2">{x.success.checking}</p>}
           {status === "paid" && <><p className="text-4xl" aria-hidden>✓</p><p className="font-display mt-3 text-3xl text-ink">{x.success.paid}</p>{user && <p className="mt-2 text-ink-2" data-testid="success-credits">{x.success.credits(user.credits)}</p>}</>}
           {status === "pending" && <><p className="text-4xl" aria-hidden>⏳</p><p className="mt-3 text-ink-2">{l.success.pendingLong}</p><button onClick={again} className="btn btn-ghost mt-4">{l.success.checkAgain}</button></>}
-          {status === "failed" && <><p className="text-4xl" aria-hidden>✕</p><p className="mt-3 text-oxblood">{x.success.failed}</p><Link href="/pricing" className="btn btn-primary mt-4">{x.credits.buy}</Link></>}
+          {status === "failed" && <><p className="text-4xl" aria-hidden>✕</p><p className="mt-3 text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]">{x.success.failed}</p><Link href="/pricing" className="btn btn-primary mt-4">{x.credits.buy}</Link></>}
           {status === "refunded" && <p className="text-ink-2">{l.success.refunded}</p>}
           {status === "signin" && <p className="text-ink-2">{l.apiErrors.sign_in_required}</p>}
           <div className="mt-8 flex flex-wrap justify-center gap-3">

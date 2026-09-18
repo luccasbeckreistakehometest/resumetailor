@@ -187,7 +187,7 @@ export default function PitchStudio() {
             <textarea aria-label={P.script} className="field mt-3" rows={12} value={script} onChange={(e) => setScript(e.target.value)} data-testid="pitch-text" />
             <div className="mt-3 flex flex-wrap items-center gap-3">
               {data?.unlocked && data.source !== "ai" && <button type="button" onClick={writeScript} disabled={busy} className="btn btn-primary !py-2 !text-sm" data-testid="pitch-write">{busy ? P.writing : P.writeScript}</button>}
-              {voiceOn && script && <button type="button" onClick={() => void listen()} className="text-sm font-semibold text-oxblood">▶ {P.listen}</button>}
+              {voiceOn && script && <button type="button" onClick={() => void listen()} className="text-sm font-semibold text-[color:var(--ink)] underline underline-offset-[3px]">{P.listen}</button>}
               {data && !data.unlocked && <Link href={`/start?gen=${id}`} className="btn btn-primary !py-2 !text-sm" data-testid="pitch-unlock">{x.credits.unlockWith}</Link>}
             </div>
             {data && !data.unlocked && <p className="mt-2 text-xs text-muted">{P.unlock}</p>}
@@ -212,7 +212,7 @@ export default function PitchStudio() {
             {mediaNote && <p className="mt-2 text-sm text-muted">{mediaNote}</p>}
             {take && phase === "done" && (
               <div className="mt-3 rounded-xl bg-paper p-3 text-sm">
-                <a href={take.url} download={`pitch-${seconds}s.${ext}`} className="font-semibold text-oxblood" data-testid="pitch-download" data-size={take.size} data-type={take.type}>⬇ {P.download}</a>
+                <a href={take.url} download={`pitch-${seconds}s.${ext}`} className="font-semibold text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" data-testid="pitch-download" data-size={take.size} data-type={take.type}>⬇ {P.download}</a>
                 <p className="mt-1 text-xs text-muted">{P.localOnly}</p>
               </div>
             )}

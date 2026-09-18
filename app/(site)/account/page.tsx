@@ -86,7 +86,7 @@ export default function AccountPage() {
       <Container className="max-w-3xl py-10">
         <Eyebrow>{A.eyebrow}</Eyebrow>
         <h1 className="font-display mt-2 text-4xl text-ink">{A.title}</h1>
-        {deleted && <p className="card mt-8 p-6 text-ink" role="status" data-testid="account-deleted">{A.deleted} <Link href="/" className="font-medium text-oxblood underline">{l.errorPages.home}</Link></p>}
+        {deleted && <p className="card mt-8 p-6 text-ink" role="status" data-testid="account-deleted">{A.deleted} <Link href="/" className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{l.errorPages.home}</Link></p>}
         {!loading && !user && !deleted && (
           <div className="card mt-8 p-6 text-center">
             <p className="text-ink-2">{A.signInFirst}</p>

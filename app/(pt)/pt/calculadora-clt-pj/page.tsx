@@ -28,7 +28,7 @@ export default function CalculatorPage() {
           <Suspense fallback={<p className="text-sm text-muted">…</p>}><CltPjCalculator /></Suspense>
         </div>
         <p className="mt-6 rounded-xl bg-gold-2 px-4 py-3 text-sm text-ink" data-testid="calc-disclaimer">{C.disclaimer}</p>
-        <p className="mt-4 text-sm"><Link href="/applications" className="font-medium text-oxblood underline-offset-4 hover:underline">{C.trackerCta} →</Link></p>
+        <p className="mt-4 text-sm"><Link href="/applications" className="font-medium text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-4 hover:underline">{C.trackerCta} →</Link></p>
 
         <section className="mt-12 max-w-3xl">
           <h2 className="font-display text-3xl text-ink">{C.faqTitle}</h2>

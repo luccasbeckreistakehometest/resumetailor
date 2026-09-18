@@ -59,7 +59,7 @@ export function FitChecker() {
       <div className="card mt-10 p-6 sm:p-8" data-tour="fit" data-testid="fit-form">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Eyebrow>{F.eyebrow}</Eyebrow>
-          {last && <button onClick={() => { setPosting(last.posting); setResume(last.resume); }} className="text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="fit-reuse">↺ {F.reuse}</button>}
+          {last && <button onClick={() => { setPosting(last.posting); setResume(last.resume); }} className="text-sm font-medium text-[color:var(--ink)] underline-offset-4 hover:underline" data-testid="fit-reuse">{F.reuse}</button>}
         </div>
         <label htmlFor="fit-posting" className="mt-3 block text-sm font-medium text-ink-2">{F.postingLabel}</label>
         <textarea id="fit-posting" className="field mt-2" rows={7} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={F.postingPh} data-testid="fit-posting" />
@@ -98,7 +98,7 @@ export function FitChecker() {
               {result.gaps.map((g, i) => (
                 <li key={g.requirement} className="rounded-xl border border-edge bg-paper p-4" data-testid="fit-gap">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-display text-2xl leading-none text-oxblood">{i + 1}</span>
+                    <span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-40)]">{String(i + 1).padStart(2, "0")}</span>
                     <p className="font-semibold text-ink">{g.requirement}</p>
                     <StatusChip item={g} labels={F.status} />
                     <span className="ml-auto text-[11px] uppercase tracking-wide text-muted">{F.weight[g.weight]}</span>

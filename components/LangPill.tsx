@@ -38,7 +38,7 @@ export function LangPill() {
   const dismiss = () => { try { localStorage.setItem(KEY, "1"); } catch {} setOffer(null); };
   return (
     <div className="fixed left-1/2 top-[70px] z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full border border-edge-2 bg-surface py-1 pl-4 pr-1 text-sm shadow-[var(--shadow)]" data-testid="lang-pill">
-      <Link href={offer.url} lang={offer.lang === "pt" ? "pt-BR" : "es"} className="font-medium text-oxblood underline-offset-4 hover:underline">{c.pill}</Link>
+      <Link href={offer.url} lang={offer.lang === "pt" ? "pt-BR" : "es"} className="font-medium text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-4 hover:underline">{c.pill}</Link>
       <button type="button" onClick={dismiss} aria-label={c.pillClose} className="grid h-7 w-7 place-items-center rounded-full text-muted hover:text-ink">✕</button>
     </div>
   );

@@ -52,7 +52,7 @@ export function ImportDrop({ onText, testId = "import", hint, className = "", to
         data-testid={`${testId}-drop`}>
         <span aria-hidden>📄</span>
         <span className="font-medium text-ink">{x.importer.drop}</span>
-        <span className="text-oxblood underline-offset-4 hover:underline">{x.importer.choose}</span>
+        <span className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{x.importer.choose}</span>
         <span className="text-xs text-muted">{hint ?? x.importer.privacy}</span>
       </div>
       <input ref={input} type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="hidden"

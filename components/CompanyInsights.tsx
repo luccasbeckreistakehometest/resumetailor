@@ -77,7 +77,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.techLabel}</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {data.tech.map((t) => (
-              <span key={t} className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-oxblood ring-1 ring-indigo-200">
+              <span key={t} className="rounded-[var(--r-1)] border border-[var(--rule)] bg-[var(--sunken)] px-[var(--s-3)] py-[2px] font-mono text-[length:var(--mn-13)] text-[color:var(--ink-2)]">
                 {t}
               </span>
             ))}
@@ -104,7 +104,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.sourcesLabel}</div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
             {data.sources.map((s) => (
-              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-oxblood underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
+              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
                 {s.title} ↗
               </a>
             ))}

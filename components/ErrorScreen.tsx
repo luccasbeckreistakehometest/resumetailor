@@ -14,7 +14,7 @@ export function ErrorScreen({ kind, onRetry, digest }: { kind: "notFound" | "err
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <Container className="max-w-xl py-20 text-center">
-        <p className="font-display text-7xl text-oxblood" aria-hidden>{kind === "notFound" ? "404" : "!"}</p>
+        <p className="font-mono text-[length:var(--mn-40)] font-medium tabular-nums text-[color:var(--ink-40)]" aria-hidden>{kind === "notFound" ? "404" : "!"}</p>
         <h1 className="font-display mt-4 text-3xl text-ink" data-testid={kind === "notFound" ? "not-found" : "error-page"}>{kind === "notFound" ? E.notFoundTitle : E.errorTitle}</h1>
         <p className="mt-3 text-ink-2">{kind === "notFound" ? E.notFoundText : E.errorText}</p>
         {digest && <p className="mt-2 text-xs text-muted">ref: {digest}</p>}
