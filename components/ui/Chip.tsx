@@ -41,7 +41,11 @@ export function Chip({
   );
 }
 
-/** What the parser found. The state is a 1px rule down the left edge — kept, missing or partial. */
+/**
+ * What the parser found. The state is a 1px rule down the left edge — kept, missing or partial.
+ * The ground is --sunken, never --sheet: on the desk-lamp theme the sheet stays light while the
+ * page's ink turns light with it, and a token drawn on paper-white was 1.4:1 there (seen, fixed).
+ */
 export function Token({
   children, state = "plain", title, className = "",
 }: {
@@ -61,7 +65,7 @@ export function Token({
     <span
       title={title}
       className={`inline-flex max-w-full items-center gap-[var(--s-2)] truncate rounded-[var(--r-1)] border border-[var(--rule)] border-l-2 ${edge}
-        bg-[var(--sheet)] px-[var(--s-3)] py-[3px] font-mono text-[length:var(--mn-13)] leading-[1.3] text-[color:var(--ink-2)] ${className}`}
+        bg-[var(--sunken)] px-[var(--s-3)] py-[3px] font-mono text-[length:var(--mn-13)] leading-[1.3] text-[color:var(--ink-2)] ${className}`}
     >
       {children}
       {label && <span className="sr-only"> — {label}</span>}

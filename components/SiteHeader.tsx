@@ -84,10 +84,12 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
           <div className="hidden min-[1100px]:block"><LanguageSwitcher /></div>
 
+          {/* The wrapper carries the breakpoint: `hidden` on the Button itself would fight the
+              variant's own `inline-flex`, and one of the two wins by stylesheet order, not intent. */}
           {!minimal && (
-            <Button href={startHref()} size="sm" className="hidden min-[1100px]:inline-flex" data-tour="nav-start">
-              {d.nav.start}
-            </Button>
+            <span className="hidden min-[1100px]:block">
+              <Button href={startHref()} size="sm" data-tour="nav-start">{d.nav.start}</Button>
+            </span>
           )}
 
           <button
