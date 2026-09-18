@@ -37,7 +37,7 @@ export function Stepper({
           return (
             <li key={s} className="relative" aria-current={state === "current" ? "step" : undefined}>
               {state === "past" && onGo
-                ? <button type="button" onClick={() => onGo(i)} className="cursor-pointer hover:text-[var(--ink)]">{body}</button>
+                ? <button type="button" onClick={() => onGo(i)} className="cursor-pointer hover:text-[color:var(--ink)]">{body}</button>
                 : body}
               {state === "current" && <span aria-hidden className="absolute inset-x-0 -bottom-px h-[2px] bg-[var(--mark)]" />}
             </li>
@@ -88,7 +88,7 @@ export function Tabs({
             tabIndex={on ? 0 : -1}
             onClick={() => onChange(t.id)}
             className={`relative cursor-pointer pb-[var(--s-3)] font-sans text-[length:var(--ui-13)] font-medium transition-colors duration-[var(--dur-1)]
-              ${on ? "text-[var(--ink)]" : "text-[var(--ink-muted)] hover:text-[var(--ink-2)]"}`}
+              ${on ? "text-[color:var(--ink)]" : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink-2)]"}`}
           >
             {t.label}
             {on && <span aria-hidden className="absolute inset-x-0 -bottom-px h-[2px] bg-[var(--ink)]" />}
@@ -102,13 +102,13 @@ export function Tabs({
 export function Breadcrumb({ trail, className = "" }: { trail: readonly { label: string; href?: string }[]; className?: string }) {
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className="flex flex-wrap items-center gap-[var(--s-2)] font-sans text-[length:var(--ui-13)] text-[var(--ink-muted)]">
+      <ol className="flex flex-wrap items-center gap-[var(--s-2)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">
         {trail.map((t, i) => (
           <li key={t.label} className="flex items-center gap-[var(--s-2)]">
-            {i > 0 && <Icon name="chevron-right" size={16} className="text-[var(--ink-40)]" />}
+            {i > 0 && <Icon name="chevron-right" size={16} className="text-[color:var(--ink-40)]" />}
             {t.href && i < trail.length - 1
-              ? <Link href={t.href as never} className="underline decoration-[var(--rule)] underline-offset-2 hover:text-[var(--ink)] hover:decoration-[var(--ink)]">{t.label}</Link>
-              : <span className={i === trail.length - 1 ? "text-[var(--ink-2)]" : undefined} aria-current={i === trail.length - 1 ? "page" : undefined}>{t.label}</span>}
+              ? <Link href={t.href as never} className="underline decoration-[var(--rule)] underline-offset-2 hover:text-[color:var(--ink)] hover:decoration-[var(--ink)]">{t.label}</Link>
+              : <span className={i === trail.length - 1 ? "text-[color:var(--ink-2)]" : undefined} aria-current={i === trail.length - 1 ? "page" : undefined}>{t.label}</span>}
           </li>
         ))}
       </ol>
@@ -125,7 +125,7 @@ export function Pagination({
   const to = Math.min(page * perPage, total);
   return (
     <div className={`flex items-center justify-between gap-[var(--s-5)] border-t border-[var(--rule-hairline)] pt-[var(--s-4)] ${className}`}>
-      <p className="font-sans text-[length:var(--ui-13)] text-[var(--ink-muted)]">
+      <p className="font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">
         <span className="tabular-nums">{from}–{to}</span> of <span className="tabular-nums">{total.toLocaleString()}</span>
       </p>
       <div className="flex gap-[var(--s-3)]">

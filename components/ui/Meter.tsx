@@ -40,8 +40,8 @@ export function Meter({
       <div className="flex items-baseline justify-between gap-[var(--s-4)]">
         <span id={id} className="eyebrow">{label}</span>
         <span className="font-mono tabular-nums leading-none">
-          <span className="text-[length:var(--mn-24)] font-medium tracking-[var(--mn-24-ls)] text-[var(--ink)]">{value}</span>
-          {unit && <span className="ml-[1px] text-[length:var(--ui-13)] text-[var(--ink-muted)]">{unit}</span>}
+          <span className="text-[length:var(--mn-24)] font-medium tracking-[var(--mn-24-ls)] text-[color:var(--ink)]">{value}</span>
+          {unit && <span className="ml-[1px] text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{unit}</span>}
         </span>
       </div>
 
@@ -64,7 +64,7 @@ export function Meter({
         )}
       </div>
 
-      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[var(--ink-muted)]">
+      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">
         {caption}
       </p>
     </div>

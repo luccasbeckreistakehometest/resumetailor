@@ -22,7 +22,9 @@ import type { ReactNode } from "react";
  *  · Numbers: right-aligned with tabular figures, header included. Left-aligned figures are the
  *    single clearest tell that nobody set the table.
  *  · A long cell never silently grows the row: one line truncated with a title, or exactly two
- *    with `clamp: 2`, and the row height is declared either way.
+ *    with `clamp: 2`, and the row height is declared either way. The layout is FIXED, so the
+ *    widths are the ones declared here and a long value can never starve its neighbours — an
+ *    auto layout with max-width:0 collapsed the title column to 50px, which is defect D4 again.
  *  · Empty keeps the header and puts one full-width row under it, so the columns stay legible.
  */
 
@@ -33,6 +35,7 @@ export type Column<T> = {
   align?: "left" | "right" | "center";
   /** Lines a text cell may use before it truncates. Default 1. */
   clamp?: 1 | 2;
+  /** Share of the table. Columns without one split what is left. */
   width?: string;
   /** Sets the whole column in the machine's voice. */
   mono?: boolean;
@@ -54,8 +57,8 @@ export function Table<T>({
 
   return (
     <div className={`w-full overflow-x-auto ${className}`}>
-      <table className="w-full border-collapse text-left font-sans">
-        {caption && <caption className="mb-[var(--s-4)] text-left font-sans text-[length:var(--ui-13)] text-[var(--ink-muted)]">{caption}</caption>}
+      <table className="w-full table-fixed border-collapse text-left font-sans">
+        {caption && <caption className="mb-[var(--s-4)] text-left font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{caption}</caption>}
         <thead>
           <tr>
             {columns.map((c, i) => (
@@ -64,7 +67,7 @@ export function Table<T>({
                 scope="col"
                 style={{ width: c.width }}
                 className={`sticky top-0 z-10 border-b border-[var(--rule)] bg-[var(--page)] px-[var(--cell-x)] py-[var(--cell-y)]
-                  font-sans text-[length:var(--ui-13)] font-medium tracking-[var(--ui-13-ls)] text-[var(--ink-muted)] whitespace-nowrap
+                  font-sans text-[length:var(--ui-13)] font-medium tracking-[var(--ui-13-ls)] text-[color:var(--ink-muted)] whitespace-nowrap
                   ${c.align === "right" ? "text-right tabular-nums" : c.align === "center" ? "text-center" : "text-left"}
                   ${stickyFirst && i === 0 ? "left-0 z-20" : ""}`}
               >
@@ -76,7 +79,7 @@ export function Table<T>({
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--s-8)] text-[length:var(--ui-15)] text-[var(--ink-muted)]">
+              <td colSpan={columns.length} className="border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--s-8)] text-[length:var(--ui-15)] text-[color:var(--ink-muted)]">
                 {empty}
               </td>
             </tr>
@@ -89,10 +92,10 @@ export function Table<T>({
               {columns.map((c, ci) => (
                 <td
                   key={c.key}
-                  className={`h-[var(--row-h)] max-w-0 border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--cell-y)]
-                    align-middle text-[length:var(--density-body)] text-[var(--ink-2)]
+                  className={`h-[var(--row-h)] border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--cell-y)]
+                    align-middle text-[length:var(--density-body)] text-[color:var(--ink-2)]
                     ${c.mono ? "font-mono tabular-nums" : ""}
-                    ${c.align === "right" ? "text-right tabular-nums text-[var(--ink)]" : c.align === "center" ? "text-center" : "text-left"}
+                    ${c.align === "right" ? "text-right tabular-nums text-[color:var(--ink)]" : c.align === "center" ? "text-center" : "text-left"}
                     ${c.clamp === 2 ? "whitespace-normal [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden" : "truncate"}
                     ${stickyFirst && ci === 0 ? "sticky left-0 bg-[var(--page)] group-hover:bg-[var(--sunken)]" : ""}`}
                   style={c.clamp === 2 ? { height: "var(--row-h-2)" } : undefined}

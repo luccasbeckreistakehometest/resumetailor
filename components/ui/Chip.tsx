@@ -27,10 +27,10 @@ export function Chip({
     "font-sans text-[length:var(--ui-12)] font-medium leading-none " +
     "transition-colors duration-[var(--dur-1)] ease-[var(--ease-move)]";
   const look = selected
-    ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--on-ink)]"
-    : "border-[var(--rule-hairline)] bg-[var(--sunken)] text-[var(--ink-2)]";
+    ? "border-[var(--ink)] bg-[var(--ink)] text-[color:var(--on-ink)]"
+    : "border-[var(--rule-hairline)] bg-[var(--sunken)] text-[color:var(--ink-2)]";
   const interactive = onClick && !disabled ? "cursor-pointer hover:bg-[var(--zebra)] hover:border-[var(--rule)]" : "";
-  const off = disabled ? "cursor-not-allowed border-[var(--rule)] bg-[var(--sunken)] text-[var(--ink-40)]" : "";
+  const off = disabled ? "cursor-not-allowed border-[var(--rule)] bg-[var(--sunken)] text-[color:var(--ink-40)]" : "";
 
   if (!onClick) return <span className={`${base} ${look} ${off} ${className}`}>{icon && <Icon name={icon} size={16} />}{children}</span>;
   return (
@@ -61,7 +61,7 @@ export function Token({
     <span
       title={title}
       className={`inline-flex max-w-full items-center gap-[var(--s-2)] truncate rounded-[var(--r-1)] border border-[var(--rule)] border-l-2 ${edge}
-        bg-[var(--sheet)] px-[var(--s-3)] py-[3px] font-mono text-[length:var(--mn-13)] leading-[1.3] text-[var(--ink-2)] ${className}`}
+        bg-[var(--sheet)] px-[var(--s-3)] py-[3px] font-mono text-[length:var(--mn-13)] leading-[1.3] text-[color:var(--ink-2)] ${className}`}
     >
       {children}
       {label && <span className="sr-only"> — {label}</span>}
@@ -78,10 +78,10 @@ export function Badge({
   className?: string;
 }) {
   const colour = {
-    neutral: "text-[var(--ink-muted)] border-[var(--rule)]",
-    mark: "text-[var(--mark)] border-[var(--mark)]",
-    kept: "text-[var(--kept)] border-[var(--kept)]",
-    query: "text-[var(--query)] border-[var(--query)]",
+    neutral: "text-[color:var(--ink-muted)] border-[var(--rule)]",
+    mark: "text-[color:var(--mark)] border-[var(--mark)]",
+    kept: "text-[color:var(--kept)] border-[var(--kept)]",
+    query: "text-[color:var(--query)] border-[var(--query)]",
   }[tone];
   return (
     <span className={`inline-block border-y px-[var(--s-2)] py-[2px] font-sans text-[length:var(--ui-11c)] font-bold uppercase tracking-[var(--ui-11c-ls)] ${colour} ${className}`}>

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -35,6 +36,23 @@ describe("theme tokens", () => {
     // The ring is `outline: 2px solid var(--mark)`; a 3px rgba() shadow measures ~1.1:1 on paper.
     const focusRules = [...css.matchAll(/:focus[^{]*\{([^}]*)\}/g)].map((m) => m[1]);
     for (const rule of focusRules) expect(rule).not.toMatch(/box-shadow:\s*0 0 0/);
+  });
+
+  it("never leaves an arbitrary text utility ambiguous", () => {
+    // Tailwind cannot tell whether text-[var(--x)] is a colour or a size, and silently picks
+    // font-size: that is how a primary button shipped with ink-on-ink, 1:1, invisible. Found by
+    // rendering the gallery and reading the computed colour. Every one carries a type hint now.
+    const root = new URL("../../", import.meta.url).pathname;
+    const files = ["components", "app"].flatMap((dir) =>
+      readdirSync(root + dir, { recursive: true, encoding: "utf8" })
+        .filter((f) => f.endsWith(".tsx"))
+        .map((f) => `${root}${dir}/${f}`));
+    const bad: string[] = [];
+    for (const f of files) {
+      const src = readFileSync(f, "utf8");
+      for (const m of src.matchAll(/text-\[(?!color:|length:)[^\]]*var\(/g)) bad.push(`${f}: ${m[0]}`);
+    }
+    expect(bad).toEqual([]);
   });
 
   it("uses the radius ladder rather than one rounded corner for everything", () => {

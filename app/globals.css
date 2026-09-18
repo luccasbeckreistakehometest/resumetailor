@@ -31,6 +31,8 @@
   --raised: #fffdf8;         /* a panel lifted off the page (same stock)      */
   --sunken: #f2ece0;         /* wells, extract blocks, disabled fields        */
   --zebra: #ede6d8;          /* table banding, above 12 rows only             */
+  --field: #fffdf8;          /* the ground of an input — paper, in light       */
+  --skeleton: #f2ece0;       /* a bar standing in for content not here yet     */
 
   /* Rules — three weights, by job */
   --rule-hairline: #e2d9c7;  /* decorative separator inside a panel   1.30:1  */
@@ -165,6 +167,9 @@
   --raised: #1d1a15;
   --sunken: #0e0c09;
   --zebra: #1a1712;            /* 1.05 step off the desk; ink on it 15.30:1 */
+  --field: #0e0c09;            /* an input is NOT the document: it sinks into the desk.
+                                  ink 16.72:1, placeholder 5.01:1, edge 3.84:1 */
+  --skeleton: #332c20;         /* a skeleton must be lighter than a dark ground to read (1.36) */
   /* THE SHEET NEVER INVERTS. It only dims, as if lit by a lamp; print restores pure white. */
   --sheet: #ede7d9;
   --rule-hairline: #2a251d;
@@ -202,6 +207,9 @@
   --raised: #1d1a15;
   --sunken: #0e0c09;
   --zebra: #1a1712;            /* 1.05 step off the desk; ink on it 15.30:1 */
+  --field: #0e0c09;            /* an input is NOT the document: it sinks into the desk.
+                                  ink 16.72:1, placeholder 5.01:1, edge 3.84:1 */
+  --skeleton: #332c20;         /* a skeleton must be lighter than a dark ground to read (1.36) */
   /* THE SHEET NEVER INVERTS. It only dims, as if lit by a lamp; print restores pure white. */
   --sheet: #ede7d9;
   --rule-hairline: #2a251d;
@@ -260,6 +268,7 @@
   --color-raised: var(--raised);
   --color-sunken: var(--sunken);
   --color-zebra: var(--zebra);
+  --color-field: var(--field);
   --color-rule-hairline: var(--rule-hairline);
   --color-rule: var(--rule);
   --color-rule-field: var(--rule-field);
@@ -479,7 +488,7 @@ body {
   width: 100%;
   min-height: var(--control-h);
   border: 1px solid var(--rule-field);
-  background: var(--sheet);
+  background: var(--field);
   border-radius: var(--r-1);
   padding: 10px var(--s-4);
   font-family: var(--font-sans);

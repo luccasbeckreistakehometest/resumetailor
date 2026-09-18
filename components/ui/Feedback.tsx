@@ -23,8 +23,8 @@ export function EmptyState({
 }) {
   return (
     <div className={`max-w-[var(--measure)] py-[var(--s-8)] ${className}`}>
-      <p className="doc-21 text-[var(--ink)]">{title}</p>
-      {children && <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[var(--ink-muted)]">{children}</p>}
+      <p className="doc-21 text-[color:var(--ink)]">{title}</p>
+      {children && <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{children}</p>}
       {action && <div className="mt-[var(--s-5)]">{action}</div>}
     </div>
   );
@@ -35,7 +35,7 @@ export function EmptyState({
  * or it is a lie about what is coming. Three rows, because three is what the lists render.
  */
 export function Skeleton({ w = "100%", h = 16, className = "" }: { w?: string | number; h?: number; className?: string }) {
-  return <span className={`skeleton block rounded-[var(--r-1)] bg-[var(--sunken)] ${className}`} style={{ width: w, height: h }} aria-hidden />;
+  return <span className={`skeleton block rounded-[var(--r-1)] bg-[var(--skeleton)] ${className}`} style={{ width: w, height: h }} aria-hidden />;
 }
 
 export function SkeletonRows({ rows = 3, cols = [] as string[], className = "" }: { rows?: number; cols?: string[]; className?: string }) {
@@ -81,7 +81,7 @@ export function Notice({
       {icon && <span style={{ color: look.ink }} className="mt-[2px]"><Icon name={icon} size={16} /></span>}
       <div className="min-w-0 flex-1">
         {title && <p className="font-sans text-[length:var(--ui-13)] font-semibold" style={{ color: look.ink }}>{title}</p>}
-        <div className="font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[var(--ink-2)]">{children}</div>
+        <div className="font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{children}</div>
       </div>
       {action}
     </div>

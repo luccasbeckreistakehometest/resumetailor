@@ -47,10 +47,10 @@ function DialogBody({ onClose, title, children, actions, width }: { onClose: () 
         style={{ maxWidth: width }}
       >
         <header className="flex items-start justify-between gap-[var(--s-5)] border-b border-[var(--rule-hairline)] px-[var(--s-7)] py-[var(--s-5)]">
-          <h2 className="ui-21 text-[var(--ink)]">{title}</h2>
+          <h2 className="ui-21 text-[color:var(--ink)]">{title}</h2>
           <Button variant="quiet" size="sm" icon="close" label="Close" onClick={onClose} />
         </header>
-        <div className="px-[var(--s-7)] py-[var(--s-6)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[var(--ink-2)]">{children}</div>
+        <div className="px-[var(--s-7)] py-[var(--s-6)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[color:var(--ink-2)]">{children}</div>
         {actions && (
           <footer className="flex flex-wrap justify-end gap-[var(--s-3)] border-t border-[var(--rule-hairline)] px-[var(--s-7)] py-[var(--s-5)]">{actions}</footer>
         )}
@@ -75,7 +75,7 @@ function DrawerBody({ onClose, title, children }: { onClose: () => void; title: 
     <div className="fixed inset-0 z-[100] flex justify-end bg-[rgba(28,25,19,.55)]">
       <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className="enter-x flex h-full w-full max-w-[360px] flex-col border-l border-[var(--rule)] bg-[var(--page)]">
         <header className="flex items-center justify-between gap-[var(--s-5)] border-b border-[var(--rule-hairline)] px-[var(--s-6)] py-[var(--s-4)]">
-          <h2 className="ui-19 text-[var(--ink)]">{title}</h2>
+          <h2 className="ui-19 text-[color:var(--ink)]">{title}</h2>
           <Button variant="quiet" size="sm" icon="close" label="Close" onClick={onClose} />
         </header>
         <div className="flex-1 overflow-y-auto p-[var(--s-6)]">{children}</div>
@@ -100,7 +100,7 @@ export function Tooltip({ text, children, className = "" }: { text: string; chil
     >
       {children}
       {show && (
-        <span role="tooltip" className="enter pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] px-[var(--s-3)] py-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[var(--ink)] shadow-[var(--shadow-pop)]">
+        <span role="tooltip" className="enter pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] px-[var(--s-3)] py-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink)] shadow-[var(--shadow-pop)]">
           {text}
         </span>
       )}
@@ -129,8 +129,8 @@ export function Toast({
       <div role="status" aria-live={tone === "mark" ? "assertive" : "polite"} className="fixed bottom-[var(--s-6)] left-1/2 z-[110] w-[min(420px,calc(100vw-32px))] -translate-x-1/2 sm:left-auto sm:right-[var(--s-6)] sm:translate-x-0">
         <div className="enter flex items-start gap-[var(--s-4)] rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] px-[var(--s-5)] py-[var(--s-4)] shadow-[var(--shadow-pop)]">
           <span style={{ color: ink }} className="mt-[1px]"><Icon name={icon} size={16} /></span>
-          <p className="flex-1 font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[var(--ink)]">{message}</p>
-          <button type="button" onClick={onDone} aria-label="Dismiss" className="cursor-pointer text-[var(--ink-muted)] hover:text-[var(--ink)]"><Icon name="close" size={16} /></button>
+          <p className="flex-1 font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink)]">{message}</p>
+          <button type="button" onClick={onDone} aria-label="Dismiss" className="cursor-pointer text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"><Icon name="close" size={16} /></button>
         </div>
       </div>
     </Portal>

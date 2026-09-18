@@ -23,7 +23,7 @@ export function Panel({
     <section className={`rounded-[var(--r-2)] border border-[var(--rule)] ${raised ? "bg-[var(--raised)]" : "bg-transparent"} ${className}`}>
       {title && (
         <header className="flex items-baseline justify-between gap-[var(--s-4)] border-b border-[var(--rule-hairline)] px-[var(--pane-pad)] py-[var(--s-4)]">
-          <h2 className="font-sans text-[length:var(--ui-15)] font-semibold text-[var(--ink)]">{title}</h2>
+          <h2 className="font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{title}</h2>
           {action}
         </header>
       )}
@@ -36,7 +36,9 @@ export function Panel({
 export function Well({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-[var(--r-1)] bg-[var(--sunken)] p-[var(--s-5)] font-mono text-[length:var(--mn-13)] leading-[var(--mn-13-lh)] text-[var(--ink-2)] ${className}`}
+      /* whitespace-pre-wrap: a well holds text a parser extracted, and its line breaks ARE the
+         content — collapsing them turned a résumé into one run-on line in the first render. */
+      className={`overflow-x-auto rounded-[var(--r-1)] bg-[var(--sunken)] p-[var(--s-5)] font-mono text-[length:var(--mn-13)] leading-[var(--mn-13-lh)] whitespace-pre-wrap text-[color:var(--ink-2)] ${className}`}
       style={{ boxShadow: "inset 0 1px 0 var(--rule-hairline)" }}
     >
       {children}

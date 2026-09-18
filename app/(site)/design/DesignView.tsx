@@ -30,8 +30,8 @@ export function DesignView() {
       <header className="sticky top-0 z-30 border-b border-[var(--rule)] bg-[var(--page)]/95 backdrop-blur-[2px]">
         <Container className="flex flex-wrap items-center justify-between gap-[var(--s-4)] py-[var(--s-4)]">
           <div className="flex items-baseline gap-[var(--s-5)]">
-            <span className="doc-21 font-semibold text-[var(--ink)]">Ofício do documento</span>
-            <span className="ui-13 text-[var(--ink-muted)]">the system, rendered</span>
+            <span className="doc-21 font-semibold text-[color:var(--ink)]">Ofício do documento</span>
+            <span className="ui-13 text-[color:var(--ink-muted)]">the system, rendered</span>
           </div>
           <div className="flex items-center gap-[var(--s-3)]">
             <Button size="sm" variant={compact ? "primary" : "outline"} onClick={() => setCompact((v) => !v)}>
@@ -49,7 +49,7 @@ export function DesignView() {
           <ol className="flex flex-wrap gap-x-[var(--s-5)] gap-y-[var(--s-2)] lg:block">
             {SECTIONS.map(([id, label]) => (
               <li key={id} className="lg:border-b lg:border-[var(--rule-hairline)]">
-                <a href={`#${id}`} className="ui-13 block py-[var(--s-2)] text-[var(--ink-muted)] hover:text-[var(--ink)]">{label}</a>
+                <a href={`#${id}`} className="ui-13 block py-[var(--s-2)] text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]">{label}</a>
               </li>
             ))}
           </ol>
@@ -80,8 +80,8 @@ function S({ id, title, note, children }: { id: string; title: string; note?: st
   return (
     <section id={id} className="scroll-mt-[80px] border-t border-[var(--rule)] pt-[var(--s-7)] pb-[var(--s-11)] first:border-t-0">
       <div className="mb-[var(--s-7)] flex flex-wrap items-baseline justify-between gap-[var(--s-4)]">
-        <h2 className="doc-31 text-[var(--ink)]">{title}</h2>
-        {note && <p className="ui-13 max-w-[46ch] text-[var(--ink-muted)]">{note}</p>}
+        <h2 className="doc-31 text-[color:var(--ink)]">{title}</h2>
+        {note && <p className="ui-13 max-w-[46ch] text-[color:var(--ink-muted)]">{note}</p>}
       </div>
       {children}
     </section>
@@ -120,36 +120,36 @@ const UI = [
 function TypeSection() {
   return (
     <S id="type" title="Type" note="Three voices: the document (Source Serif 4), the interface (Public Sans), the machine (IBM Plex Mono). Each step carries its own tracking and leading — a size alone is not a style.">
-      <p className="ui-13 mb-[var(--s-5)] text-[var(--ink-muted)]">Document scale · 6∶5 from an 18px base</p>
+      <p className="ui-13 mb-[var(--s-5)] text-[color:var(--ink-muted)]">Document scale · 6∶5 from an 18px base</p>
       {DOC.map(([cls, text]) => (
         <div key={cls} className="flex flex-col gap-[var(--s-2)] border-b border-[var(--rule-hairline)] py-[var(--s-4)] sm:flex-row sm:items-baseline sm:gap-[var(--s-7)]">
-          <code className="mn-13 w-[72px] shrink-0 text-[var(--ink-muted)]">{cls}</code>
-          <p className={`${cls} min-w-0 text-[var(--ink)]`}>{text}</p>
+          <code className="mn-13 w-[72px] shrink-0 text-[color:var(--ink-muted)]">{cls}</code>
+          <p className={`${cls} min-w-0 text-[color:var(--ink)]`}>{text}</p>
         </div>
       ))}
 
-      <p className="ui-13 mt-[var(--s-9)] mb-[var(--s-5)] text-[var(--ink-muted)]">
+      <p className="ui-13 mt-[var(--s-9)] mb-[var(--s-5)] text-[color:var(--ink-muted)]">
         Interface scale · 9∶8 from a 15px base. Set at 0.874× the serif beside it, because the x-heights differ.
       </p>
       {UI.map(([cls, text]) => (
         <div key={cls} className="flex flex-col gap-[var(--s-2)] border-b border-[var(--rule-hairline)] py-[var(--s-3)] sm:flex-row sm:items-baseline sm:gap-[var(--s-7)]">
-          <code className="mn-13 w-[72px] shrink-0 text-[var(--ink-muted)]">{cls}</code>
-          <p className={`${cls} min-w-0 text-[var(--ink)]`}>{text}</p>
+          <code className="mn-13 w-[72px] shrink-0 text-[color:var(--ink-muted)]">{cls}</code>
+          <p className={`${cls} min-w-0 text-[color:var(--ink)]`}>{text}</p>
         </div>
       ))}
 
-      <p className="ui-13 mt-[var(--s-9)] mb-[var(--s-5)] text-[var(--ink-muted)]">
+      <p className="ui-13 mt-[var(--s-9)] mb-[var(--s-5)] text-[color:var(--ink-muted)]">
         Machine readout · a number the machine produced is mono; a number the person pays is serif and duplexed.
       </p>
       <div className="flex flex-wrap items-baseline gap-[var(--s-9)]">
-        <span className="mn-40 text-[var(--ink)]">89<span className="mn-24 text-[var(--ink-muted)]">%</span></span>
-        <span className="mn-24 text-[var(--ink)]">100/100</span>
-        <span className="mn-13 text-[var(--ink-2)]">gen_110aa835 · v4</span>
-        <span className="doc-26 text-[var(--ink)]">R$ 149,00</span>
+        <span className="mn-40 text-[color:var(--ink)]">89<span className="mn-24 text-[color:var(--ink-muted)]">%</span></span>
+        <span className="mn-24 text-[color:var(--ink)]">100/100</span>
+        <span className="mn-13 text-[color:var(--ink-2)]">gen_110aa835 · v4</span>
+        <span className="doc-26 text-[color:var(--ink)]">R$ 149,00</span>
       </div>
       <div className="mt-[var(--s-7)] grid gap-[var(--s-3)] sm:grid-cols-2">
         <Well>111111<br />000000<br />123456</Well>
-        <p className="ui-13 self-center text-[var(--ink-muted)]">
+        <p className="ui-13 self-center text-[color:var(--ink-muted)]">
           Both mono lines measure the same width, and so do the serif ones: Source Serif 4 is duplexed.
           Fraunces is not — that is why it no longer sets a figure in this product.
         </p>
@@ -167,7 +167,7 @@ const RAMP = [
   ["--zebra", "row banding, >12 rows", "1.15"],
   ["--rule-hairline", "inside a panel", "1.30"],
   ["--rule", "structural", "1.54"],
-  ["--rule-field", "every interactive edge", "3.19 — passes 1.4.11"],
+  ["--rule-field", "every interactive edge", "3.19"],
   ["--ink-40", "placeholder, disabled", "3.70"],
   ["--ink-muted", "metadata, help", "4.93"],
   ["--ink-2", "secondary body", "8.34"],
@@ -193,9 +193,9 @@ function ColourSection() {
           {RAMP.map(([token, use, ratio]) => (
             <div key={token} className="flex items-center gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-3)]">
               <Swatch token={token} />
-              <code className="mn-13 w-[126px] shrink-0 text-[var(--ink-2)]">{token}</code>
-              <span className="ui-13 min-w-0 flex-1 truncate text-[var(--ink-muted)]">{use}</span>
-              <span className="mn-13 shrink-0 text-[var(--ink-muted)]">{ratio}</span>
+              <code className="mn-13 w-[126px] shrink-0 text-[color:var(--ink-2)]">{token}</code>
+              <span className="ui-13 min-w-0 flex-1 text-[color:var(--ink-muted)]">{use}</span>
+              <span className="mn-13 shrink-0 whitespace-nowrap text-[color:var(--ink-muted)]">{ratio}</span>
             </div>
           ))}
         </div>
@@ -204,9 +204,9 @@ function ColourSection() {
           {SEMANTIC.map(([token, use, ratio]) => (
             <div key={token} className="flex items-center gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-3)]">
               <Swatch token={token} />
-              <code className="mn-13 w-[70px] shrink-0 text-[var(--ink-2)]">{token}</code>
-              <span className="ui-13 min-w-0 flex-1 text-[var(--ink-muted)]">{use}</span>
-              <span className="mn-13 shrink-0 text-[var(--ink-muted)]">{ratio}</span>
+              <code className="mn-13 w-[70px] shrink-0 text-[color:var(--ink-2)]">{token}</code>
+              <span className="ui-13 min-w-0 flex-1 text-[color:var(--ink-muted)]">{use}</span>
+              <span className="mn-13 shrink-0 text-[color:var(--ink-muted)]">{ratio}</span>
             </div>
           ))}
           <div className="mt-[var(--s-7)] flex flex-col gap-[var(--s-3)]">
@@ -231,8 +231,8 @@ function SpaceSection() {
         <div>
           {steps.map(([t, px]) => (
             <div key={t} className="flex items-center gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-2)]">
-              <code className="mn-13 w-[54px] shrink-0 text-[var(--ink-muted)]">{t}</code>
-              <span className="mn-13 w-[44px] shrink-0 text-right text-[var(--ink-muted)]">{px}px</span>
+              <code className="mn-13 w-[54px] shrink-0 text-[color:var(--ink-muted)]">{t}</code>
+              <span className="mn-13 w-[44px] shrink-0 text-right text-[color:var(--ink-muted)]">{px}px</span>
               <span className="h-3 bg-[var(--ink)]" style={{ width: px }} aria-hidden />
             </div>
           ))}
@@ -242,8 +242,8 @@ function SpaceSection() {
             <div key={t} className="flex items-center gap-[var(--s-5)]">
               <span className="h-12 w-12 shrink-0 border border-[var(--rule-field)] bg-[var(--sunken)]" style={{ borderRadius: `var(${t})` }} aria-hidden />
               <div className="min-w-0">
-                <code className="mn-13 block text-[var(--ink-2)]">{t}</code>
-                <span className="ui-13 text-[var(--ink-muted)]">{use}</span>
+                <code className="mn-13 block text-[color:var(--ink-2)]">{t}</code>
+                <span className="ui-13 text-[color:var(--ink-muted)]">{use}</span>
               </div>
             </div>
           ))}
@@ -260,17 +260,17 @@ function IconSection() {
     <S id="icons" title="Icons" note="One local sprite, 28 marks, drawn twice — a 20 grid at 1.5px stroke and a 16 grid at 1.25px. A 20 shrunk to 16 is banned: the stroke thins and it stops matching the type.">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-y-[var(--s-6)]">
         {ICON_NAMES.map((n) => (
-          <div key={n} className="flex flex-col items-center gap-[var(--s-3)] text-[var(--ink)]">
+          <div key={n} className="flex flex-col items-center gap-[var(--s-3)] text-[color:var(--ink)]">
             <div className="flex items-end gap-[var(--s-4)]">
               <Icon name={n} size={20} />
               <Icon name={n} size={16} />
             </div>
-            <span className="ui-12 text-center text-[var(--ink-muted)]">{n}</span>
+            <span className="ui-12 text-center text-[color:var(--ink-muted)]">{n}</span>
           </div>
         ))}
       </div>
-      <p className="ui-13 mt-[var(--s-7)] text-[var(--ink-muted)]">
-        Beside text: <span className="ui-15 text-[var(--ink)]"><Icon name="download" size={16} /> Download the kit</span> — the 16 sits on the cap height, not the box.
+      <p className="ui-13 mt-[var(--s-7)] text-[color:var(--ink-muted)]">
+        Beside text: <span className="ui-15 text-[color:var(--ink)]"><Icon name="download" size={16} /> Download the kit</span> — the 16 sits on the cap height, not the box.
       </p>
     </S>
   );
@@ -312,7 +312,7 @@ function ButtonSection() {
           <Tooltip text="Copy the share link"><Button variant="outline" icon="copy" label="Copy the share link" /></Tooltip>
           <Tooltip text="Open in a new tab"><Button variant="outline" icon="external" label="Open in a new tab" /></Tooltip>
           <Tooltip text="Delete"><Button variant="outline" icon="trash" label="Delete" /></Tooltip>
-          <span className="ui-13 text-[var(--ink-muted)]">Allowed only in a toolbar of three or more, each with a name and a tooltip.</span>
+          <span className="ui-13 text-[color:var(--ink-muted)]">Allowed only in a toolbar of three or more, each with a name and a tooltip.</span>
         </div>
       </Row>
       <Row label="As a link">
@@ -443,11 +443,11 @@ const KITS: KitRow[] = [
 function TableSection() {
   const [page, setPage] = useState(1);
   const cols = [
-    { key: "title", header: "Kit", clamp: 2 as const, cell: (r: KitRow) => r.title },
-    { key: "company", header: "Company", cell: (r: KitRow) => r.company },
-    { key: "stage", header: "Stage", cell: (r: KitRow) => <Badge tone={r.stage === "interview" ? "kept" : r.stage === "draft" ? "neutral" : "query"}>{r.stage}</Badge> },
-    { key: "match", header: "Match", align: "right" as const, mono: true, cell: (r: KitRow) => `${r.match}%` },
-    { key: "cost", header: "AI cost", align: "right" as const, cell: (r: KitRow) => `R$ ${r.cost}` },
+    { key: "title", header: "Kit", clamp: 2 as const, width: "38%", cell: (r: KitRow) => r.title },
+    { key: "company", header: "Company", width: "16%", cell: (r: KitRow) => r.company },
+    { key: "stage", header: "Stage", width: "18%", cell: (r: KitRow) => <Badge tone={r.stage === "interview" ? "kept" : r.stage === "draft" ? "neutral" : "query"}>{r.stage}</Badge> },
+    { key: "match", header: "Match", align: "right" as const, mono: true, width: "14%", cell: (r: KitRow) => `${r.match}%` },
+    { key: "cost", header: "AI cost", align: "right" as const, width: "14%", cell: (r: KitRow) => `R$ ${r.cost}` },
   ];
   return (
     <S id="tables" title="Tables" note="Numbers right-aligned and tabular, header included. Rules between rows, zebra only above twelve. A long cell truncates at two lines rather than silently growing the row.">
@@ -472,28 +472,28 @@ function SurfaceSection() {
     <S id="surfaces" title="Surfaces" note="Depth is reached for in order: a rule, then a background step, then an inset, and a shadow last. Two shadows exist in the whole system and the sheet owns one of them.">
       <div className="grid gap-[var(--s-7)] md:grid-cols-2">
         <Panel title="A panel in the page">
-          <p className="ui-15 text-[var(--ink-2)]">A rule and nothing else. It does not float, so it does not cast.</p>
+          <p className="ui-15 text-[color:var(--ink-2)]">A rule and nothing else. It does not float, so it does not cast.</p>
         </Panel>
         <Panel title="A raised panel" raised>
-          <p className="ui-15 text-[var(--ink-2)]">One background step off the page. Still no shadow.</p>
+          <p className="ui-15 text-[color:var(--ink-2)]">One background step off the page. Still no shadow.</p>
         </Panel>
       </div>
       <div className="mt-[var(--s-7)]">
         <Well>
           {"ALEX SOUSA\nProduct Designer · São Paulo\n\nEXPERIENCE\nNubank — Product Designer (2021–)\n  · Led the design system used by 40 engineers"}
         </Well>
-        <p className="ui-13 mt-[var(--s-3)] text-[var(--ink-muted)]">An inset well, in the machine&rsquo;s voice: this is the text a parser sees.</p>
+        <p className="ui-13 mt-[var(--s-3)] text-[color:var(--ink-muted)]">An inset well, in the machine&rsquo;s voice: this is the text a parser sees.</p>
       </div>
 
       <p className="eyebrow mt-[var(--s-9)] mb-[var(--s-4)]">The sheet — the one object allowed to look like a physical page</p>
       <Sheet className="max-w-[560px]">
-        <h1 className="doc-31 text-[var(--ink)]">Alex Sousa</h1>
-        <p className="mn-13 mt-[var(--s-2)] text-[var(--ink-2)]">alex@exemplo.com · +55 11 90000-0000 · São Paulo</p>
+        <h1 className="doc-31 text-[color:var(--ink)]">Alex Sousa</h1>
+        <p className="mn-13 mt-[var(--s-2)] text-[color:var(--ink-2)]">alex@exemplo.com · +55 11 90000-0000 · São Paulo</p>
         <div className="mt-[var(--s-4)] h-[2px] w-full bg-[var(--mark)]" aria-hidden />
-        <h2 className="ui-11c mt-[var(--s-6)] text-[var(--ink-muted)]">Experiência</h2>
-        <h3 className="doc-18 mt-[var(--s-3)] font-semibold text-[var(--ink)]">Nubank — Product Designer</h3>
-        <p className="doc-15 text-[var(--ink-muted)]">2021 — presente</p>
-        <ul className="doc-15 mt-[var(--s-3)] flex flex-col gap-[var(--s-2)] text-[var(--ink-2)]">
+        <h2 className="ui-11c mt-[var(--s-6)] text-[color:var(--ink-muted)]">Experiência</h2>
+        <h3 className="doc-18 mt-[var(--s-3)] font-semibold text-[color:var(--ink)]">Nubank — Product Designer</h3>
+        <p className="doc-15 text-[color:var(--ink-muted)]">2021 — presente</p>
+        <ul className="doc-15 mt-[var(--s-3)] flex flex-col gap-[var(--s-2)] text-[color:var(--ink-2)]">
           <li className="hang">· Conduziu o design system usado por 40 pessoas de engenharia.</li>
           <li className="hang">· Reduziu o tempo de criação de telas em 38%.</li>
         </ul>
@@ -529,7 +529,7 @@ function StateSection() {
           <Button variant="outline">Tab to me</Button>
           <Input className="max-w-[220px]" placeholder="…and to me" />
           <Checkbox label="…and me" />
-          <span className="ui-13 text-[var(--ink-muted)]">2px --mark at 2px offset, 7.95:1 on paper.</span>
+          <span className="ui-13 text-[color:var(--ink-muted)]">2px --mark at 2px offset, 7.95:1 on paper.</span>
         </div>
       </Row>
     </S>
@@ -619,14 +619,14 @@ function LayoutSection() {
 
       <p className="eyebrow mt-[var(--s-9)] mb-[var(--s-4)]">L-prose · the measure, offset into columns 2–8</p>
       <div className="border border-[var(--rule-hairline)] p-[var(--s-5)]">
-        <p className="doc-18 measure text-[var(--ink-2)]">
+        <p className="doc-18 measure text-[color:var(--ink-2)]">
           Sessenta e seis caracteres por linha é o que um olho segue sem se perder no retorno. Mais do que isso e a
           linha seguinte é procurada; menos e o texto vira uma coluna de jornal. Esta medida vale para toda a prosa do
           produto, em qualquer largura de tela.
         </p>
       </div>
       <Rule className="mt-[var(--s-12)]" />
-      <p className="ui-13 mt-[var(--s-5)] text-[var(--ink-muted)]">
+      <p className="ui-13 mt-[var(--s-5)] text-[color:var(--ink-muted)]">
         docs/DESIGN.md is the written system; this page is the rendered one. If they disagree, one of them is a bug.
       </p>
     </S>

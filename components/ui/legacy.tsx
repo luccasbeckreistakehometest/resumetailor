@@ -12,11 +12,11 @@ export const Eyebrow = ({ children }: { children: ReactNode }) => <p className="
 
 /** One display line per page. Never two. */
 export const H1 = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
-  <h1 className={`doc-45 text-[var(--ink)] lg:text-[length:var(--doc-64)] lg:leading-[var(--doc-64-lh)] lg:tracking-[var(--doc-64-ls)] ${className}`}>{children}</h1>
+  <h1 className={`doc-45 text-[color:var(--ink)] lg:text-[length:var(--doc-64)] lg:leading-[var(--doc-64-lh)] lg:tracking-[var(--doc-64-ls)] ${className}`}>{children}</h1>
 );
 
 export const H2 = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
-  <h2 className={`doc-31 text-[var(--ink)] ${className}`}>{children}</h2>
+  <h2 className={`doc-31 text-[color:var(--ink)] ${className}`}>{children}</h2>
 );
 
 /** @deprecated Use <Seal>: same mark, the name the system uses. */
