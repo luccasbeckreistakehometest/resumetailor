@@ -45,7 +45,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-edge bg-surface p-4">
+      <div className="rounded-xl border border-edge bg-raised p-4">
         <div className="flex items-center gap-2 text-sm text-muted">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-edge border-t-indigo-600" />
           {d.insights.loading}

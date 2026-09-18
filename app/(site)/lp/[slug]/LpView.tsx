@@ -49,7 +49,7 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
         </Container>
       </section>
 
-      <section className="border-y border-edge bg-surface" data-testid="lp-free">
+      <section className="border-y border-edge bg-raised" data-testid="lp-free">
         <Container className="py-12">
           <p className="font-display text-3xl text-ink">{S.freeTitle}</p>
           <p className="mt-1 text-ink-2">{S.freeIntro}</p>
@@ -81,7 +81,7 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
         </Container>
       </section>
 
-      <section className="border-t border-edge bg-surface">
+      <section className="border-t border-edge bg-raised">
         <Container className="grid gap-6 py-10 sm:grid-cols-3">
           {PROOF_STATS.slice(0, 3).map((s, i) => (
             <div key={i}><p className="font-display text-3xl text-[color:var(--ink)] decoration-[var(--rule-field)]">{s.value}</p><p className="mt-1 text-sm text-ink-2">{d.landing.proof.labels[i] ?? s.label}</p><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted underline-offset-2 hover:underline">{d.landing.proof.sourcePrefix} {s.source}</a></div>

@@ -25,7 +25,7 @@ export function RadarStrip({ alerts, items, onSent }: { alerts: RadarItem[]; ite
   }
 
   return (
-    <section className="mt-8 rounded-2xl border border-edge bg-surface p-4" data-testid="radar">
+    <section className="mt-8 rounded-2xl border border-edge bg-raised p-4" data-testid="radar">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="doc-21 text-[color:var(--ink)]">{R.radarTitle}</p>
         <p className="text-xs text-muted">{R.radarStat} — <a href="https://www.greenhouse.com/blog/2024-greenhouse-candidate-experience-report" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">{R.radarStatSource}</a></p>

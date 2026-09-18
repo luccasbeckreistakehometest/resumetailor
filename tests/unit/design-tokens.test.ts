@@ -104,3 +104,32 @@ describe("no utility fights another utility in the same group", () => {
     for (const src of files) expect(src).not.toMatch(/<Container[^>]*className="[^"]*max-w-/);
   });
 });
+
+/**
+ * A rename is the way a token dies quietly. `--moss`, `--gold`, `--oxblood` and `--paper-2` were
+ * replaced by `--kept`, `--query`, `--mark` and `--sunken`, and re-declared only as Tailwind colour
+ * NAMES inside @theme inline — so `stroke="var(--moss)"` still parsed, still passed tsc, and drew
+ * nothing. The /fit gauge shipped as an empty 144px box. This is the check that would have caught
+ * it: every custom property a component reads must be declared somewhere it can resolve.
+ */
+describe("no component reads a custom property that nothing declares", () => {
+  const declaredInCss = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+  const root = new URL("../../", import.meta.url).pathname;
+  const files = ["components", "app"].flatMap((dir) =>
+    readdirSync(root + dir, { recursive: true, encoding: "utf8" })
+      .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"))
+      .map((f) => `${root}${dir}/${f}`));
+
+  it("resolves every var(--x) written in a component", () => {
+    const dead: string[] = [];
+    for (const f of files) {
+      const src = readFileSync(f, "utf8");
+      // A component may declare its own on the element it also reads it on, e.g. style={{ "--gauge": … }}
+      const local = new Set([...src.matchAll(/"(--[a-z0-9-]+)"\s*:/g)].map((m) => m[1]));
+      for (const m of src.matchAll(/var\((--[a-z0-9-]+)/g)) {
+        if (!declaredInCss.has(m[1]) && !local.has(m[1])) dead.push(`${f.slice(root.length)}: var(${m[1]})`);
+      }
+    }
+    expect(dead).toEqual([]);
+  });
+});

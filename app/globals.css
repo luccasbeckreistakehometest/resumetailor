@@ -295,7 +295,6 @@
   /* Compatibility: old name → new meaning. Deleted surface by surface (docs/DESIGN.md §14). */
   --color-paper: var(--page);
   --color-paper-2: var(--sunken);
-  --color-surface: var(--sheet);
   --color-muted: var(--ink-muted);
   --color-edge: var(--rule-hairline);
   --color-edge-2: var(--rule);

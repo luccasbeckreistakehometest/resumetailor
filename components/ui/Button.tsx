@@ -35,14 +35,15 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-[var(--control-h-sm)] px-[var(--s-4)] text-[length:var(--ui-13)]",
-  md: "h-[var(--control-h)] px-[var(--s-6)] text-[length:var(--ui-15)]",
-  lg: "h-[calc(var(--control-h)+8px)] px-[var(--s-8)] text-[length:var(--ui-17)]",
+  sm: "h-[var(--control-h-sm)] whitespace-nowrap px-[var(--s-4)] text-[length:var(--ui-13)]",
+  md: "h-[var(--control-h)] whitespace-nowrap px-[var(--s-6)] text-[length:var(--ui-15)]",
+  // Height grows instead of the label overflowing: the pt-BR and es CTAs are two words longer.
+  lg: "min-h-[calc(var(--control-h)+8px)] px-[var(--s-8)] py-[var(--s-3)] text-[length:var(--ui-17)]",
 };
 
 const BASE =
   "relative inline-flex items-center justify-center gap-[var(--s-3)] rounded-[var(--r-2)] " +
-  "font-sans font-semibold leading-none whitespace-nowrap align-middle cursor-pointer " +
+  "font-sans font-semibold leading-none text-center text-balance align-middle cursor-pointer " +
   "transition-[background-color,border-color,color,transform] duration-[var(--dur-1)] ease-[var(--ease-move)] " +
   "active:translate-y-px " +
   // Disabled is a real ground and a real ink, so the label stays readable at 3.39:1.

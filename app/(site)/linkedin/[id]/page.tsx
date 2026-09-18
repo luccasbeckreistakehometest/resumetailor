@@ -72,7 +72,7 @@ export default function LinkedInPage() {
         {phase === "ready" && data && (
           <div className="mt-8 space-y-6" data-testid="li-profile">
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
-              <span className="rounded-full bg-surface px-2.5 py-1 ring-1 ring-edge">{L.forRole(data.targetRole || "—")}</span>
+              <span className="rounded-full bg-raised px-2.5 py-1 ring-1 ring-edge">{L.forRole(data.targetRole || "—")}</span>
               {data.cached && <span data-testid="li-cached">{L.cached}</span>}
               <span className="ml-auto"><CopyButton k="all" text={profileAsText(data.profile, { headline: L.headline, about: L.about, experience: L.experience, skills: L.skills })} testId="li-copy-all" copied={copied} onCopy={copy} labels={labels} /></span>
             </div>
@@ -126,7 +126,7 @@ export default function LinkedInPage() {
             <section className="card p-5">
               <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ink-2">{L.skills}</h2><CopyButton k="skills" text={data.profile.skills.join(", ")} copied={copied} onCopy={copy} labels={labels} /></div>
               <p className="mt-1 text-xs text-muted">{L.skillsHint}</p>
-              <div className="mt-3 flex flex-wrap gap-1.5" data-testid="li-skills">{data.profile.skills.map((s, i) => <span key={s} className={"rounded-full px-2.5 py-1 text-xs font-medium ring-1 " + (i < 5 ? "bg-ink text-paper ring-ink" : "bg-surface text-ink-2 ring-edge")}>{i < 5 ? "📌 " : ""}{s}</span>)}</div>
+              <div className="mt-3 flex flex-wrap gap-1.5" data-testid="li-skills">{data.profile.skills.map((s, i) => <span key={s} className={"rounded-full px-2.5 py-1 text-xs font-medium ring-1 " + (i < 5 ? "bg-ink text-paper ring-ink" : "bg-raised text-ink-2 ring-edge")}>{i < 5 ? "📌 " : ""}{s}</span>)}</div>
             </section>
             <p className="text-[11px] text-muted">{L.honest}</p>
           </div>

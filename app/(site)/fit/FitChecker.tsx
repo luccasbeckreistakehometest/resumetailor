@@ -145,11 +145,11 @@ const StatusChip = ({ item, labels }: { item: FitItem; labels: Record<FitItem["s
 /** A three-quarter arc, drawn inline: no chart library for one number. */
 function Gauge({ score, label }: { score: number; label: string }) {
   const r = 52, c = 2 * Math.PI * r, arc = c * 0.75, filled = arc * (Math.max(0, Math.min(100, score)) / 100);
-  const tone = score >= 80 ? "var(--moss)" : score >= 60 ? "var(--gold)" : score >= 40 ? "var(--gold)" : "var(--oxblood)";
+  const tone = score >= 80 ? "var(--kept)" : score >= 40 ? "var(--query)" : "var(--mark)";
   return (
     <div className="relative grid h-36 w-36 place-items-center" data-testid="fit-gauge">
       <svg viewBox="0 0 128 128" className="absolute inset-0 h-full w-full -rotate-[135deg]" aria-hidden>
-        <circle cx="64" cy="64" r={r} fill="none" stroke="var(--paper-2)" strokeWidth="10" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="var(--sunken)" strokeWidth="10" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
         <circle cx="64" cy="64" r={r} fill="none" stroke={tone} strokeWidth="10" strokeDasharray={`${filled} ${c}`} strokeLinecap="round" />
       </svg>
       <div className="text-center">

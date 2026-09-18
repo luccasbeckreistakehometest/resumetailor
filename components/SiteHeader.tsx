@@ -27,7 +27,7 @@ function NavLink({ href, children, ...rest }: { href: string; children: React.Re
       href={href as never}
       aria-current={current ? "page" : undefined}
       className={
-        "relative flex h-[var(--header-h)] items-center font-sans text-[length:var(--ui-15)] transition-colors duration-[var(--dur-1)] " +
+        "relative flex h-[var(--header-h)] shrink-0 items-center whitespace-nowrap font-sans text-[length:var(--ui-15)] transition-colors duration-[var(--dur-1)] " +
         (current
           ? "font-medium text-[color:var(--ink)] after:absolute after:inset-x-0 after:bottom-[-1px] after:h-[2px] after:bg-[var(--ink)] after:content-['']"
           : "text-[color:var(--ink-2)] hover:text-[color:var(--ink)]")
@@ -52,7 +52,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
         {!minimal && (
           <nav
-            className="hidden h-full min-w-0 items-center gap-[var(--s-7)] border-l border-[var(--rule-hairline)] pl-[var(--s-6)] min-[1100px]:flex"
+            className="hidden h-full min-w-0 items-center gap-[var(--s-7)] border-l border-[var(--rule-hairline)] pl-[var(--s-6)] min-[1280px]:flex"
             aria-label={l.menu.title}
           >
             <NavLink href={to("ats")} data-testid="nav-ats">{x.nav.atsCheck}</NavLink>
@@ -75,9 +75,9 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
                 {x.credits.badge(user.credits)}
               </Link>
             )}
-            {/* Signed in, the name lives in the drawer below 1100 — the pt-BR e-mail is long. */}
+            {/* Signed in, the name lives in the drawer below 1280 — the pt-BR e-mail is long. */}
             {user ? (
-              <span className="hidden min-[1100px]:block">
+              <span className="hidden min-[1280px]:block">
                 <AccountMenu open={account} onOpen={() => setAccount(true)} onClose={() => setAccount(false)} />
               </span>
             ) : (
@@ -85,12 +85,12 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
             )}
           </div>
 
-          <div className="hidden min-[1100px]:block"><LanguageSwitcher /></div>
+          <div className="hidden min-[1280px]:block"><LanguageSwitcher /></div>
 
           {/* The wrapper carries the breakpoint: `hidden` on the Button itself would fight the
               variant's own `inline-flex`, and one of the two wins by stylesheet order, not intent. */}
           {!minimal && (
-            <span className="hidden min-[1100px]:block">
+            <span className="hidden min-[1280px]:block">
               <Button href={startHref()} size="sm" data-tour="nav-start">{d.nav.start}</Button>
             </span>
           )}
@@ -98,7 +98,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
           <button
             type="button"
             onClick={() => setMenu(true)}
-            className="grid h-[var(--control-h)] w-[var(--control-h)] place-items-center rounded-[var(--r-2)] border border-[var(--rule-field)] text-[color:var(--ink)] hover:bg-[var(--sunken)] min-[1100px]:hidden"
+            className="grid h-[var(--control-h)] w-[var(--control-h)] place-items-center rounded-[var(--r-2)] border border-[var(--rule-field)] text-[color:var(--ink)] hover:bg-[var(--sunken)] min-[1280px]:hidden"
             aria-label={l.menu.open}
             aria-expanded={menu}
             aria-haspopup="dialog"
@@ -180,7 +180,7 @@ function MobileMenu({ onClose, minimal }: { onClose: () => void; minimal: boolea
     window.setTimeout(() => window.dispatchEvent(new CustomEvent("rt:auth", { detail: mode })), 0);
   };
   return (
-    <div className="fixed inset-0 z-[70] bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] min-[1100px]:hidden" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] min-[1280px]:hidden" onClick={onClose}>
       <div
         ref={ref}
         role="dialog"
