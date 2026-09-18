@@ -808,7 +808,29 @@ The code is the truth; this section keeps the document honest.
 | C7 | `L-document` is 816 + 320 | As fixed widths they overflow any pane narrower than 1168px — which the gallery is. | Max-widths; the sheet shrinks first |
 | C8 | Dark is a first-class theme | It had never been rendered. It now has been, at both widths — but only on `/design`. | `<html data-theme="light">` pins every product route to Paper until surfaces 4–18 are rebuilt and looked at in the dark. Remove the attribute then. |
 
-Still not done, and deliberately so: the `.doc-*` print themes (§10) are untouched, four of them still
-indigo — that is surface 3, and it lands with the parity spec. The old `.card`/`.btn`/`.field`/
-`.eyebrow` classes still exist, re-cut on the new tokens, because they are used ~1,400 times; they
-are deleted surface by surface.
+---
+
+## 17. What applying it to the product changed
+
+Surfaces 3–17 are built. The system survived contact with the product; these are the places it had
+to change, again found by rendering and looking rather than by reading.
+
+| # | What happened | Now |
+|---|---|---|
+| A1 | `hidden min-[1100px]:inline-flex` on a Button: `hidden` and the base's `inline-flex` are both display utilities, and the stylesheet's order decided — so "Start free" showed at 390px and pushed the menu button off the screen. | The breakpoint lives on a wrapper; two utilities from one group never sit on one element |
+| A2 | `<Container className="max-w-3xl">` never narrowed anything, for the same reason. The account page asked for a 768px measure and rendered at 1600. | `width="page" \| "reading" \| "prose"` is a prop; a unit test fails the build if a `max-w-*` is passed through `className` again |
+| A3 | A Token drew itself on `--sheet`. In dark the sheet stays *light* while the page's ink turns light with it: the keyword chips on the landing were 1.4:1. | Tokens sit on `--sunken`, which the sheet's own block redefines, so they read in both contexts |
+| A4 | `data-density="compact"` passed to `<Container>` was silently dropped — it only accepts `children` and `className`, so the admin was still rendering comfortable rows. | Density goes on a plain element inside |
+| A5 | A `<Notice tone="mark">` already has `role="alert"`; the text inside carried a second one, so `getByRole("alert")` resolved to two nodes and an e2e assertion became ambiguous. | One alert per error |
+| A6 | Screenshots at 390px reported zero horizontal overflow on a page that was visibly cut off: under mobile emulation the layout viewport grows with the content, so `scrollWidth - innerWidth` is always 0. | The rig compares with the width it asked the device for |
+| A7 | The .docx divergence in the spec (Cambria body) could not be verified against a real Word or Google Docs from here, and a substituted font reflows the page. | Calibri stays, with the reasoning recorded in `lib/resume/export.ts` so nobody "fixes" it blind |
+
+The dark theme is on: `<html data-theme="light">` is gone and the reader's own setting decides. The
+sheet still never inverts. Looked at in dark: landing, kit, editor, library, pricing, tools, the
+tracker and `/design`.
+
+The compatibility classes (`.card`, `.btn`, `.field`, `.eyebrow`) are still defined and still used
+by the screens that were not rebuilt in this pass — the pitch studio, the interview session, the
+brief, the LinkedIn pass, contact, success and the ad-funnel pages. They are re-cut on the new
+tokens, so those screens inherit the type, the colour and the focus ring; what they do not have yet
+is the grid.
