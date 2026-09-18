@@ -565,3 +565,116 @@ honest divergence for `.docx`.
 - `@media print`: `--page`/`--sheet` → `#fff`, grain off, `--ink` → `#111`, no UI chrome, widows and
   orphans `3`, `break-inside: avoid` on every experience entry, and link URLs printed after the link
   text only in `Ledger`.
+
+---
+
+## 11. Component inventory
+
+Every component below must ship with **all** of: rest, hover, `:focus-visible`, active, disabled,
+loading, empty, error, and a designed long-content behaviour. A component that only has a rest state
+is not done.
+
+### 11.1 Button
+
+Four variants and no more. All at `--control-h`, `--r-2`, `ui-15` 600 (`ui-17` 600 for the one
+`lg` size), icon `20` at `--s-3` from the label.
+
+| Variant | Rest | Hover | Active | Disabled | Loading |
+|---|---|---|---|---|---|
+| `primary` | `--ink` ground, `--page` label (16.26:1) | ground `#000` | `translateY(1px)`, no shadow | `--rule` ground, `--ink-40` label, `cursor: not-allowed` | label stays, a 16px spinner replaces the icon slot, width frozen |
+| `mark` | `--mark` ground, white label (8.57:1) | `--mark-deep` | as above | as above | as above |
+| `outline` | transparent, `1px --rule-field`, `--ink` label | `--sunken` ground | as above | `--rule` border, `--ink-40` label | as above |
+| `quiet` | transparent, `--ink-2` label | `--sunken` ground | as above | `--ink-40` label | as above |
+
+- `mark` is only ever *destructive or corrective* — "Delete", "Remove this claim", "It's not mine".
+  It is **not** the buy button. The buy button is `primary`.
+- **One `primary` per view.** The kit screen's eight equal buttons become one `primary`
+  (*Download the kit*), two `outline`, and the rest inside an overflow menu.
+- Disabled never uses `opacity`, which drops a label below 4.5:1 silently; it uses real tokens.
+- An icon-only button must carry `aria-label` and a tooltip, and is allowed only in a toolbar of ≥3
+  such buttons — never as one of several labelled buttons in a row (D7).
+
+### 11.2 Field
+
+`--control-h`, `--r-1`, `1px --rule-field`, `--sheet` ground, `ui-15`, `--s-5` horizontal padding.
+
+| State | Treatment |
+|---|---|
+| Rest | as above; label `ui-13` 500 `--ink-2` **above** the field, always visible, never a placeholder-as-label |
+| Hover | border `--ink-40` |
+| Focus | the one ring (§8); border becomes `--ink` |
+| Filled | unchanged — no colour change on "has value" |
+| Invalid | border `--mark`, a `flag` 16 icon inside the right padding, message below in `ui-13` `--mark`, `aria-describedby` + `aria-invalid` |
+| Disabled | `--sunken` ground, `--rule` border, `--ink-40` text |
+| Read-only | `--sunken` ground, `--rule-hairline` border, ink text, no focus ring lift |
+| Loading | skeleton bar inside the field at the exact height of a line of `ui-15` |
+| With limit | counter `ui-12` tabular, right-aligned under the field; turns `--query` at 90%, `--mark` at 100% |
+
+Textareas: `min-height` of 6 lines on the funnel, resize vertical only, and the paste-target ones
+(`job`, `resume`) show the character count and a `Paste from clipboard` `quiet` button in the label
+row. Checkboxes and radios are 20px, `--r-1`, `1px --rule-field`, checked = `--ink` ground with a
+white `check` 16 — never a native control.
+
+### 11.3 The sheet
+
+The most important component in the product. `816px` wide, `--r-0`, `--sheet` ground,
+`--shadow-sheet`, `56px` inner margin (≈ 14mm at 96dpi), content set in the document scale.
+
+- Below 900px it becomes full-bleed with a `24px` margin and a `1px --rule` top and bottom instead of
+  the shadow.
+- It carries a `--mark` 2px rule under the name line, and nothing else coloured.
+- A page-break guide is a `1px dashed --rule` line with a `ui-11c --ink-muted` label
+  `PAGE 2` — so the candidate can see what falls off the first page. This is the kind of detail the
+  product exists for and it does not exist today.
+
+### 11.4 Meter, Table, Chip, Token, Badge, Seal
+
+- **Meter** — §9.3. One component, three uses.
+- **Table** — §9.2.
+- **Chip** (`--r-1`, `ui-12` 500, `--sunken` ground, `--rule-hairline` border, 24px tall): a
+  *filter or a choice* the user can act on. Hover `--zebra`, selected `--ink` ground.
+- **Token** (`--r-1`, `mn-13`, `--sheet` ground, `1px --rule`): a *keyword from the machine*. Never
+  interactive. State is a 1px left rule: `--kept` present, `--mark` missing, `--query` partial. The
+  two chip languages on today's kit screen collapse into these two.
+- **Badge** (`ui-11c`, no ground, a 1px rule above and below): counts and statuses in a table cell.
+- **Seal** — the one decorative element, kept: the rotated dashed `--mark` stamp. **Once per page,
+  ever**, and only on a claim of fact ("free · no signup · nothing stored"). Today it also appears
+  over a pricing card, which is an advert, not a fact.
+
+### 11.5 Layout components
+
+- **Header.** Fixes D3. Two rows are forbidden. Primary nav is at most **five** items
+  (`ATS check · Am I a fit? · Compare · Pricing · Tools`), with `My CVs`, `Applications`, `Interview`
+  and `Admin` moving into an account menu behind the avatar once signed in. Credits become a
+  `mn-13` figure inside that menu's trigger. Below `1100px` the nav collapses to the menu button — not
+  at `768px`, which is why it breaks today.
+- **Footer.** `L-editorial`: the wordmark and the payment line in the 7, the three link columns in
+  the 4, a single `--rule` above. On the funnel and inside the editor the footer is one `ui-13` line
+  of legal links, not the full sitemap.
+- **Rail.** 320px, `1px --rule` on its inner edge, no ground change, `compact` density, sticky.
+- **Dialog.** `--r-3`, `--shadow-pop`, 480px, `--page` ground, title `ui-21`, a `--rule` under the
+  title row and over the action row, actions right-aligned with `primary` last.
+- **Stepper.** Replaces the `STEP 1 OF 2` string, which also lies (it becomes `STEP 3 OF 4`). A
+  horizontal rule with the step names in `ui-11c`, the current one in `--ink` and a `--mark` tick
+  under it, past ones in `--ink-muted` and clickable, future ones in `--ink-40`. Always shows the
+  true total.
+- **Empty state.** A left-aligned block in the content column: `doc-21` sentence, `ui-13` line of
+  explanation, one `outline` button. No centred card, no illustration, no exclamation mark.
+- **Skeleton.** Matches the final layout exactly — same row heights, same column widths, same number
+  of rows (3). `--sunken` bars at `--r-1`, a 1.4s opacity pulse, disabled under reduced motion.
+- **Support launcher.** The floating circle is deleted. Support becomes a `quiet` button in the
+  footer and in the account menu, and a `link` in the error states. Nothing floats over content at
+  390px.
+
+---
+
+## 12. Internationalisation
+
+- pt-BR and es copy stays as written. The system must survive it: German-length labels are not the
+  test here, **Portuguese is** — `Comparar vagas`, `Estou apto?`, `Meus currículos` are 30–60% longer
+  than the English. Every nav item, button and table header is specified to wrap to **one** line at
+  its longest translation at 1100px, and the header budget in §11.5 is calculated against the pt-BR
+  strings, not the English ones.
+- `lang` is already set per route group; add `hyphens: auto` on prose and `text-wrap: pretty` on
+  headings so the longer languages break well.
+- The three currency/locale formats come from `Intl`, never from a template string.
