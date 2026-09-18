@@ -4,7 +4,7 @@ import { useI18n } from "@/app/i18n/I18nProvider";
 import { FeatureShowcase, isFree } from "@/components/FeatureShowcase";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Container, Stamp } from "@/components/ui";
+import { Container, Seal } from "@/components/ui";
 import type { FeatureKey } from "@/app/i18n/r3/showcase";
 
 /**
@@ -29,19 +29,23 @@ export function ToolsHub() {
     letters: "/library", linkedin: "/library", webcv: "/library", intl: "/library",
   };
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="py-10">
-        <Stamp>ResumeTailor</Stamp>
-        <h1 className="font-display mt-4 text-4xl text-ink sm:text-5xl" data-tour="hub">{S.hubTitle}</h1>
-        <p className="mt-2 max-w-2xl text-lg text-ink-2">{S.hubIntro}</p>
-        <section className="mt-8" data-tour="free-tools">
+      <Container className="py-[var(--s-10)]">
+        <div className="grid gap-[var(--gutter)] md:grid-cols-12">
+          <div className="md:col-span-5">
+            <Seal>ResumeTailor</Seal>
+            <h1 className="doc-45 mt-[var(--s-5)] text-[color:var(--ink)]" data-tour="hub">{S.hubTitle}</h1>
+          </div>
+          <p className="max-w-[var(--measure)] self-end font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[color:var(--ink-2)] md:col-span-6 md:col-start-7">{S.hubIntro}</p>
+        </div>
+        <section className="mt-[var(--s-10)]" data-tour="free-tools">
           <p className="eyebrow">{S.hubFree}</p>
-          <div className="mt-3"><FeatureShowcase keys={HUB_FEATURES.filter(isFree)} links={links} testId="hub-free" /></div>
+          <div className="mt-[var(--s-4)]"><FeatureShowcase keys={HUB_FEATURES.filter(isFree)} links={links} testId="hub-free" /></div>
         </section>
-        <section className="mt-10">
+        <section className="mt-[var(--s-11)]">
           <p className="eyebrow">{S.hubKit}</p>
-          <div className="mt-3"><FeatureShowcase keys={HUB_FEATURES.filter((k) => !isFree(k))} links={links} testId="hub-kit" /></div>
+          <div className="mt-[var(--s-4)]"><FeatureShowcase keys={HUB_FEATURES.filter((k) => !isFree(k))} links={links} testId="hub-kit" /></div>
         </section>
       </Container>
       <SiteFooter />
