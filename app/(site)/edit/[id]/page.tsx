@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Container, Eyebrow } from "@/components/ui";
+import { Button, Chip, Container, EmptyState, Tabs, Textarea } from "@/components/ui";
 import { ResumeEditor } from "@/components/editor/ResumeEditor";
 import { FormMode } from "@/components/editor/FormMode";
 import { VersionsPanel } from "@/components/editor/VersionsPanel";
@@ -76,83 +76,102 @@ export default function EditPage() {
     return (
       <div className="min-h-screen">
         <SiteHeader />
-        <Container className="max-w-md py-20 text-center">
-          <p className="text-4xl">🔒</p>
-          <h1 className="font-display mt-3 text-2xl text-ink" data-testid="edit-locked">{E.lockedTitle}</h1>
-          <Link href={gen ? `/start?gen=${gen.id}` : "/library"} className="btn btn-primary mt-6">{gen ? r.editor.back : d.nav.myCVs}</Link>
+        <Container className="py-[var(--s-12)]">
+          <EmptyState
+            title={E.lockedTitle}
+            action={<Button href={gen ? `/start?gen=${gen.id}` : "/library"}>{gen ? r.editor.back : d.nav.myCVs}</Button>}
+          >
+            <span data-testid="edit-locked">{E.lockedTitle}</span>
+          </EmptyState>
         </Container>
       </div>
     );
   }
 
   const exportHref = (doc: "resume" | "cover", format: "docx" | "txt") => `/api/generations/${id}/export?doc=${doc}&format=${format}`;
-  const saveLabel = save === "saving" ? E.saving : save === "saved" ? `✓ ${E.saved}` : save === "failed" ? E.saveFailed : "";
+  const saveLabel = save === "saving" ? E.saving : save === "saved" ? E.saved : save === "failed" ? E.saveFailed : "";
 
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="py-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <Container className="py-[var(--s-8)]">
+        <div className="flex flex-wrap items-end justify-between gap-[var(--s-4)] border-b border-[var(--rule)] pb-[var(--s-4)]">
           <div>
-            <Eyebrow>{gen.title}</Eyebrow>
-            <h1 className="font-display mt-1 text-4xl text-ink">{E.title}</h1>
-            <p className="mt-1 text-sm text-ink-2">{E.intro}</p>
+            <p className="eyebrow">{gen.title}</p>
+            <h1 className="doc-31 mt-[var(--s-2)] text-[color:var(--ink)]">{E.title}</h1>
+            <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{E.intro}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={"text-sm " + (save === "failed" ? "text-oxblood" : "text-muted")} role="status" data-testid="save-state">{saveLabel}</span>
-            <Link href={`/start?gen=${id}`} className="btn btn-ghost !py-2 !text-sm">← {E.back}</Link>
+          <div className="flex flex-wrap items-center gap-[var(--s-4)]">
+            <span
+              className="font-mono text-[length:var(--mn-13)] tabular-nums"
+              style={{ color: save === "failed" ? "var(--mark)" : save === "saved" ? "var(--kept)" : "var(--ink-muted)" }}
+              role="status"
+              data-testid="save-state"
+            >
+              {saveLabel}
+            </span>
+            <Button variant="outline" size="sm" icon="arrow-left" href={`/start?gen=${id}`}>{E.back}</Button>
           </div>
         </div>
 
-        <div className="mt-6 flex gap-1 overflow-x-auto border-b border-edge" role="tablist">
-          {(["edit", "form", "changes"] as Tab[]).map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} data-testid={`tab-${t}`}
-              className={"whitespace-nowrap px-3 py-2 text-sm font-medium " + (tab === t ? "border-b-2 border-ink text-ink" : "text-muted hover:text-ink")}>{E.tabs[t]}</button>
-          ))}
-        </div>
+        {/* 7 / 5: the text being edited, and the page it becomes. */}
+        <div className="mt-[var(--s-7)] grid gap-[var(--gutter)] lg:grid-cols-12">
+          <div className="min-w-0 lg:col-span-7">
+            <Tabs
+              tabs={(["edit", "form", "changes"] as Tab[]).map((t) => ({ id: t, label: E.tabs[t] }))}
+              value={tab}
+              onChange={(t) => setTab(t as Tab)}
+            />
+            <div className="mt-[var(--s-6)]">
+              {tab === "edit" && (parsed ? <ResumeEditor value={parsed} onChange={onParsed} /> : (
+                <div className="border border-[var(--rule)] p-[var(--s-5)]">
+                  <p className="eyebrow">{E.rawTitle}</p>
+                  <Textarea aria-label={E.title} className="mt-[var(--s-4)] font-mono text-[length:var(--mn-13)]" rows={24} value={raw} onChange={(e) => onRaw(e.target.value)} data-testid="ed-raw" />
+                </div>
+              ))}
+              {tab === "form" && <FormMode resume={raw} cover={gen.kit.coverLetter} />}
+              {tab === "changes" && <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="diff" />}
+            </div>
+          </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="min-w-0 space-y-4">
-            {tab === "edit" && (parsed ? <ResumeEditor value={parsed} onChange={onParsed} /> : (
-              <div className="card p-4">
-                <p className="text-sm text-ink-2">{E.rawTitle}</p>
-                <textarea aria-label={E.title} className="field mt-3 font-mono text-[13px]" rows={24} value={raw} onChange={(e) => onRaw(e.target.value)} data-testid="ed-raw" />
+          <aside className="min-w-0 lg:col-span-5" data-density="compact">
+            {/* The document itself, on the sheet, in the same styles /print and /cv use. */}
+            <div className="flex flex-wrap items-center gap-[var(--s-2)]">
+              <span className="eyebrow mr-[var(--s-2)]">{E.preview}</span>
+              {TEMPLATES.map((t) => (
+                <Chip key={t} selected={tpl === t} onClick={() => setTpl(t)}>{d.print.templates[t]}</Chip>
+              ))}
+            </div>
+            <div className="mt-[var(--s-4)] max-h-[70vh] overflow-y-auto">
+              <div className="sheet p-[var(--s-7)]" data-testid="edit-preview">
+                <div className={`doc-${tpl}`}><ReactMarkdown>{raw}</ReactMarkdown></div>
               </div>
-            ))}
-            {tab === "form" && <FormMode resume={raw} cover={gen.kit.coverLetter} />}
-            {tab === "changes" && <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="diff" />}
-          </div>
+            </div>
 
-          <aside className="min-w-0 space-y-4">
-            <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="truth" onEdit={() => setTab("edit")} onGen={setGen} />
-            <div className="card p-4" data-testid="downloads">
-              <p className="font-semibold text-ink">⬇ {E.download}</p>
-              <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+            <section className="mt-[var(--s-8)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="downloads">
+              <p className="eyebrow">{E.download}</p>
+              <div className="mt-[var(--s-4)] grid gap-[var(--s-5)] sm:grid-cols-2">
                 {(["resume", "cover"] as const).map((doc) => (
-                  <div key={doc} className="rounded-xl bg-paper p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">{doc === "resume" ? E.resumeDoc : E.coverDoc}</p>
-                    <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-                      <a href={exportHref(doc, "docx")} className="font-semibold text-oxblood" data-testid={`dl-${doc}-docx`}>{E.word}</a>
-                      <a href={exportHref(doc, "txt")} className="font-semibold text-oxblood" data-testid={`dl-${doc}-txt`}>{E.txt}</a>
-                      {doc === "resume" && <Link href={`/print?id=${id}&template=${tpl}`} target="_blank" className="font-semibold text-oxblood">{E.pdf}</Link>}
+                  <div key={doc}>
+                    <p className="font-sans text-[length:var(--ui-12)] font-medium text-[color:var(--ink-2)]">{doc === "resume" ? E.resumeDoc : E.coverDoc}</p>
+                    <div className="mt-[var(--s-2)] flex flex-wrap gap-x-[var(--s-4)] gap-y-[var(--s-2)] font-sans text-[length:var(--ui-13)] font-medium">
+                      <a href={exportHref(doc, "docx")} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]" data-testid={`dl-${doc}-docx`}>{E.word}</a>
+                      <a href={exportHref(doc, "txt")} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]" data-testid={`dl-${doc}-txt`}>{E.txt}</a>
+                      {doc === "resume" && <Link href={`/print?id=${id}&template=${tpl}`} target="_blank" className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]">{E.pdf}</Link>}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-            <VersionsPanel genId={id} stamp={stamp} onRestored={onRestored} />
-            {stamp > 0 && <button type="button" onClick={refreshLetters} className="text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="refresh-letters">↻ {E.refreshLetters}</button>}
-            {note && <p className="text-sm text-moss" role="status">{note}</p>}
-            <div className="card p-4">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-sm font-semibold text-ink">{E.preview}</span>
-                {TEMPLATES.map((t) => (
-                  <button key={t} type="button" onClick={() => setTpl(t)} className={"rounded-full border px-2.5 py-1 text-xs " + (tpl === t ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2")}>{d.print.templates[t]}</button>
-                ))}
-              </div>
-              <div className="mt-3 max-h-[70vh] overflow-y-auto rounded-lg bg-white p-5 shadow-inner" data-testid="edit-preview">
-                <div className={`doc-${tpl}`}><ReactMarkdown>{raw}</ReactMarkdown></div>
-              </div>
+            </section>
+
+            <div className="mt-[var(--s-8)]"><VersionsPanel genId={id} stamp={stamp} onRestored={onRestored} /></div>
+            {stamp > 0 && (
+              <Button variant="quiet" size="sm" icon="history" className="mt-[var(--s-4)]" onClick={refreshLetters} data-testid="refresh-letters">{E.refreshLetters}</Button>
+            )}
+            {note && <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--kept)]" role="status">{note}</p>}
+
+            <div className="mt-[var(--s-8)]">
+              <KitChecks gen={gen} resume={raw} onReplace={onReplace} view="truth" onEdit={() => setTab("edit")} onGen={setGen} />
             </div>
           </aside>
         </div>
