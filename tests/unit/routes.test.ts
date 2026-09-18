@@ -84,4 +84,17 @@ describe("showcase copy parity", () => {
     for (const l of ["en", "pt", "es"] as const) expect(angleFaq[l].base).toHaveLength(3);
     expect(angleFaq.pt.specific.gupy?.a).toContain("sem afiliação");
   });
+
+  it("no feature ships without being sold on an ad landing and on the hub", async () => {
+    const { showcaseCopy } = await import("@/app/i18n/r3/showcase");
+    const { ANGLE_CONTENT } = await import("@/app/i18n/r3/angles");
+    const { HUB_FEATURES } = await import("@/components/ToolsHub");
+    const keys = Object.keys(showcaseCopy.en.cards) as (keyof typeof showcaseCopy.en.cards)[];
+    // The hub's headline is "everything you can do", in all three languages: it must mean it.
+    expect([...HUB_FEATURES].sort()).toEqual([...keys].sort());
+    // An angle may leave a feature out on purpose; a feature on NO angle is an oversight, not an
+    // editorial choice — paid traffic never hears about it. `intl` was in that hole.
+    const onSomeAngle = new Set(Object.values(ANGLE_CONTENT).flatMap((c) => c.features));
+    expect([...keys].filter((k) => !onSomeAngle.has(k))).toEqual([]);
+  });
 });

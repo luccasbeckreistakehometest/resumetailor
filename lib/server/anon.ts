@@ -12,9 +12,9 @@ import { getDb } from "@/lib/server/db";
 export function anonHasWork(id: string): boolean {
   if (!id) return false;
   const row = getDb().prepare(`SELECT
-      EXISTS(SELECT 1 FROM generations WHERE anonId = ?1)
-      + EXISTS(SELECT 1 FROM applications WHERE anonId = ?1)
-      + EXISTS(SELECT 1 FROM career_profiles WHERE ownerKey = ?1)
-      + EXISTS(SELECT 1 FROM onboarding WHERE id = ?1) AS n`).get(id) as { n: number };
+      EXISTS(SELECT 1 FROM generations WHERE anonId = ?)
+      + EXISTS(SELECT 1 FROM applications WHERE anonId = ?)
+      + EXISTS(SELECT 1 FROM career_profiles WHERE ownerKey = ?)
+      + EXISTS(SELECT 1 FROM onboarding WHERE id = ?) AS n`).get(id, id, id, id) as { n: number };
   return row.n > 0;
 }

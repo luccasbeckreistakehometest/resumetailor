@@ -7,11 +7,11 @@ import type { AngleKey } from "@/lib/i18n/routes";
  */
 export type FreeTool = "ats" | "fit" | "compare" | "calculator";
 export const ANGLE_CONTENT: Record<AngleKey, { features: FeatureKey[]; free: FreeTool[] }> = {
-  jobseeker: { features: ["match", "fit", "truth", "editor", "compare", "tracker", "interview", "letters", "webcv"], free: ["ats", "fit", "compare", "calculator"] },
+  jobseeker: { features: ["match", "fit", "truth", "editor", "compare", "tracker", "interview", "letters", "intl", "webcv"], free: ["ats", "fit", "compare", "calculator"] },
   firstjob: { features: ["voice", "truth", "numbers", "editor", "pitch", "interview", "linkedin", "webcv"], free: ["ats", "fit", "calculator"] },
-  careerchange: { features: ["match", "meter", "fit", "truth", "human", "editor", "letters", "interview"], free: ["fit", "ats", "compare"] },
+  careerchange: { features: ["match", "meter", "fit", "truth", "human", "editor", "letters", "intl", "interview"], free: ["fit", "ats", "compare"] },
   vschatgpt: { features: ["truth", "human", "numbers", "match", "interview", "editor", "pitch", "compare"], free: ["ats", "fit", "compare"] },
-  layoff: { features: ["tracker", "editor", "compare", "calculator", "interview", "letters", "voice", "codes"], free: ["compare", "calculator", "ats", "fit"] },
+  layoff: { features: ["tracker", "editor", "compare", "calculator", "interview", "letters", "intl", "voice", "codes"], free: ["compare", "calculator", "ats", "fit"] },
   interview: { features: ["interview", "pitch", "voice", "tracker", "truth", "letters"], free: ["ats", "fit", "compare"] },
   gupy: { features: ["ats", "editor", "pitch", "truth", "human", "interview", "calculator", "tracker"], free: ["ats", "fit", "calculator", "compare"] },
 };

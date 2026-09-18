@@ -30,7 +30,9 @@ export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; o
 
   const tone = m.generic ? "text-oxblood" : m.score >= 75 ? "text-moss" : "text-ink";
   const bar = m.generic ? "bg-oxblood" : m.score >= 75 ? "bg-moss" : "bg-gold";
-  const canDeepen = !limit && gen.deepenLeft > 0;
+  // The meter itself is computed server-side from the stored kit, so a locked preview can show it
+  // without leaking the text. Deepening is a whole new generation, so it waits for the unlock.
+  const canDeepen = gen.unlocked && !limit && gen.deepenLeft > 0;
 
   return (
     <div className={"rounded-xl border p-5 " + (m.generic ? "border-oxblood/40 bg-oxblood/5" : "border-edge bg-surface")} data-testid="personalisation" data-generic={m.generic ? "1" : "0"}>
@@ -57,7 +59,9 @@ export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; o
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {canDeepen ? (
           <button onClick={deepen} disabled={busy} className={"btn !py-2 !text-sm " + (m.generic ? "btn-primary" : "btn-ghost")} data-testid="deepen">{busy ? P.deepening : P.deepen}</button>
-        ) : <span className="text-xs text-muted" data-testid="deepen-limit">{P.limit}</span>}
+        ) : !gen.unlocked
+          ? <span className="text-xs text-muted" data-testid="deepen-locked">{P.locked}</span>
+          : <span className="text-xs text-muted" data-testid="deepen-limit">{P.limit}</span>}
         {gen.deepened > 0 && <span className="text-xs text-muted">{P.deepenedTimes(gen.deepened)}</span>}
         {error && <p className="text-sm text-oxblood" role="alert">{error}</p>}
       </div>
