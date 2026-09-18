@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { factsCount, factsText, type ProfileFacts } from "@/lib/profile/facts";
+import { Button, Icon, Textarea } from "@/components/ui";
 
 type Profile = { resume: string; facts: ProfileFacts; roles: string[]; updatedAt: string };
 
@@ -40,30 +40,32 @@ export function BaseResumeCard() {
   }
 
   return (
-    <section className="card mt-8 p-5" data-testid="base-resume">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-display text-2xl text-ink">📄 {P.baseTitle}</p>
-        {profile && <p className="text-xs text-muted">{P.updated(date)}</p>}
+    <section className="border border-[var(--rule)] p-[var(--s-6)]" data-testid="base-resume">
+      <div className="flex flex-wrap items-baseline justify-between gap-[var(--s-3)]">
+        <p className="doc-21 text-[color:var(--ink)]">{P.baseTitle}</p>
+        {profile && <p className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">{P.updated(date)}</p>}
       </div>
-      <p className="mt-1 text-sm text-ink-2">{profile ? P.baseIntro : P.baseEmpty}</p>
+      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{profile ? P.baseIntro : P.baseEmpty}</p>
       {profile && (
         <>
           <label htmlFor="rt-base-resume" className="sr-only">{P.baseTitle}</label>
-          <textarea id="rt-base-resume" className="field mt-4 font-mono text-[13px]" rows={8} value={draft} onChange={(e) => { setDraft(e.target.value); setNote(""); }} data-testid="base-resume-text" />
+          <Textarea id="rt-base-resume" className="mt-[var(--s-5)]" rows={8} value={draft} onChange={(e) => { setDraft(e.target.value); setNote(""); }} data-testid="base-resume-text" />
           {n > 0 && (
-            <details className="mt-3 text-sm">
-              <summary className="cursor-pointer font-medium text-ink" data-testid="base-resume-facts">🎙 {P.factsTitle(n)}</summary>
-              <p className="mt-2 whitespace-pre-line text-ink-2">{factsText(profile.facts)}</p>
+            <details className="mt-[var(--s-4)] font-sans text-[length:var(--ui-13)]">
+              <summary className="flex cursor-pointer items-center gap-[var(--s-2)] font-medium text-[color:var(--ink)]" data-testid="base-resume-facts">
+                <Icon name="mic" size={16} />{P.factsTitle(n)}
+              </summary>
+              <p className="mt-[var(--s-3)] whitespace-pre-line text-[color:var(--ink-2)]">{factsText(profile.facts)}</p>
             </details>
           )}
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button type="button" onClick={save} disabled={draft === profile.resume || draft.trim().length < 30} className="btn btn-ink !py-1.5 !text-sm" data-testid="base-resume-save">{P.save}</button>
-            <Link href="/start?new=tailor&base=profile" className="btn btn-primary !py-1.5 !text-sm" data-testid="base-resume-new">{P.newJob}</Link>
-            <button type="button" onClick={remove} className="text-sm text-muted hover:text-oxblood" data-testid="base-resume-delete">{P.remove}</button>
+          <div className="mt-[var(--s-5)] flex flex-wrap items-center gap-[var(--s-3)]">
+            <Button size="sm" onClick={save} disabled={draft === profile.resume || draft.trim().length < 30} data-testid="base-resume-save">{P.save}</Button>
+            <Button size="sm" variant="outline" href="/start?new=tailor&base=profile" data-testid="base-resume-new">{P.newJob}</Button>
+            <Button size="sm" variant="quiet" onClick={remove} data-testid="base-resume-delete">{P.remove}</Button>
           </div>
         </>
       )}
-      {note && <p className="mt-2 text-sm text-moss" role="status">{note}</p>}
+      {note && <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-13)] text-[color:var(--kept)]" role="status">{note}</p>}
     </section>
   );
 }

@@ -42,6 +42,9 @@ test.describe("full LinkedIn pass", () => {
     expect(posts).toEqual([]);
 
     await page.goto("/library");
+    // The library row keeps one visible action; the rest live in the row's menu (docs/DESIGN.md
+    // surface 8), so the LinkedIn link is reached through it rather than sitting in the row.
+    await page.getByTestId("library-more").first().click();
     await expect(page.getByTestId("library-linkedin")).toBeVisible();
     const robots = await (await page.request.get("/robots.txt")).text();
     expect(robots).toContain("/linkedin/");

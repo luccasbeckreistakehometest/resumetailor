@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { Button } from "@/components/ui";
 
 type Ref = { code: string; link: string; credits: number; pending: number; rewarded: number };
 
@@ -19,16 +20,16 @@ export function ReferralCard() {
   if (!data) return null;
   const text = `${C.shareText} ${data.link}`;
   return (
-    <section className="card mt-8 p-5" data-testid="referral">
-      <p className="font-display text-2xl text-ink">🤝 {C.referTitle}</p>
-      <p className="mt-1 text-sm text-ink-2">{C.referIntro(data.credits)}</p>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <code className="rounded bg-paper px-2 py-1 text-sm text-ink" data-testid="referral-link">{data.link}</code>
-        <button type="button" className="btn btn-ink !py-1.5 !text-sm" onClick={() => { void navigator.clipboard.writeText(data.link).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1500); }).catch(() => {}); }}>{copied ? C.copied : C.copyLink}</button>
-        <a className="btn btn-ghost !py-1.5 !text-sm" target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${encodeURIComponent(text)}`}>{C.shareWa}</a>
-        <a className="btn btn-ghost !py-1.5 !text-sm" target="_blank" rel="noopener noreferrer" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(data.link)}`}>{C.shareLi}</a>
+    <section className="mt-[var(--s-9)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="referral">
+      <p className="eyebrow">{C.referTitle}</p>
+      <p className="mt-[var(--s-3)] max-w-[var(--measure)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{C.referIntro(data.credits)}</p>
+      <div className="mt-[var(--s-4)] flex flex-wrap items-center gap-[var(--s-3)]">
+        <code className="rounded-[var(--r-1)] bg-[var(--sunken)] px-[var(--s-3)] py-[var(--s-2)] font-mono text-[length:var(--mn-13)] text-[color:var(--ink-2)]" data-testid="referral-link">{data.link}</code>
+        <Button size="sm" icon="copy" onClick={() => { void navigator.clipboard.writeText(data.link).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1500); }).catch(() => {}); }}>{copied ? C.copied : C.copyLink}</Button>
+        <Button size="sm" variant="outline" href={`https://wa.me/?text=${encodeURIComponent(text)}`}>{C.shareWa}</Button>
+        <Button size="sm" variant="outline" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(data.link)}`}>{C.shareLi}</Button>
       </div>
-      <p className="mt-2 text-xs text-muted" data-testid="referral-stats">{C.stats(data.pending, data.rewarded)}</p>
+      <p className="mt-[var(--s-3)] font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]" data-testid="referral-stats">{C.stats(data.pending, data.rewarded)}</p>
     </section>
   );
 }

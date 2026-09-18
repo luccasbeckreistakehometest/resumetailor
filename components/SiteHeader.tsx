@@ -70,13 +70,16 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
               <Link
                 href="/account"
                 data-testid="credits"
-                className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-2)] hover:text-[color:var(--ink)]"
+                className="shrink-0 whitespace-nowrap font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-2)] hover:text-[color:var(--ink)]"
               >
                 {x.credits.badge(user.credits)}
               </Link>
             )}
+            {/* Signed in, the name lives in the drawer below 1100 — the pt-BR e-mail is long. */}
             {user ? (
-              <AccountMenu open={account} onOpen={() => setAccount(true)} onClose={() => setAccount(false)} />
+              <span className="hidden min-[1100px]:block">
+                <AccountMenu open={account} onOpen={() => setAccount(true)} onClose={() => setAccount(false)} />
+              </span>
             ) : (
               <AuthButton />
             )}

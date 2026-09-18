@@ -42,7 +42,7 @@ export type Column<T> = {
 };
 
 export function Table<T>({
-  rows, columns, getKey, empty, caption, stickyFirst = false, minWidth, className = "",
+  rows, columns, getKey, empty, caption, stickyFirst = false, minWidth, rowAttrs, className = "",
 }: {
   rows: readonly T[];
   columns: readonly Column<T>[];
@@ -53,6 +53,8 @@ export function Table<T>({
   stickyFirst?: boolean;
   /** The width below which the pane scrolls rather than the columns collapsing. */
   minWidth?: string;
+  /** Attributes for the row element itself — a test id, a data-state the caller reads back. */
+  rowAttrs?: (row: T) => Record<string, string | undefined>;
   className?: string;
 }) {
   const zebra = rows.length > 12;
@@ -96,6 +98,7 @@ export function Table<T>({
           {rows.map((row, i) => (
             <tr
               key={getKey(row, i)}
+              {...(rowAttrs?.(row) ?? {})}
               className={`group transition-colors duration-[var(--dur-1)] hover:bg-[var(--sunken)] ${zebra && i % 2 === 1 ? "bg-[var(--zebra)]" : ""}`}
             >
               {columns.map((c, ci) => {
