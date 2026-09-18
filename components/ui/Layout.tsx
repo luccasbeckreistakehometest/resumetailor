@@ -43,8 +43,10 @@ export function Editorial({
 export function DocumentLayout({ children, rail, className = "" }: { children: ReactNode; rail?: ReactNode; className?: string }) {
   return (
     <div className={`flex flex-col items-start gap-[var(--s-8)] xl:flex-row xl:justify-center ${className}`}>
-      <div className="w-full min-w-0 xl:w-[816px] xl:shrink-0">{children}</div>
-      {rail && <div className="w-full xl:w-[320px] xl:shrink-0" data-density="compact">{rail}</div>}
+      {/* max-width, not width: inside a narrower pane the sheet shrinks instead of pushing the
+          rail off the edge — which is exactly what the gallery showed it doing at 948px. */}
+      <div className="w-full min-w-0 xl:max-w-[816px] xl:flex-1">{children}</div>
+      {rail && <div className="w-full min-w-0 xl:max-w-[320px] xl:flex-1" data-density="compact">{rail}</div>}
     </div>
   );
 }
