@@ -427,9 +427,11 @@ is why nothing on the kit screen looks more important than anything else.
 - Entering moves ≤ 8px. Nothing slides across the screen.
 - The score meter fills once, over `--dur-3`, on first appearance only — never on re-render.
 - `@media (prefers-reduced-motion: reduce)`: all durations become `1ms`, the meter renders at its
-  final value, the listening pulse becomes a static ring, and the marquee on the role ticker stops
-  (today it runs regardless, which is a WCAG 2.2.2 failure since it is longer than 5s and has no
-  pause control — the ticker either gains a pause control or is deleted).
+  final value, and the listening pulse becomes a static ring. **`prefers-reduced-motion` does not
+  appear anywhere in the codebase today** (`grep` over `app/`, `components/`, `lib/` returns
+  nothing), so the tour spotlight, the pulse ring and every transition ignore it. The
+  `.animate-marquee` keyframes in `globals.css:235` are dead — no component uses the class — and are
+  deleted rather than fixed.
 
 ### 7.4 Icons
 
@@ -467,3 +469,99 @@ is the only label.
   paper and it is what the app uses today.
 - Field states, all designed (§11): rest, hover, focus, filled, invalid, disabled, read-only,
   loading, and with a character counter when a `maxLength` exists.
+
+---
+
+## 9. Data display
+
+### 9.1 Numerals
+
+| Kind of number | Face | Feature | Example |
+|---|---|---|---|
+| A machine's verdict | IBM Plex Mono 500 | mono is tabular by construction | `89%`, `100/100`, `41 → 89` |
+| Money | Source Serif 4 400/600 | duplexed, no `tnum` needed | `R$ 149` |
+| A column of counts in a table | Public Sans 400 | `font-variant-numeric: tabular-nums` (**measured to work**) | `1 240` |
+| A count inside a sentence | Public Sans 400 | proportional (default) | "you have 3 credits" |
+
+Rules:
+- Every numeric table column is `text-align: right` with `tabular-nums`, and its header is right
+  aligned too. Today's admin table left-aligns `MATCH` and `AI COST`; that is the tell.
+- The unit is never part of the figure's type size. `89` at `mn-40`, `%` at `mn-24` with
+  `--ink-muted`, baseline-aligned. Same for `R$` against the amount.
+- Percentages and scores always carry their denominator or their baseline: `89% match · was 41%`.
+  A naked `78%` is meaningless and appears three times on the kit screen today.
+- BRL formatting uses `Intl.NumberFormat("pt-BR")` — `R$ 1.499,00`, with a non-breaking space after
+  `R$`. The `(BRL)` currently baked into the price string is dropped; the currency note lives once,
+  under the table.
+
+### 9.2 Tables
+
+Tables exist. This product has at least five real ones: keyword coverage, before/after,
+applications by stage, versions, and the admin lists.
+
+- `--r-0`, full-bleed inside their pane, `border-collapse: separate; border-spacing: 0`.
+- **Header**: `ui-13` 500, `--ink-muted`, `1px solid var(--rule)` underneath, sticky within the pane.
+- **Rows**: separated by `1px solid var(--rule-hairline)`. **Zebra only above 12 rows**, using
+  `--zebra`; below that, rules alone read cleaner. Never both.
+- **Row hover** is `--sunken`, not a shadow, not a transform.
+- **Alignment**: text left, numbers right, status centred only when it is a single glyph. Label and
+  value in a two-column definition row share a baseline — set the label at `ui-13` and the value at
+  `ui-15` and align on `alignment-baseline`, not on the box.
+- A table that scrolls sideways gets its own `overflow-x: auto` container with the first column
+  sticky; the page body never scrolls horizontally.
+- An empty table keeps its header and shows one full-width row (§11 empty state), so the columns
+  stay legible.
+
+### 9.3 Meters — one component, three uses
+
+D6 dies here. There is one `Meter`, used by match, personalisation and "sounds human":
+
+```
+[ ui-11c label                                    mn-24 value ]
+[ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░  4px track, --r-0        ]
+[ ui-13 --ink-muted caption: what the number means            ]
+```
+
+- Track `--sunken`, fill `--ink`, 4px tall, square ends. Colour is used only to mark a *threshold
+  crossing*: the fill becomes `--kept` at or above the good threshold and `--query` below the poor
+  one; there is no red fill, because red is a mark, not a score.
+- A "before" value is a 1px `--rule-strong` tick on the track with its number in `--ink-muted`
+  above it — not a second bar.
+- `role="meter"`, `aria-valuenow/min/max`, `aria-labelledby` to the label.
+- **No donut, no radial gauge, no needle.** The hero's donut chart is replaced by this meter.
+
+### 9.4 Charts
+
+The interview trend line is the only chart. It stays a line: 1px `--ink`, no fill, no gradient, no
+dots except the last point, a 1px `--rule-hairline` baseline, `ui-12` tabular axis labels, and a
+`--query` dashed rule for the target. If a chart needs a legend it is the wrong chart.
+
+---
+
+## 10. Screen-to-print parity
+
+This is the product's whole promise, and today it is broken three ways (D2). The fix is one set of
+document styles used by the preview, the print route and the public web CV, with a documented,
+honest divergence for `.docx`.
+
+| Surface | Faces | Colour |
+|---|---|---|
+| Preview in the editor / kit (`.sheet`) | Source Serif 4 body, Public Sans labels, Plex Mono contacts | ink only, one `--mark` rule under the name |
+| `/print` → PDF | identical CSS, `@page { margin: 18mm 16mm }` | ink only; grain and UI chrome removed |
+| Public web CV (`/cv/[slug]`) | identical | identical |
+| `.docx` (`lib/resume/export.ts`) | **Cambria** body, **Calibri** labels | ink only |
+
+- **The four indigo `.doc-*` themes are deleted.** Six themes become three, named for what they are
+  rather than for a mood: `Plain` (maximum parser safety), `Ruled` (section rules, the default),
+  `Ledger` (two-column with a 4-column dates/labels margin, for print and hand-over). All three are
+  set in Source Serif 4 + Public Sans, ink only.
+- **Why Cambria for `.docx`.** Word cannot be trusted to have Source Serif 4, and a missing font
+  reflows the page — the one thing a résumé must never do. Cambria ships with Office on Windows and
+  macOS and is a screen-first serif with similar proportions. This divergence is deliberate and is
+  the only one; it is written in the export file's header comment so nobody "fixes" it.
+- **Parity test.** A Playwright spec renders `/print?id=…` and the editor preview at the same width
+  and asserts that the computed `font-family`, `font-size` and `line-height` of `h1`, `h2`, `p` and
+  `li` match. It fails the build if the two drift apart.
+- `@media print`: `--page`/`--sheet` → `#fff`, grain off, `--ink` → `#111`, no UI chrome, widows and
+  orphans `3`, `break-inside: avoid` on every experience entry, and link URLs printed after the link
+  text only in `Ledger`.
