@@ -198,7 +198,7 @@ function VoiceView(p: ViewProps) {
           <button onClick={p.onBegin} className="btn btn-primary" data-testid="voice-start">{p.briefing ? x.voice.again : x.voice.start}</button>
         ) : (
           <>
-            <div className={"relative grid h-20 w-20 place-items-center rounded-full " + (phase === "listening" ? "pulse bg-oxblood text-white" : phase === "thinking" ? "bg-gold-2 text-ink" : "bg-paper-2 text-ink")} aria-hidden>
+            <div className={"relative grid h-20 w-20 place-items-center rounded-full " + (phase === "listening" ? "pulse bg-[var(--mark)] text-[color:var(--on-mark)]" : phase === "thinking" ? "bg-[var(--query-wash)] text-[color:var(--ink)]" : "bg-[var(--sunken)] text-[color:var(--ink)]")} aria-hidden>
               <span className="text-2xl">{phase === "listening" ? "🎙" : phase === "thinking" ? "…" : phase === "paused" ? "⏸" : "🔊"}</span>
             </div>
             <p className="text-sm font-medium text-[color:var(--ink-2)]" role="status" data-testid={phase === "thinking" ? "voice-thinking" : "voice-status"}>{label}</p>

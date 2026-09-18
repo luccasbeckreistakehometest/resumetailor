@@ -13,14 +13,14 @@ import { htmlLang, type RouteLang } from "@/lib/i18n/routes";
  * The document shell shared by the three root layouts: English (every app page), and the
  * Portuguese and Spanish public pages, whose HTML is rendered in that language from the start.
  *
- * `data-theme="light"` is deliberate. The "Desk lamp" dark theme exists in the tokens
- * (docs/DESIGN.md §6.2) but the product screens have not been rebuilt or looked at in it yet, so
- * the attribute pins every route to Paper and stops `prefers-color-scheme` flipping ~40 untested
- * routes. /design removes it to preview the dark ramp. Drop it when surfaces 4–18 are done.
+ * The theme follows the reader's own setting. "Desk lamp" (docs/DESIGN.md §6.2) was pinned off
+ * while the product screens were still the old ones; the surfaces have been rebuilt on the tokens
+ * and looked at in both, so the pin is gone and `prefers-color-scheme` decides. The sheet never
+ * inverts in either theme — a résumé is a printed artefact — and @media print restores pure white.
  */
 export function RootShell({ lang, children }: { lang: RouteLang; children: React.ReactNode }) {
   return (
-    <html lang={htmlLang(lang)} data-scroll-behavior="smooth" data-theme="light"
+    <html lang={htmlLang(lang)} data-scroll-behavior="smooth"
       className={`${fontVariables} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-paper">
         <I18nProvider initialLang={lang} locked={lang !== "en"}>

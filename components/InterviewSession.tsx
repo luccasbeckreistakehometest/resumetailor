@@ -172,7 +172,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
 
             {phase === "listening" ? (
               <div className="mt-6 flex flex-col items-center gap-4">
-                <button onClick={speech.stop} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-oxblood text-white" aria-label={x.interview.done} data-testid="answer-stop"><span className="text-2xl">■</span></button>
+                <button onClick={speech.stop} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-[var(--mark)] text-[color:var(--on-mark)]" aria-label={x.interview.done} data-testid="answer-stop"><span className="text-2xl">■</span></button>
                 <p className="text-sm font-medium text-oxblood">{x.interview.listening}</p>
                 <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{speech.interim}</p>
                 <button onClick={speech.stop} className="btn btn-ink">{x.interview.done}</button>

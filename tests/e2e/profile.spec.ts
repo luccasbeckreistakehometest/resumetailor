@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SAMPLE_JOB, SAMPLE_RESUME, buildKitByText, signUp, skipTour, unlockedTailorKit } from "./helpers";
+import { SAMPLE_JOB, SAMPLE_RESUME, buildKitByText, kitAction, signUp, skipTour, unlockedTailorKit } from "./helpers";
 
 test.describe("saved base résumé", () => {
   test("the second kit needs only the role and the posting; 'new job' starts at the posting; deleting clears the pre-fill", async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe("saved base résumé", () => {
 
     // From kit #1 (unlocked): lands on the posting step with that kit's résumé.
     await page.goto(`/start?gen=${first.id}`);
-    await page.getByTestId("new-job").click();
+    await kitAction(page, "new-job");
     await expect(page.getByTestId("job")).toBeVisible();
     await expect(page.getByTestId("job")).toHaveValue("");
     await expect(page.getByTestId("saved-resume-chip")).toBeVisible();

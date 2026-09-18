@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { buildKitByText, signUp, skipTour } from "./helpers";
+import { buildKitByText, kitAction, signUp, skipTour } from "./helpers";
 
 test.describe("application tracker", () => {
   test("add → move across the board → funnel → edit → persists → survives signup → delete", async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe("application tracker", () => {
 
   test("a kit result offers to track the application with the kit and role prefilled", async ({ page }) => {
     await buildKitByText(page);
-    await page.getByTestId("track").first().click();
+    await kitAction(page, "track");
     await expect(page).toHaveURL(/\/applications\?add=1/);
     await expect(page.getByTestId("app-add-form")).toBeVisible();
     await expect(page.getByTestId("app-role")).toHaveValue("Marketing Analyst");

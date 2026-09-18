@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { buildKitByText, signUp } from "./helpers";
+import { buildKitByText, kitAction, signUp } from "./helpers";
 
 test.describe("full LinkedIn pass", () => {
   test.beforeEach(async ({ context }) => { await context.grantPermissions(["clipboard-read", "clipboard-write"]); });
@@ -15,7 +15,7 @@ test.describe("full LinkedIn pass", () => {
     await page.getByTestId("unlock").click();
     await signUp(page);
     await expect(page.getByTestId("kit")).toBeVisible({ timeout: 15_000 });
-    await page.getByTestId("linkedin-link").click();
+    await kitAction(page, "linkedin-link");
     await expect(page).toHaveURL(new RegExp(`/linkedin/${id}`));
     await expect(page.getByTestId("li-profile")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId("li-cached")).toBeHidden();

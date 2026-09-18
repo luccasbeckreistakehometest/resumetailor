@@ -89,11 +89,11 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
         </Container>
       </section>
 
-      <section className="bg-oxblood text-white">
+      <section className="bg-[var(--ink)] text-[color:var(--on-ink)]">
         <Container className="py-14 text-center">
           <p className="font-display text-3xl sm:text-4xl">{a.title}</p>
-          <Link href={startHref(via)} onClick={cta("final")} className="btn btn-ink mt-6 !bg-paper !text-ink hover:!bg-white">{S.ctaFinal}</Link>
-          <p className="mt-3 text-sm text-white/80">{S.noSub}</p>
+          <Link href={startHref(via)} onClick={cta("final")} className="btn mt-6 bg-[var(--on-ink)] text-[color:var(--ink)] hover:opacity-90">{S.ctaFinal}</Link>
+          <p className="mt-3 text-sm opacity-80">{S.noSub}</p>
         </Container>
       </section>
       {/* Ad landings keep one path forward; the footer carries only what the law asks for. */}

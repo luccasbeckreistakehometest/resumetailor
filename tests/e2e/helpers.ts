@@ -87,3 +87,14 @@ export async function unlockedTailorKit(page: Page, opts: { email?: string } = {
   await expect(page.getByTestId("kit")).toBeVisible({ timeout: 15_000 });
   return { id, ...account };
 }
+
+/**
+ * A kit screen keeps ONE primary action visible and puts the rest behind "More" (docs/DESIGN.md
+ * surface 5). This opens that menu when it is there, so a spec can reach an action that genuinely
+ * moved without asserting anything weaker than before.
+ */
+export async function kitAction(page: Page, testId: string) {
+  const more = page.getByTestId("kit-more");
+  if (await more.isVisible({ timeout: 1000 }).catch(() => false)) await more.click();
+  await page.getByTestId(testId).first().click();
+}
