@@ -256,6 +256,12 @@ layouts; a screen picks one and states which.
 | `L-document` | 816px sheet + 320px rail, rail on the right ≥1280px, below the sheet under that | Kit delivery, editor, print preview, public CV |
 | `L-tool` | 320px fixed rail + fluid pane, 1px rule between, no gap | Admin, applications board, library |
 
+**Stacking.** `L-editorial` is 7/4 above 1024px, 8/4 between 768 and 1024, and one column below 768
+with the 4-column material moving *below* the 7 — except the score/meter block, which moves *above*
+it, because on a phone the verdict comes first. `L-document` puts the rail under the sheet below
+1280px. `L-tool` collapses the rail into a drawer below 1024px. A layout without a stated stacking
+rule renders as overlapping columns on a phone — which is exactly what the first specimen did.
+
 `L-editorial`'s 7/4 asymmetry is the default and does the most work: headings, prose and forms sit in
 the 7, while meters, sources, notes and secondary actions sit in the 4. It replaces today's habit of
 a centred `max-w-6xl` with a full-width grid of equal cards.
@@ -511,6 +517,11 @@ applications by stage, versions, and the admin lists.
   sticky; the page body never scrolls horizontally.
 - An empty table keeps its header and shows one full-width row (§11 empty state), so the columns
   stay legible.
+- **A long cell does not silently break the row.** In `compact`, a text cell is one line, truncated
+  with `text-overflow: ellipsis` and a `title`; the row height stays `--row-h`. Where the full value
+  matters (a kit title), the column is allowed **two** lines with `-webkit-line-clamp: 2` and the row
+  height is declared as `--row-h-2`, never left to wrap on its own — which is how a 36px row silently
+  became 54px in the specimen.
 
 ### 9.3 Meters — one component, three uses
 
@@ -525,8 +536,9 @@ D6 dies here. There is one `Meter`, used by match, personalisation and "sounds h
 - Track `--sunken`, fill `--ink`, 4px tall, square ends. Colour is used only to mark a *threshold
   crossing*: the fill becomes `--kept` at or above the good threshold and `--query` below the poor
   one; there is no red fill, because red is a mark, not a score.
-- A "before" value is a 1px `--rule-strong` tick on the track with its number in `--ink-muted`
-  above it — not a second bar.
+- A "before" value is a **2px** `--rule-field` tick that overshoots the track by 4px top and bottom,
+  with its number in `ui-13` `--ink-muted` beside it — not a second bar. Drawn at 1px it disappears
+  against a 4px track; this was caught by rendering the specimen and looking at it.
 - `role="meter"`, `aria-valuenow/min/max`, `aria-labelledby` to the label.
 - **No donut, no radial gauge, no needle.** The hero's donut chart is replaced by this meter.
 
@@ -581,7 +593,7 @@ Four variants and no more. All at `--control-h`, `--r-2`, `ui-15` 600 (`ui-17` 6
 
 | Variant | Rest | Hover | Active | Disabled | Loading |
 |---|---|---|---|---|---|
-| `primary` | `--ink` ground, `--page` label (16.26:1) | ground `#000` | `translateY(1px)`, no shadow | `--rule` ground, `--ink-40` label, `cursor: not-allowed` | label stays, a 16px spinner replaces the icon slot, width frozen |
+| `primary` | `--ink` ground, `--page` label (16.26:1) | ground `#000` | `translateY(1px)`, no shadow | `--sunken` ground, `--rule` border, `--ink-40` label (3.39:1), `cursor: not-allowed` | label stays, a 16px spinner replaces the icon slot, width frozen |
 | `mark` | `--mark` ground, white label (8.57:1) | `--mark-deep` | as above | as above | as above |
 | `outline` | transparent, `1px --rule-field`, `--ink` label | `--sunken` ground | as above | `--rule` border, `--ink-40` label | as above |
 | `quiet` | transparent, `--ink-2` label | `--sunken` ground | as above | `--ink-40` label | as above |
@@ -591,6 +603,10 @@ Four variants and no more. All at `--control-h`, `--r-2`, `ui-15` 600 (`ui-17` 6
 - **One `primary` per view.** The kit screen's eight equal buttons become one `primary`
   (*Download the kit*), two `outline`, and the rest inside an overflow menu.
 - Disabled never uses `opacity`, which drops a label below 4.5:1 silently; it uses real tokens.
+  The first draft of this table put the disabled label on a `--rule` ground: rendered and measured, that
+  is **2.41:1** and unreadable. It is `--sunken` + `--ink-40` = **3.39:1** (dark: 5.01:1). WCAG 1.4.3
+  exempts inactive controls from the text minimum; 3:1 is our floor anyway, because a disabled button
+  the user cannot read is a button they will click at.
 - An icon-only button must carry `aria-label` and a tooltip, and is allowed only in a toolbar of ≥3
   such buttons — never as one of several labelled buttons in a row (D7).
 
