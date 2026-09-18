@@ -41,7 +41,7 @@ export async function POST(_: Request, ctx: Ctx) {
     if (row.unlocked !== 1) return bad("unlock_first", 409);
     const cached = getVariant(id, KIND);
     if (cached) return { body: view(row, cached, true) };
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) return limited(over);
@@ -53,7 +53,7 @@ export async function POST(_: Request, ctx: Ctx) {
       const input = JSON.parse(row.input) as { jobDescription?: string };
       const posting = input.jobDescription ?? "";
       const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
-      const ran = await runAi("linkedin", { ownerKey: owner.key, ip: owner.ip }, () =>
+      const ran = await runAi("linkedin", owner, () =>
         generateLinkedIn({ kit, targetRole: row.targetRole, posting, vocabulary: roleVocabulary(posting, kit.keywords), lang }));
       if (!ran.ok) return ran.reply;
       const { profile, model, costUsd } = ran.value;

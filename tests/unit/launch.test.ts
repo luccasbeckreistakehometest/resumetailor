@@ -369,7 +369,7 @@ describe("LGPD: export and delete", () => {
     // Written before signing in, from the same address.
     saveContact({ name: "", email: u.email.toUpperCase(), topic: "payment", message: "my pix did not show up", lang: "en", userId: null, ip: "1.2.3.4" });
     const { recordUsage } = await import("@/lib/server/spend");
-    recordUsage({ feature: "generate", ownerKey: u.id, ip: "1.2.3.4", costUsd: 0.01 });
+    recordUsage({ feature: "generate", ownerKey: u.id, ip: "1.2.3.4", anonymous: false, costUsd: 0.01 });
     // An anonymous first session, claimed at signup: the anonymous timeline and fit checks move over.
     const anon = `anon_del_${Date.now()}`;
     const { recordEvent } = await import("@/lib/server/onboarding");

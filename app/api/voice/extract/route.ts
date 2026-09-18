@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
     const fresh = existing ? null : reserve([["VOICE_BRIEFINGS_OWNER_DAY", owner.key], ["VOICE_BRIEFINGS_IP_DAY", owner.ip]]);
     if (fresh && !fresh.ok) return limited(fresh.failed, "voice_turns_limit");
-    const ran = await runAi("voice_extract", { ownerKey: owner.key, ip: owner.ip }, () => extractBriefing(parsed.data));
+    const ran = await runAi("voice_extract", owner, () => extractBriefing(parsed.data));
     if (!ran.ok) {
       if (existing) db.prepare("UPDATE voice_briefings SET turns = turns - 1 WHERE id = ? AND turns > 1").run(parsed.data.briefingId);
       if (fresh?.ok) fresh.release();

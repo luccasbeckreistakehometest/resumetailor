@@ -20,7 +20,7 @@ export async function withOwner(fn: (owner: Owner) => Promise<Reply>, opts: { al
   const key = owner.userId ?? owner.anonId;
   const { body, status, headers: extra } = await fn({ userId: owner.userId, anonId: owner.anonId, key, ip, isNewAnon: owner.isNewAnon });
   const res = NextResponse.json(body, { status: status ?? 200, headers: extra });
-  if (owner.isNewAnon) res.cookies.set(ANON_COOKIE, owner.anonId, ANON_COOKIE_OPTIONS);
+  if (owner.anonCookie) res.cookies.set(ANON_COOKIE, owner.anonCookie, ANON_COOKIE_OPTIONS);
   return res;
 }
 

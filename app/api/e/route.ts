@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const ignored = isBot(ua, process.env.ANALYTICS_ALLOW_HEADLESS === "1") || (site !== null && site !== "same-origin") || optedOut(h);
   const owner = await ownerKey();
   const res = new NextResponse(null, { status: 204 });
-  if (owner.isNewAnon) res.cookies.set(ANON_COOKIE, owner.anonId, ANON_COOKIE_OPTIONS);
+  if (owner.anonCookie) res.cookies.set(ANON_COOKIE, owner.anonCookie, ANON_COOKIE_OPTIONS);
   if (ignored) return res;
   const visitorId = visitorFor({ anonId: owner.anonId, userId: owner.userId }) ?? (owner.anonId || null);
   if (!admitBeacon({ hasCookie: !owner.isNewAnon, visitorId, ip: clientIp(h) })) return res;

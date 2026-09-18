@@ -2,13 +2,18 @@ import { getDb } from "@/lib/server/db";
 import { envNumber } from "@/lib/server/env";
 
 /**
- * The caller's IP. Caddy (the only way in, in production) replaces X-Forwarded-For with the real
- * client address, so the first entry is trustworthy there. Locally it falls back to "local".
+ * The caller's IP, for the per-IP limits.
+ *
+ * Caddy (the only way in, in production) APPENDS the real client address to whatever
+ * X-Forwarded-For the caller sent — it does not replace it. So the FIRST entry is written by the
+ * caller and anybody could reset every per-IP limit by sending a new fake one on each request;
+ * the LAST entry is the one the proxy itself added. We read the last entry, and fall back to
+ * X-Real-IP (also set by the proxy) and then to "local" for direct/localhost calls.
  */
 export function clientIp(headers: Headers): string {
-  const xff = headers.get("x-forwarded-for");
-  const first = xff?.split(",")[0]?.trim();
-  if (first) return first.slice(0, 64);
+  const parts = (headers.get("x-forwarded-for") ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+  const last = parts[parts.length - 1];
+  if (last) return last.slice(0, 64);
   return headers.get("x-real-ip")?.trim().slice(0, 64) || "local";
 }
 

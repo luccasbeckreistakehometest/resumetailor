@@ -48,7 +48,7 @@ export async function POST(request: Request, ctx: Ctx) {
     const kind = `pitch:${seconds}`;
     const cached = getVariant(id, kind);
     if (cached) return { body: { pitch: JSON.parse(cached.body) as Pitch, source: "ai", cached: true, unlocked: true, feedbackLeft: feedbackLeft(id) } };
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) return limited(over);
@@ -59,7 +59,7 @@ export async function POST(request: Request, ctx: Ctx) {
       if (again) return { body: { pitch: JSON.parse(again.body) as Pitch, source: "ai", cached: true, unlocked: true, feedbackLeft: feedbackLeft(id) } };
       const k = JSON.parse(kit.row.result) as Kit;
       const lang = (["en", "pt", "es"].includes(kit.row.lang) ? kit.row.lang : "en") as Lang;
-      const ran = await runAi("pitch_script", { ownerKey: owner.key, ip: owner.ip }, () =>
+      const ran = await runAi("pitch_script", owner, () =>
         generatePitch({ kit: k, title: kit.row.title, role: kit.row.targetRole, posting: kitInput(kit.row).jobDescription ?? "", lang, seconds }));
       if (!ran.ok) return ran.reply;
       saveVariant({ generationId: id, kind, variant: { subject: "", body: JSON.stringify(ran.value.pitch) }, model: ran.value.model, costUsd: ran.value.costUsd });

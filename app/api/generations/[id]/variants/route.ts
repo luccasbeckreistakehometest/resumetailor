@@ -34,7 +34,7 @@ export async function POST(request: Request, ctx: Ctx) {
     const kind = parsed.data.kind as (typeof VARIANT_KINDS)[number];
     const cached = getVariant(id, kind);
     if (cached) return { body: serialiseVariant(cached, true) };
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) return limited(over);
@@ -45,7 +45,7 @@ export async function POST(request: Request, ctx: Ctx) {
       const kit = JSON.parse(row.result) as Kit;
       const input = JSON.parse(row.input) as { jobDescription?: string };
       const lang = (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang;
-      const ran = await runAi("variant", { ownerKey: owner.key, ip: owner.ip }, () =>
+      const ran = await runAi("variant", owner, () =>
         generateVariant({ kind, kit, title: row.title, targetRole: row.targetRole, posting: input.jobDescription ?? "", lang }));
       if (!ran.ok) return ran.reply;
       const { variant, model, costUsd } = ran.value;

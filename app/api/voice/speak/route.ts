@@ -4,7 +4,7 @@ import { cacheKey, isAppPrompt, readCached, synthesise, ttsProvider, writeCached
 import { anonId, currentUser } from "@/lib/server/session";
 import { requestIp } from "@/lib/server/http";
 import { take } from "@/lib/server/ratelimit";
-import { isAnonymousKey, overBudget, recordUsage, ttsCost } from "@/lib/server/spend";
+import { failedCallFloorUsd, reserveSpend, settleSpend, ttsCost } from "@/lib/server/spend";
 
 export const runtime = "nodejs";
 
@@ -35,17 +35,21 @@ export async function POST(request: Request) {
   const ip = await requestIp();
   const ownerKey = owner.userId ?? owner.anonId;
   if (!take("SPEAK_IP_DAY", ip).ok || !take("SPEAK_OWNER_DAY", ownerKey).ok) return silent();
-  if (overBudget({ anonymous: isAnonymousKey(owner.userId) })) return silent();
+  // The cost is known up front (providers bill per character), so the hold is the exact price.
+  const cost = ttsCost(text.length);
+  const usage = { feature: "tts", ownerKey, ip, anonymous: owner.userId === null };
+  const held = reserveSpend({ ...usage, model: provider, estimateUsd: cost });
+  if (!held.ok) return silent();
   try {
     const buf = await synthesise(text, lang);
-    if (!buf) return silent();
+    if (!buf) { settleSpend(held.id, { model: provider, costUsd: 0 }); return silent(); }
     writeCached(key, buf);
-    recordUsage({ feature: "tts", ownerKey, ip, model: provider, costUsd: ttsCost(text.length) });
+    settleSpend(held.id, { model: provider, costUsd: cost });
     return audio(buf);
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     console.error("[tts]", detail);
-    recordUsage({ feature: "tts", ownerKey, ip, model: provider, ok: false, error: detail });
+    settleSpend(held.id, { model: provider, costUsd: failedCallFloorUsd(), ok: false, error: detail });
     return silent();
   }
 }

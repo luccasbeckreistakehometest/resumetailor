@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     if (!parsed.success) return bad("missing_fields");
     const gen = getGeneration(parsed.data.generationId);
     if (!gen || !ownsGeneration(gen, owner.userId, owner.anonId)) return bad("not_found", 404);
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     if (countSessionsForKit(gen.id, owner.userId, owner.anonId) >= MAX_SESSIONS_PER_KIT) return { body: { error: "limit" }, status: 429 };
     const over = takeAll([["INTERVIEW_IP_HOUR", owner.ip], ["INTERVIEW_OWNER_HOUR", owner.key]]);
