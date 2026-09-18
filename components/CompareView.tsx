@@ -101,7 +101,7 @@ export function CompareView() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-5xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <Stamp>{C.eyebrow}</Stamp>
         <h1 className="font-display mt-4 text-4xl leading-tight text-ink sm:text-5xl">{C.h1}</h1>
         <p className="mt-3 max-w-3xl text-lg text-ink-2">{C.intro}</p>

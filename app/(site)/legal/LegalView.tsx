@@ -39,14 +39,14 @@ export function LegalView({ doc, forced, identity }: { doc: LegalDocKey; forced:
     <div className="flex min-h-screen flex-col">
       {forced && <LangSync lang={forced} />}
       <SiteHeader />
-      <Container className="max-w-3xl py-10">
+      <Container width="prose" className="py-[var(--s-10)]">
         <article data-testid="legal-doc" data-doc={doc} lang={lang === "pt" ? "pt-BR" : lang}>
           <Eyebrow>{l.footer.legal}</Eyebrow>
-          <h1 className="font-display mt-2 text-4xl text-ink">{d.title}</h1>
+          <h1 className="doc-45 mt-[var(--s-3)] text-[color:var(--ink)]">{d.title}</h1>
           <p className="mt-2 text-sm text-muted">{L.updated}: {updated}</p>
           <p className="mt-4 text-lg leading-relaxed text-ink-2">{d.summary}</p>
 
-          <section className="card mt-8 p-5" data-testid="legal-identity">
+          <section className="mt-[var(--s-8)] border border-[var(--rule)] p-[var(--s-5)]" data-testid="legal-identity">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{L.who}</h2>
             {hasIdentity ? (
               <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-[auto_1fr]">
@@ -63,7 +63,7 @@ export function LegalView({ doc, forced, identity }: { doc: LegalDocKey; forced:
 
           {d.sections.map((s) => (
             <section key={s.h} className="mt-8">
-              <h2 className="font-display text-2xl text-ink">{s.h}</h2>
+              <h2 className="doc-26 text-[color:var(--ink)]">{s.h}</h2>
               <Blocks body={s.body} />
             </section>
           ))}

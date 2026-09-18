@@ -25,7 +25,7 @@ export default function InterviewOverviewPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-4xl py-12">
+      <Container width="reading" className="py-[var(--s-11)]">
         <div data-tour="progress">
           <Eyebrow>{P.eyebrow}</Eyebrow>
           <h1 className="font-display mt-2 text-4xl text-ink">{P.title}</h1>

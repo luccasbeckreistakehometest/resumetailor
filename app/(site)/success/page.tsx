@@ -71,7 +71,7 @@ function SuccessInner() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="max-w-xl py-16 text-center sm:py-20">
+      <Container width="prose" className="py-[var(--s-12)]">
         <div className="card p-8" data-testid="success" data-status={status} aria-live="polite">
           {status === "checking" && <p className="text-ink-2">{x.success.checking}</p>}
           {status === "paid" && <><p className="text-4xl" aria-hidden>✓</p><p className="font-display mt-3 text-3xl text-ink">{x.success.paid}</p>{user && <p className="mt-2 text-ink-2" data-testid="success-credits">{x.success.credits(user.credits)}</p>}</>}

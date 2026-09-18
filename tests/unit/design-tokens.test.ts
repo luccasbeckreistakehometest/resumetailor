@@ -86,3 +86,21 @@ describe("the document stylesheet", () => {
     expect(body).not.toMatch(/font-size:\s*\d+px/);
   });
 });
+
+/**
+ * Two utilities from the same group on one element are resolved by stylesheet order, not by the
+ * order they were written. That cost the account page its measure (a max-w-3xl that never applied)
+ * and pushed the mobile menu button off the edge (a `hidden` that lost to `inline-flex`). This is
+ * the cheap check that stops the pattern coming back in the product's own files.
+ */
+describe("no utility fights another utility in the same group", () => {
+  // Comments are stripped first: this very rule is explained in a comment that quotes the bug.
+  const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  const files = readdirSync(new URL("../../components", import.meta.url), { recursive: true, encoding: "utf8" })
+    .filter((f) => f.endsWith(".tsx"))
+    .map((f) => strip(readFileSync(new URL(`../../components/${f}`, import.meta.url), "utf8")));
+
+  it("never sets a max-width on <Container> through className", () => {
+    for (const src of files) expect(src).not.toMatch(/<Container[^>]*className="[^"]*max-w-/);
+  });
+});

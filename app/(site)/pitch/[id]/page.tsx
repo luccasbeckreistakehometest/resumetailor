@@ -170,7 +170,7 @@ export default function PitchStudio() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-5xl py-8">
+      <Container width="reading" className="py-[var(--s-8)]">
         <Eyebrow>{P.cta}</Eyebrow>
         <h1 className="font-display mt-1 text-4xl text-ink">{P.title}</h1>
         <p className="mt-2 max-w-3xl text-ink-2">{P.intro}</p>

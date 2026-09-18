@@ -38,7 +38,7 @@ export function ContactView() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="max-w-2xl py-10">
+      <Container width="prose" className="py-[var(--s-10)]">
         <Eyebrow>{C.eyebrow}</Eyebrow>
         <h1 className="font-display mt-2 text-4xl text-ink">{C.title}</h1>
         <p className="mt-3 text-ink-2">{C.intro}</p>

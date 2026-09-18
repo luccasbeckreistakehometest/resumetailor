@@ -13,7 +13,7 @@ export function AtsPage({ lang, forced }: { lang: Lang; forced: boolean }) {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-4xl py-12">
+      <Container width="reading" className="py-[var(--s-11)]">
         <AtsSeo lang={lang} forced={forced} part="head" />
         <AtsChecker lang={lang} forced={forced} />
         <AtsSeo lang={lang} forced={forced} part="faq" />

@@ -36,7 +36,7 @@ export default function BriefPage() {
   return (
     <div className="min-h-screen">
       <div className="no-print"><SiteHeader /></div>
-      <Container className="max-w-2xl py-8">
+      <Container width="prose" className="py-[var(--s-8)]">
         <div data-testid="brief">
         <Eyebrow>{B.briefTitle}</Eyebrow>
         <h1 className="font-display mt-1 text-4xl text-ink">{app.company || app.role}</h1>

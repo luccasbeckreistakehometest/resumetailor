@@ -83,22 +83,22 @@ export default function AccountPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="max-w-3xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <Eyebrow>{A.eyebrow}</Eyebrow>
-        <h1 className="font-display mt-2 text-4xl text-ink">{A.title}</h1>
-        {deleted && <p className="card mt-8 p-6 text-ink" role="status" data-testid="account-deleted">{A.deleted} <Link href="/" className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{l.errorPages.home}</Link></p>}
+        <h1 className="doc-45 mt-[var(--s-3)] text-[color:var(--ink)]">{A.title}</h1>
+        {deleted && <p className="mt-[var(--s-8)] border border-[var(--rule)] p-[var(--s-6)] text-[color:var(--ink)]" role="status" data-testid="account-deleted">{A.deleted} <Link href="/" className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{l.errorPages.home}</Link></p>}
         {!loading && !user && !deleted && (
-          <div className="card mt-8 p-6 text-center">
+          <div className="mt-[var(--s-8)] border border-[var(--rule)] p-[var(--s-6)]">
             <p className="text-ink-2">{A.signInFirst}</p>
             <button className="btn btn-primary mt-4" onClick={() => setAuthOpen(true)}>{x.nav.signIn}</button>
           </div>
         )}
         {user && (
           <div className="mt-8 space-y-6" data-testid="account">
-            {user.mustChangePassword && <p className="rounded-xl border border-gold bg-gold-2 px-4 py-3 text-sm text-ink" role="status" data-testid="must-change">{l.auth.mustChange}</p>}
+            {user.mustChangePassword && <p className="bg-[var(--query-wash)] px-[var(--s-5)] py-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink)]" style={{ borderLeft: "2px solid var(--query)" }} role="status" data-testid="must-change">{l.auth.mustChange}</p>}
 
-            <section className="card p-6" aria-labelledby="acc-profile">
-              <h2 id="acc-profile" className="font-display text-2xl text-ink">{A.profile}</h2>
+            <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" aria-labelledby="acc-profile">
+              <h2 id="acc-profile" className="doc-21 text-[color:var(--ink)]">{A.profile}</h2>
               <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
                 <dt className="text-muted">{A.email}</dt><dd className="break-all text-ink" data-testid="account-email">{user.email}</dd>
                 <dt className="text-muted">{A.name}</dt><dd className="text-ink">{user.name || "—"}</dd>
@@ -108,8 +108,8 @@ export default function AccountPage() {
               {data?.termsAcceptedAt && <p className="mt-3 text-xs text-muted">{A.consentOn(date(data.termsAcceptedAt))} <Link href="/legal/terms" className="underline">{l.footer.terms}</Link> · <Link href="/legal/privacy" className="underline">{l.footer.privacy}</Link></p>}
             </section>
 
-            <section className="card p-6" aria-labelledby="acc-plan">
-              <h2 id="acc-plan" className="font-display text-2xl text-ink">{A.plan}</h2>
+            <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" aria-labelledby="acc-plan">
+              <h2 id="acc-plan" className="doc-21 text-[color:var(--ink)]">{A.plan}</h2>
               <p className="mt-2 text-sm text-ink-2" data-testid="account-plan">{A.planText(user.credits)}</p>
               <Link href="/pricing" className="btn btn-primary mt-4">{A.buy}</Link>
               <div className="mt-4"><VoucherField /></div>
@@ -131,8 +131,8 @@ export default function AccountPage() {
               )}
             </section>
 
-            <section className="card p-6" aria-labelledby="acc-sec">
-              <h2 id="acc-sec" className="font-display text-2xl text-ink">{A.security}</h2>
+            <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" aria-labelledby="acc-sec">
+              <h2 id="acc-sec" className="doc-21 text-[color:var(--ink)]">{A.security}</h2>
               <form onSubmit={changePassword} className="mt-4 grid gap-3 sm:max-w-md">
                 <p className="text-sm font-medium text-ink">{A.changePassword}</p>
                 <label className="text-sm text-ink-2" htmlFor="acc-current">{A.current}</label>
@@ -148,16 +148,16 @@ export default function AccountPage() {
               </div>
             </section>
 
-            <section className="card p-6" aria-labelledby="acc-data">
-              <h2 id="acc-data" className="font-display text-2xl text-ink">{A.data}</h2>
+            <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" aria-labelledby="acc-data">
+              <h2 id="acc-data" className="doc-21 text-[color:var(--ink)]">{A.data}</h2>
               <p className="mt-2 text-sm text-ink-2">{A.dataHint}</p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button onClick={() => void download()} disabled={busy === "dl"} className="btn btn-ghost" data-testid="export-data">{busy === "dl" ? A.downloading : A.download}</button>
-                {user.role !== "admin" && <button onClick={() => setDel({ ...del, open: true })} className="btn btn-ghost !border-oxblood !text-oxblood" data-testid="delete-open">{A.delete}</button>}
+                {user.role !== "admin" && <button onClick={() => setDel({ ...del, open: true })} className="btn btn-mark" data-testid="delete-open">{A.delete}</button>}
               </div>
               {note("data")}
               {del.open && (
-                <form onSubmit={remove} className="mt-5 rounded-xl border border-oxblood/40 bg-paper p-4" data-testid="delete-form">
+                <form onSubmit={remove} className="mt-[var(--s-5)] border border-[var(--mark)] p-[var(--s-5)]" data-testid="delete-form">
                   <p className="font-semibold text-ink">{A.deleteTitle}</p>
                   <p className="mt-1 text-sm text-ink-2">{A.deleteText}</p>
                   <label htmlFor="del-confirm" className="mt-3 block text-sm text-ink-2">{A.deleteConfirm}</label>

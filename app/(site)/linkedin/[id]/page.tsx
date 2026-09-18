@@ -48,7 +48,7 @@ export default function LinkedInPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-3xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Eyebrow>{L.eyebrow}{data ? ` · ${data.title}` : ""}</Eyebrow>

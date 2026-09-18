@@ -6,9 +6,24 @@ import type { ReactNode } from "react";
  * leaving. Each one states its stacking rule, because a layout without one overlaps on a phone.
  */
 
-/** 12 columns, 1200px, 24px gutter (16px under 768). Everything else sits inside this. */
-export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`mx-auto w-full max-w-[var(--page-max)] px-[var(--s-5)] sm:px-[var(--s-7)] ${className}`}>{children}</div>;
+/**
+ * 12 columns, 1200px, 24px gutter (16px under 768). Everything else sits inside this.
+ *
+ * `width` narrows it, and it is a PROP rather than a max-w-* in className on purpose: two
+ * max-width utilities on one element are resolved by stylesheet order, not by the order they are
+ * written, so `<Container className="max-w-3xl">` silently stayed 1200px wide. Found by looking at
+ * the account page, which was setting a 768px measure and rendering at 1600.
+ */
+const WIDTH = {
+  page: "max-w-[var(--page-max)]",
+  reading: "max-w-[880px]",
+  prose: "max-w-[680px]",
+} as const;
+
+export function Container({
+  children, width = "page", className = "",
+}: { children: ReactNode; width?: keyof typeof WIDTH; className?: string }) {
+  return <div className={`mx-auto w-full ${WIDTH[width]} px-[var(--s-5)] sm:px-[var(--s-7)] ${className}`}>{children}</div>;
 }
 
 /** L-prose: one column at the measure, offset into columns 2–8. Not centred — set on the page. */
