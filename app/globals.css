@@ -113,6 +113,9 @@
   --ease-in: cubic-bezier(0.5, 0, 0.9, 0.3);
   --ease-move: cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* The masthead is one row, always. 60px on the comfortable scale; density never touches it. */
+  --header-h: 60px;
+
   /* Density — comfortable is the default; a surface states its own (§7.1) */
   --control-h: 44px;
   --control-h-sm: 36px;

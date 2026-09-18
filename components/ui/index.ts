@@ -44,4 +44,5 @@ export { EmptyState, Skeleton, SkeletonRows, Notice } from "./Feedback";
 export { Stepper, Tabs, Breadcrumb, Pagination } from "./Nav";
 export { Dialog, Drawer, Tooltip, Toast } from "./Overlay";
 export { Container, Prose, Editorial, DocumentLayout, ToolLayout, Section } from "./Layout";
+export { Logo } from "./Wordmark";
 export { Eyebrow, H1, H2, Stamp } from "./legacy";
