@@ -118,7 +118,7 @@ export default function EditPage() {
         <div className="mt-[var(--s-7)] grid gap-[var(--gutter)] lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-7">
             <Tabs
-              tabs={(["edit", "form", "changes"] as Tab[]).map((t) => ({ id: t, label: E.tabs[t] }))}
+              tabs={(["edit", "form", "changes"] as Tab[]).map((t) => ({ id: t, label: E.tabs[t], testId: `tab-${t}` }))}
               value={tab}
               onChange={(t) => setTab(t as Tab)}
             />

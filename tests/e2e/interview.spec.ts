@@ -87,7 +87,7 @@ test.describe("mock interview", () => {
     await login(page, "admin@resumetailor.app", "resumetailor2026");
     await page.goto("/admin");
     await expect(page.getByTestId("admin-totals")).toContainText(/Interviews|Entrevistas/);
-    await page.getByRole("button", { name: /^interviews|^entrevistas/i }).click();
+    await page.getByRole("tab", { name: /^interviews|^entrevistas/i }).click();
     await expect(page.getByTestId("admin-table")).toContainText(user.email);
   });
 });
