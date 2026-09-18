@@ -42,6 +42,7 @@
   --ink-muted: #756a56;      /* metadata, help, captions              4.93:1  */
   --ink-2: #514839;          /* secondary body, table cell prose      8.34:1  */
   --ink: #1c1913;            /* primary text, primary button ground  16.26:1  */
+  --ink-hover: #000000;      /* the ink ground, pressed harder                */
   --on-ink: #faf6ee;         /* label on an ink ground                        */
 
   /* Semantics — what a mark on a document can mean */
@@ -173,6 +174,7 @@
   --ink-muted: #a0957f;        /* 6.32:1 on desk, 5.86:1 raised */
   --ink-2: #c0b6a0;            /* 9.30:1 */
   --ink: #f2ede1;              /* 16.01:1 — and the primary button ground */
+  --ink-hover: #ffffff;        /* on a dark ground the ink brightens, not darkens */
   --on-ink: #14120e;           /* 16.01:1 on that ground */
   --mark: #e08a93;             /* 7.33:1 */
   --mark-deep: #eda3aa;        /* 9.28:1 — lighter on hover, because the ground is dark */
@@ -209,6 +211,7 @@
   --ink-muted: #a0957f;        /* 6.32:1 on desk, 5.86:1 raised */
   --ink-2: #c0b6a0;            /* 9.30:1 */
   --ink: #f2ede1;              /* 16.01:1 — and the primary button ground */
+  --ink-hover: #ffffff;        /* on a dark ground the ink brightens, not darkens */
   --on-ink: #14120e;           /* 16.01:1 on that ground */
   --mark: #e08a93;             /* 7.33:1 */
   --mark-deep: #eda3aa;        /* 9.28:1 — lighter on hover, because the ground is dark */
@@ -264,6 +267,7 @@
   --color-ink-muted: var(--ink-muted);
   --color-ink-2: var(--ink-2);
   --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
   --color-on-ink: var(--on-ink);
   --color-mark: var(--mark);
   --color-mark-deep: var(--mark-deep);
@@ -462,9 +466,7 @@ body {
 }
 /* Primary is INK. Red is a proofreader's mark, not a button (§6). */
 .btn-primary, .btn-ink { background: var(--ink); color: var(--on-ink); border: 1px solid var(--ink); }
-.btn-primary:hover:not(:disabled), .btn-ink:hover:not(:disabled) { background: #000; border-color: #000; }
-:root[data-theme="dark"] .btn-primary:hover:not(:disabled),
-:root[data-theme="dark"] .btn-ink:hover:not(:disabled) { background: #fff; border-color: #fff; }
+.btn-primary:hover:not(:disabled), .btn-ink:hover:not(:disabled) { background: var(--ink-hover); border-color: var(--ink-hover); }
 /* The corrective / destructive button, and nothing else. */
 .btn-mark { background: var(--mark); color: var(--on-mark); border: 1px solid var(--mark); }
 .btn-mark:hover:not(:disabled) { background: var(--mark-deep); border-color: var(--mark-deep); }
@@ -510,6 +512,21 @@ textarea.field { line-height: var(--doc-15-lh); resize: vertical; }
 .tour-mask { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
 .tour-hole { position: absolute; border-radius: var(--r-2); box-shadow: 0 0 0 9999px rgba(28, 23, 19, 0.62); transition: all var(--dur-3) var(--ease-move); }
 .tour-card { position: fixed; z-index: 91; max-width: min(340px, calc(100vw - 24px)); }
+
+/* Entering: ≤8px, opacity and transform only, one duration. Nothing slides across the screen. */
+@keyframes enter-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes enter-right { from { opacity: 0; transform: translateX(8px) } to { opacity: 1; transform: none } }
+.enter { animation: enter-up var(--dur-3) var(--ease-out) both; }
+.enter-x { animation: enter-right var(--dur-3) var(--ease-out) both; }
+
+/* A skeleton breathes; under reduced motion the global rule stops it on its first frame. */
+@keyframes skeleton-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .55 } }
+.skeleton { animation: skeleton-pulse 1.4s var(--ease-move) infinite; }
+
+/* The meter fills once, on first appearance — a CSS animation, so a re-render cannot replay it.
+   Under reduced motion the global rule collapses it to 1ms and it simply renders full. */
+@keyframes meter-fill { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.meter-fill { transform-origin: left center; animation: meter-fill var(--dur-3) var(--ease-out) both; }
 
 /* Listening pulse. Under reduced motion the base rule above freezes it into a static ring. */
 @keyframes pulse-ring { 0% { transform: scale(0.9); opacity: 0.8 } 100% { transform: scale(1.9); opacity: 0 } }
