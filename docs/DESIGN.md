@@ -363,3 +363,107 @@ sheet carries its own small token block rather than inheriting the desk's.
 - **Grain stays, at half strength.** The paper texture is part of the identity, but at
   `rgba(28,25,19,.022)` on a 3px grid — currently `.035`, which visibly dithers text edges at 13px.
   It is disabled inside `.sheet` (the document is clean paper) and under `print`.
+
+---
+
+## 7. Density, depth and motion
+
+### 7.1 Density is a decision
+
+Two densities, chosen per surface and stated in the surface's file header. Same tokens, different
+values; nothing else changes.
+
+| Token | `comfortable` | `compact` | |
+|---|---|---|---|
+| `--control-h` | 44px | 32px | Button, input, select height |
+| `--control-h-sm` | 36px | 28px | Inline / toolbar controls |
+| `--row-h` | 56px | 36px | List and table row |
+| `--cell-y` / `--cell-x` | 12px / 16px | 6px / 12px | Table cell padding |
+| `--pane-pad` | 24px | 16px | Panel padding |
+| body step | `ui-15` | `ui-13` | |
+| label step | `ui-13` | `ui-12` | |
+
+- **Comfortable**: marketing, `/start` funnel, the sheet and everything inside it, legal, account,
+  pricing, the public CV.
+- **Compact**: library list, applications board, admin, the editor's field column, the truth-check
+  list, versions, the admin tables.
+- **Coarse pointers override.** Under `@media (pointer: coarse)`, `--control-h` is forced to 44px
+  and `--row-h` to 48px even on compact surfaces. A phone is never dense.
+
+### 7.2 Depth, in order of preference
+
+Reach for these in order. A shadow is the *fourth* choice, not the first.
+
+1. **A rule.** `1px solid var(--rule)`. On retina, a 1px CSS border is 2 device pixels and holds;
+   never use `0.5px`, and never fake a rule with a `2px` background that renders soft.
+2. **A background step.** `--page` → `--sheet` (raised) or `--page` → `--sunken` (inset).
+3. **An inset.** `box-shadow: inset 0 1px 0 var(--rule-hairline)` at the top of a well.
+4. **A shadow.** Two only, and only for things that genuinely float:
+   ```
+   --shadow-pop: 0 1px 2px rgba(28,25,19,.06), 0 8px 24px -12px rgba(28,25,19,.28);
+   --shadow-sheet: 0 1px 0 rgba(28,25,19,.05), 0 24px 48px -32px rgba(28,25,19,.35);
+   ```
+   `--shadow-pop` for popovers, menus, dialogs and the header once scrolled. `--shadow-sheet` for the
+   document sheet, which is the one object allowed to look like a physical page. In dark mode both
+   shadows are replaced by a `--rule` border plus the `--desk-raised` step, because shadows do not
+   read on a dark ground.
+
+A panel that sits *in* the page gets a rule and nothing else. Today every panel has a shadow, which
+is why nothing on the kit screen looks more important than anything else.
+
+### 7.3 Motion
+
+```
+--dur-1: 120ms   state change on a control (hover, press, check)
+--dur-2: 180ms   a thing appearing in place (popover, inline error, row insert)
+--dur-3: 260ms   a thing arriving from elsewhere (dialog, drawer, step transition)
+--ease-out:  cubic-bezier(.2, .8, .3, 1)     entering
+--ease-in:   cubic-bezier(.5, 0, .9, .3)     leaving
+--ease-move: cubic-bezier(.4, 0, .2, 1)      position/size only
+```
+
+- Only `opacity`, `transform` and `background-color` are animated. Never `height`, `width`, `top`
+  or `box-shadow`.
+- Entering moves ≤ 8px. Nothing slides across the screen.
+- The score meter fills once, over `--dur-3`, on first appearance only — never on re-render.
+- `@media (prefers-reduced-motion: reduce)`: all durations become `1ms`, the meter renders at its
+  final value, the listening pulse becomes a static ring, and the marquee on the role ticker stops
+  (today it runs regardless, which is a WCAG 2.2.2 failure since it is longer than 5s and has no
+  pause control — the ticker either gains a pause control or is deleted).
+
+### 7.4 Icons
+
+**No icon package.** One local sprite, `public/icons.svg`, containing `<symbol>` elements that we
+draw and own, used as `<svg><use href="/icons.svg#name"/></svg>` with `aria-hidden` unless the icon
+is the only label.
+
+- **Two optical sizes, drawn separately, never scaled:** `16` (inline, dense rows, chips) and `20`
+  (buttons, nav, section marks). A 20px icon shrunk to 16px is banned — the stroke thins and it
+  stops matching the type.
+- **One stroke weight:** 1.5px at 20px, 1.25px at 16px, `stroke-linecap: round`,
+  `stroke-linejoin: round`, `vector-effect: non-scaling-stroke`. Butt caps and filled shapes only for
+  the two brand glyphs.
+- **Optical alignment:** an icon beside `ui-15` text sits on the text's cap-height, not its box —
+  `translateY(-0.5px)` on the 16px set, verified against a baseline overlay.
+- **Inventory (28).** `mic`, `keyboard`, `document`, `sheet-stack`, `download`, `print`, `pencil`,
+  `check`, `close`, `flag`, `search`, `link`, `external`, `chevron-down`, `chevron-right`,
+  `arrow-right`, `arrow-left`, `plus`, `minus`, `drag`, `trash`, `copy`, `eye`, `lock`, `globe`,
+  `play`, `history`, `menu`, plus exactly two brand marks: `linkedin`, `whatsapp`.
+- **Emoji are not icons.** Every emoji listed in D7 is replaced by a sprite symbol or by a word.
+  Emoji stay only where they are *content* — inside a user's own text.
+
+---
+
+## 8. Borders, fields and the focus ring
+
+- Every interactive edge is `1px solid var(--rule-field)` — 3.19:1 light, 3.67:1 dark, so a field is
+  discernible without relying on its placeholder.
+- **Focus** is one ring, identical everywhere: `outline: 2px solid var(--mark); outline-offset: 2px;`
+  on `:focus-visible` only. Measured 7.95:1 against `--page` and 7.33:1 against `--desk`, so it
+  passes 3:1 non-text contrast with room to spare. The `outline-offset` means it never overlaps the
+  control's own border, which is how it stays visible on dark grounds and on the sheet.
+- `:focus` without `:focus-visible` never draws a ring (no mouse-click rings).
+- **Never** `box-shadow: 0 0 0 3px rgba(...)` as a focus indicator: it is invisible at 3:1 against the
+  paper and it is what the app uses today.
+- Field states, all designed (§11): rest, hover, focus, filled, invalid, disabled, read-only,
+  loading, and with a character counter when a `maxLength` exists.
