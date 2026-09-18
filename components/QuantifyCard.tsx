@@ -5,6 +5,7 @@ import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import { speechAvailable, useSpeechInput } from "@/lib/client/speech";
 import type { GenerationView } from "@/lib/server/generations";
+import { Button, Checkbox, Icon, Input, Notice } from "@/components/ui";
 
 type Answer = { value: string; context: string; skip: boolean };
 
@@ -36,7 +37,7 @@ export function QuantifyCard({ gen, onUpdate }: { gen: GenerationView; onUpdate:
   });
 
   if (!gen.kit) {
-    return gen.quantify.count > 0 ? <p className="text-sm text-ink-2" data-testid="quantify-teaser">🔢 {Q.lockedTeaser(gen.quantify.count)}</p> : null;
+    return gen.quantify.count > 0 ? <p className="font-sans text-[length:var(--ui-13)] text-[color:var(--ink-2)]" data-testid="quantify-teaser">{Q.lockedTeaser(gen.quantify.count)}</p> : null;
   }
   if (asks.length === 0) return null;
 
@@ -55,33 +56,38 @@ export function QuantifyCard({ gen, onUpdate }: { gen: GenerationView; onUpdate:
 
   const used = gen.quantify.left === 0;
   return (
-    <section className="rounded-2xl border border-gold bg-gold-2/40 p-5" data-testid="quantify">
-      <p className="font-display text-xl text-ink">🔢 {Q.title}</p>
-      <p className="mt-1 text-sm text-ink-2">{Q.intro}</p>
-      {used && !note ? <p className="mt-3 text-sm text-muted" data-testid="quantify-used">{Q.used}</p> : (
-        <ol className="mt-4 space-y-3">
+    <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="quantify">
+      <p className="eyebrow">{Q.title}</p>
+      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{Q.intro}</p>
+      {used && !note ? (
+        <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]" data-testid="quantify-used">{Q.used}</p>
+      ) : (
+        <ol className="mt-[var(--s-5)] border-t border-[var(--rule-hairline)]">
           {asks.map((a, i) => (
-            <li key={i} className="rounded-xl bg-surface p-3" data-testid="quantify-ask">
-              <p className="text-sm font-medium text-ink">{a.question}</p>
-              <p className="mt-0.5 text-xs text-muted">“{a.bullet}”</p>
-              <div className={"mt-2 grid gap-2 sm:grid-cols-[8rem_1fr_auto] " + (answers[i]?.skip ? "opacity-40" : "")}>
-                <input aria-label={Q.value} placeholder={a.unitHint || Q.value} inputMode="decimal" className="field !py-1.5" value={answers[i]?.value ?? ""} disabled={answers[i]?.skip || busy} onChange={(e) => set(i, { value: e.target.value })} data-testid="quantify-value" />
-                <input aria-label={Q.context} placeholder={Q.context} className="field !py-1.5" value={answers[i]?.context ?? ""} disabled={answers[i]?.skip || busy} onChange={(e) => set(i, { context: e.target.value })} data-testid="quantify-context" />
+            <li key={i} className="border-b border-[var(--rule-hairline)] py-[var(--s-5)]" data-testid="quantify-ask">
+              <p className="font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink)]">{a.question}</p>
+              {/* The bullet the question came from, quoted in the document's own voice. */}
+              <p className="doc-12 mt-[var(--s-2)] text-[color:var(--ink-muted)]">“{a.bullet}”</p>
+              <div className={"mt-[var(--s-4)] grid gap-[var(--s-3)] sm:grid-cols-[7rem_1fr] " + (answers[i]?.skip ? "opacity-50" : "")}>
+                <Input aria-label={Q.value} placeholder={a.unitHint || Q.value} inputMode="decimal" value={answers[i]?.value ?? ""} disabled={answers[i]?.skip || busy} onChange={(e) => set(i, { value: e.target.value })} data-testid="quantify-value" />
+                <Input aria-label={Q.context} placeholder={Q.context} value={answers[i]?.context ?? ""} disabled={answers[i]?.skip || busy} onChange={(e) => set(i, { context: e.target.value })} data-testid="quantify-context" />
+              </div>
+              <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-[var(--s-5)]">
+                <Checkbox checked={answers[i]?.skip ?? false} onChange={(e) => set(i, { skip: e.target.checked })} data-testid="quantify-skip" label={Q.dontKnow} />
                 {speechAvailable() && (
                   <button type="button" disabled={busy || answers[i]?.skip} onClick={() => { if (speech.listening) { speech.stop(); return; } setVoiceFor(i); speech.start(); }}
-                    className="rounded-full border border-edge-2 px-3 py-1.5 text-xs font-semibold text-ink" data-testid="quantify-mic">{speech.listening && voiceFor === i ? `■ ${Q.listening}` : `🎙 ${Q.speak}`}</button>
+                    className="inline-flex items-center gap-[var(--s-2)] font-sans text-[length:var(--ui-12)] font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)] disabled:text-[color:var(--ink-40)]" data-testid="quantify-mic">
+                    <Icon name="mic" size={16} />{speech.listening && voiceFor === i ? Q.listening : Q.speak}
+                  </button>
                 )}
               </div>
-              <label className="mt-2 flex items-center gap-2 text-xs text-ink-2">
-                <input type="checkbox" checked={answers[i]?.skip ?? false} onChange={(e) => set(i, { skip: e.target.checked })} data-testid="quantify-skip" />{Q.dontKnow}
-              </label>
             </li>
           ))}
         </ol>
       )}
-      {!used && <button type="button" onClick={submit} disabled={busy} className="btn btn-primary mt-4" data-testid="quantify-submit">{busy ? Q.working : Q.submit}</button>}
-      {note && <p className="mt-3 text-sm text-moss" role="status" data-testid="quantify-done">{note}</p>}
-      {error && <p className="mt-3 text-sm text-oxblood" role="alert">{error}</p>}
+      {!used && <Button className="mt-[var(--s-5)]" size="sm" onClick={submit} loading={busy} data-testid="quantify-submit">{busy ? Q.working : Q.submit}</Button>}
+      {note && <Notice tone="kept" icon="check" className="mt-[var(--s-4)]"><span role="status" data-testid="quantify-done">{note}</span></Notice>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert">{error}</span></Notice>}
     </section>
   );
 }

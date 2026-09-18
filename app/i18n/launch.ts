@@ -57,7 +57,7 @@ const en = {
     refresh_capped: "You've updated this kit's letters a few times today. Try again tomorrow.",
   } satisfies Record<ApiErrorCode, string>,
   aiDown: "AI generation is temporarily unavailable. You can still fill everything in — try generating again in a few minutes.",
-  menu: { open: "Open menu", close: "Close menu", title: "Menu", account: "My account", admin: "Admin", start: "Start free", signedInAs: "Signed in as" },
+  menu: { open: "Open menu", close: "Close menu", title: "Menu", account: "My account", admin: "Admin", start: "Start free", signedInAs: "Signed in as", more: "More" },
   footer: {
     legal: "Legal", privacy: "Privacy", terms: "Terms", refunds: "Refunds", cookies: "Cookies", contact: "Contact",
     payStripe: "Card payments in USD by Stripe", payMp: "Pix, boleto and card by Mercado Pago (charged in BRL)",
@@ -192,7 +192,7 @@ const pt: Launch = {
     refresh_capped: "Você já atualizou as cartas deste kit algumas vezes hoje. Tente de novo amanhã.",
   },
   aiDown: "A geração por IA está fora do ar por enquanto. Você pode preencher tudo normalmente — tenta gerar de novo em alguns minutos.",
-  menu: { open: "Abrir menu", close: "Fechar menu", title: "Menu", account: "Minha conta", admin: "Admin", start: "Começar grátis", signedInAs: "Conectado como" },
+  menu: { open: "Abrir menu", close: "Fechar menu", title: "Menu", account: "Minha conta", admin: "Admin", start: "Começar grátis", signedInAs: "Conectado como", more: "Mais" },
   footer: {
     legal: "Jurídico", privacy: "Privacidade", terms: "Termos", refunds: "Reembolso", cookies: "Cookies", contact: "Contato",
     payStripe: "Cartão em dólar (USD) pelo Stripe", payMp: "Pix, boleto e cartão pelo Mercado Pago (cobrado em reais)",
@@ -325,7 +325,7 @@ const es: Launch = {
     refresh_capped: "Ya actualizaste las cartas de este kit varias veces hoy. Vuelve a intentarlo mañana.",
   },
   aiDown: "La generación con IA no está disponible por ahora. Puedes completar todo igual — vuelve a intentar generar en unos minutos.",
-  menu: { open: "Abrir menú", close: "Cerrar menú", title: "Menú", account: "Mi cuenta", admin: "Admin", start: "Empieza gratis", signedInAs: "Sesión iniciada como" },
+  menu: { open: "Abrir menú", close: "Cerrar menú", title: "Menú", account: "Mi cuenta", admin: "Admin", start: "Empieza gratis", signedInAs: "Sesión iniciada como", more: "Más" },
   footer: {
     legal: "Legal", privacy: "Privacidad", terms: "Términos", refunds: "Reembolsos", cookies: "Cookies", contact: "Contacto",
     payStripe: "Pago con tarjeta en dólares (USD) vía Stripe", payMp: "Pix, boleto y tarjeta vía Mercado Pago (cobro en reales brasileños, BRL)",
