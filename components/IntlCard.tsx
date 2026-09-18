@@ -59,7 +59,7 @@ export function IntlCard({ gen }: { gen: GenerationView }) {
           <p className="mt-[var(--s-2)] font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">{I.left(version.left)}</p>
         </div>
       )}
-      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert">{error}</span></Notice>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
     </section>
   );
 }

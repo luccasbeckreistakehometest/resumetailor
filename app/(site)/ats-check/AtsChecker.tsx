@@ -150,7 +150,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
           <Button size="lg" onClick={run} data-testid="ats-check">{A.check}</Button>
           <p className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{A.privacy}</p>
         </div>
-        {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert" data-testid="ats-error">{error}</span></Notice>}
+        {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="ats-error">{error}</span></Notice>}
       </div>
 
       {result && (

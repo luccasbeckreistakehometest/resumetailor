@@ -112,7 +112,7 @@ export function LetterStudio({ gen }: { gen: GenerationView }) {
         </div>
       )}
       {(letter || mail) && <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{L.placeholders}</p>}
-      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert" data-testid="letters-error">{error}</span></Notice>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="letters-error">{error}</span></Notice>}
     </div>
   );
 }

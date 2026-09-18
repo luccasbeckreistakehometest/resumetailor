@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { buildKitByText, login, signUp, skipTour } from "./helpers";
+import { buildKitByText, login, signOut, signUp, skipTour } from "./helpers";
 
 const ADMIN = { email: "admin@resumetailor.app", password: "resumetailor2026" };
 
@@ -29,7 +29,7 @@ test.describe("support and admin tools", () => {
 
     await login(page, ADMIN.email, ADMIN.password);
     await page.goto("/admin");
-    await page.getByRole("button", { name: /^Messages/ }).click();
+    await page.getByRole("tab", { name: /^Messages/ }).click();
     const item = page.getByTestId("admin-messages").locator("li", { hasText: marker }).first();
     await expect(item).toContainText("visitor@example.com");
     await expect(page.getByTestId("admin-messages")).not.toContainText(`${marker}-bot`);
@@ -49,7 +49,7 @@ test.describe("support and admin tools", () => {
     const slug = url.split("/cv/")[1];
     for (const path of ["/api/admin/overview", "/api/admin/users", "/api/admin/messages"]) expect((await page.request.get(path)).status()).toBe(403);
     expect((await page.request.post(`/api/admin/public/${slug}`, { data: { down: true } })).status()).toBe(403);
-    await page.getByTestId("signout").click();
+    await signOut(page);
 
     await login(page, ADMIN.email, ADMIN.password);
     await page.goto("/admin");

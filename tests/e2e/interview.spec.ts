@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { buildKitByText, login, signUp } from "./helpers";
+import { buildKitByText, login, signOut, signUp } from "./helpers";
 
 const VOICE_ANSWER = "At Acme I led the lifecycle programme for two years. Pipeline had stalled, so I rebuilt the segmentation and ran weekly A/B tests. Qualified pipeline grew 38 percent in 12 months and I handed the playbook to sales.";
 const TYPED_ANSWER = "The failed campaign was a paid push to cold audiences in 2024. I paused it after one week, moved the budget to retargeting, and the cost per lead fell by 40 percent. What I changed was to test the audience before the creative.";
@@ -83,7 +83,7 @@ test.describe("mock interview", () => {
     await expect(page.getByTestId("session-item")).toHaveCount(1);
     await expect(page.getByTestId("session-item")).toContainText(/completed|concluída|completada/i);
 
-    await page.getByTestId("signout").click();
+    await signOut(page);
     await login(page, "admin@resumetailor.app", "resumetailor2026");
     await page.goto("/admin");
     await expect(page.getByTestId("admin-totals")).toContainText(/Interviews|Entrevistas/);

@@ -87,7 +87,7 @@ export function QuantifyCard({ gen, onUpdate }: { gen: GenerationView; onUpdate:
       )}
       {!used && <Button className="mt-[var(--s-5)]" size="sm" onClick={submit} loading={busy} data-testid="quantify-submit">{busy ? Q.working : Q.submit}</Button>}
       {note && <Notice tone="kept" icon="check" className="mt-[var(--s-4)]"><span role="status" data-testid="quantify-done">{note}</span></Notice>}
-      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert">{error}</span></Notice>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
     </section>
   );
 }

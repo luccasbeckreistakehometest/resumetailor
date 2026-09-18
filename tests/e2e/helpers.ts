@@ -98,3 +98,13 @@ export async function kitAction(page: Page, testId: string) {
   if (await more.isVisible({ timeout: 1000 }).catch(() => false)) await more.click();
   await page.getByTestId(testId).first().click();
 }
+
+/**
+ * Sign out. The control moved into the account menu when the header was cut to five public links
+ * (docs/DESIGN.md surface 4), so open the menu first when it is there.
+ */
+export async function signOut(page: Page) {
+  const menu = page.getByTestId("nav-account");
+  if (await menu.isVisible({ timeout: 1000 }).catch(() => false)) await menu.click();
+  await page.getByTestId("signout").click();
+}

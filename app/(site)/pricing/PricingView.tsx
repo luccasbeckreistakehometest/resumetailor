@@ -104,7 +104,7 @@ export function PricingView() {
               )}
               <p>{l.pricing.prepaid} <Link href="/legal/refunds" className="underline underline-offset-[3px] hover:text-[color:var(--ink)]">{l.pricing.refundLink}</Link></p>
             </div>
-            {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert">{error}</span></Notice>}
+            {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
           </div>
 
           {/* The price table: packs are rows, and the saving is its own column rather than a

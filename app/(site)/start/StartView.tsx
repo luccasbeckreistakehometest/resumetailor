@@ -346,7 +346,7 @@ function StartInner() {
                 </div>
               )}
 
-              {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-5)]"><span role="alert">{error}</span></Notice>}
+              {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-5)]"><span>{error}</span></Notice>}
 
               {current !== "intent" && !loading && (
                 <div className="mt-[var(--s-8)] flex justify-end border-t border-[var(--rule)] pt-[var(--s-5)]">
@@ -435,7 +435,7 @@ function StartInner() {
                       ) : (
                         <Button className="mt-[var(--s-5)]" size="lg" onClick={unlock} loading={unlocking} data-testid="unlock">{unlocking ? x.auth.working : x.credits.unlockWith}</Button>
                       )}
-                      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert">{error}</span></Notice>}
+                      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
                     </div>
 
                     <div className="mt-[var(--s-6)] flex flex-wrap items-center gap-[var(--s-3)] border-t border-[var(--rule)] pt-[var(--s-5)]">

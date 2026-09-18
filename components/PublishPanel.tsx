@@ -103,7 +103,7 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
           </div>
         </div>
       )}
-      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span role="alert" data-testid="publish-error">{error}</span></Notice>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="publish-error">{error}</span></Notice>}
     </section>
   );
 }
