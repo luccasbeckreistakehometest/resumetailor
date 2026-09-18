@@ -788,3 +788,27 @@ look like it was made by a senior".
    colour.
 5. Tab through the surface with the keyboard: every interactive element must show the ring from §8,
    in order, with no traps.
+
+---
+
+## 16. What building it changed
+
+The foundations (§14 items 1, 2 and the `/design` gallery) are built. Everything below is a place
+where the written system was wrong or incomplete, found by rendering it and looking at the result.
+The code is the truth; this section keeps the document honest.
+
+| # | The spec said | The build found | Now |
+|---|---|---|---|
+| C1 | Field ground is `--sheet` | In dark, `--sheet` is the *dimmed paper* of the document, so every input became a bright cream slab on the desk. An input is not the document. | New token `--field`: `#FFFDF8` light, `#0E0C09` dark (ink 16.72:1, placeholder 5.01:1, edge 3.84:1) |
+| C2 | Skeleton bars are `--sunken` | `--sunken` is *darker* than the desk, so a loading row was invisible in dark (1.13:1 step). | New token `--skeleton`: `#F2ECE0` light, `#332C20` dark (1.36 step off the desk) |
+| C3 | Primary hover is `#000` | Correct on paper, wrong on the desk, where ink is `#F2EDE1` and pressing it should brighten. | New token `--ink-hover`: `#000` light, `#fff` dark |
+| C4 | Truncate a long table cell | Done with `max-width: 0` under an auto layout, the title column collapsed to 50px and destroyed its content — **defect D4, reintroduced by the fix for D4**. | `table-layout: fixed`, columns declare their share, and a `minWidth` floor below which the pane scrolls instead of the columns collapsing |
+| C5 | — | `overflow: hidden` on a `<td>` clips the cell's own bottom border: the row's rule sat half a pixel above its neighbours' and the text stopped centring against them. Visible at 3×. | The clamp lives on an inner block; the cell keeps its height token |
+| C6 | — | `text-[var(--on-ink)]` is ambiguous to Tailwind, which reads it as a **font-size** and leaves the colour inherited. Every primary button shipped ink-on-ink (1:1) and the destructive button ink-on-oxblood (≈2:1). | Every arbitrary text utility carries a `color:`/`length:` hint, and `tests/unit/design-tokens.test.ts` fails the build on the next one |
+| C7 | `L-document` is 816 + 320 | As fixed widths they overflow any pane narrower than 1168px — which the gallery is. | Max-widths; the sheet shrinks first |
+| C8 | Dark is a first-class theme | It had never been rendered. It now has been, at both widths — but only on `/design`. | `<html data-theme="light">` pins every product route to Paper until surfaces 4–18 are rebuilt and looked at in the dark. Remove the attribute then. |
+
+Still not done, and deliberately so: the `.doc-*` print themes (§10) are untouched, four of them still
+indigo — that is surface 3, and it lands with the parity spec. The old `.card`/`.btn`/`.field`/
+`.eyebrow` classes still exist, re-cut on the new tokens, because they are used ~1,400 times; they
+are deleted surface by surface.

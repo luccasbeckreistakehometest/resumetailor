@@ -42,7 +42,7 @@ export type Column<T> = {
 };
 
 export function Table<T>({
-  rows, columns, getKey, empty, caption, stickyFirst = false, className = "",
+  rows, columns, getKey, empty, caption, stickyFirst = false, minWidth, className = "",
 }: {
   rows: readonly T[];
   columns: readonly Column<T>[];
@@ -51,13 +51,22 @@ export function Table<T>({
   /** Read by a screen reader, and printed above the table on paper. */
   caption?: string;
   stickyFirst?: boolean;
+  /** The width below which the pane scrolls rather than the columns collapsing. */
+  minWidth?: string;
   className?: string;
 }) {
   const zebra = rows.length > 12;
 
   return (
     <div className={`w-full overflow-x-auto ${className}`}>
-      <table className="w-full table-fixed border-collapse text-left font-sans">
+      {/* A table narrower than its columns need is not a table, it is five ellipses in a row: at
+          390px the five-column example rendered "N…", "8…", "R…". Below the floor the pane
+          scrolls sideways instead — the page body never does — and `stickyFirst` keeps the
+          first column in view while it happens. */}
+      <table
+        className="w-full table-fixed border-collapse text-left font-sans"
+        style={{ minWidth: minWidth ?? `${columns.length * 120}px` }}
+      >
         {caption && <caption className="mb-[var(--s-4)] text-left font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{caption}</caption>}
         <thead>
           <tr>
