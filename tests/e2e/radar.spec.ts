@@ -1,7 +1,12 @@
 import { test, expect } from "./fixtures";
 import { skipTour, unlockedTailorKit } from "./helpers";
 
-const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+/**
+ * A date the radar will count as exactly `n` whole days ago. It reads a date-only value as noon
+ * UTC (lib/applications/radar.ts), so "n days back from now" lands on n-1 whenever the clock is
+ * before 12:00 UTC — half a day back puts it on the right side of that anchor at every hour.
+ */
+const daysAgo = (n: number) => new Date(Date.now() - (n + 0.5) * 86_400_000).toISOString().slice(0, 10);
 
 test.describe("follow-up radar, calendar and brief", () => {
   test.use({ permissions: ["clipboard-read", "clipboard-write"] });
