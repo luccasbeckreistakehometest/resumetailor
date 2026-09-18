@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { skipTour } from "./helpers";
+import { signUp, skipTour, unlockedTailorKit } from "./helpers";
 
 // A posting whose vocabulary the demo kit barely touches, so the first draft reads generic.
 const POSTING = `Demand Generation Manager
@@ -26,6 +26,15 @@ test("a tailored kit shows how generic it is, goes deeper on the posting, and st
   await expect(page.getByTestId("pers-generic")).toBeVisible();
   await expect(page.getByTestId("pers-missing")).toContainText(/salesforce|marketo/);
   const before = await score(page);
+
+  // Locked: the meter is honest about how generic the draft is, but going deeper is another full
+  // generation, so it waits for the unlock instead of offering a working button.
+  await expect(page.getByTestId("deepen-locked")).toBeVisible();
+  await expect(page.getByTestId("deepen")).toBeHidden();
+  expect((await page.request.post(`/api/generations/${await page.evaluate(() => localStorage.getItem("rt_last_gen") ?? "")}/deepen`)).status()).toBe(403);
+  await page.getByTestId("unlock").click();
+  await signUp(page);
+  await expect(page.getByTestId("kit")).toBeVisible({ timeout: 15_000 });
 
   await page.getByTestId("deepen").click();
   await expect(page.getByTestId("personalisation")).toHaveAttribute("data-generic", "0", { timeout: 30_000 });
@@ -59,11 +68,7 @@ test("a kit built without a posting has no meter", async ({ page }) => {
 });
 
 test("parallel deepen requests on one kit never run more passes than the limit", async ({ page }) => {
-  await page.goto("/");
-  await skipTour(page);
-  const made = await page.request.post("/api/generate", { data: { mode: "tailor", targetRole: "Demand Generation Manager", jobDescription: POSTING, resume: RESUME, lang: "en" } });
-  expect(made.status()).toBe(200);
-  const { id } = await made.json();
+  const { id } = await unlockedTailorKit(page, { email: `deepen${Date.now()}@example.com` });
   const codes = await Promise.all(Array.from({ length: 6 }, () => page.request.post(`/api/generations/${id}/deepen`).then((r) => r.status())));
   expect(codes.filter((c) => c === 200).length).toBeLessThanOrEqual(2);
   expect(codes.filter((c) => c === 429).length).toBeGreaterThanOrEqual(4);
