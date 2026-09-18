@@ -8,6 +8,10 @@ import { envNumber } from "@/lib/server/env";
 export interface UsageInput { feature: string; ownerKey?: string | null; ip?: string | null; anonymous: boolean; model?: string; costUsd?: number; ok?: boolean; error?: string | null }
 
 /**
+ * Records a call that already happened, without taking part in the budget. Anything that is about
+ * to SPEND should use reserveSpend/settleSpend instead, so parallel calls cannot pass the ceiling
+ * together.
+ *
  * `anonymous` is the caller having no account, decided at the call site from `owner.userId` —
  * never guessed from the shape of `ownerKey`, which for a visitor is a cookie value.
  */
