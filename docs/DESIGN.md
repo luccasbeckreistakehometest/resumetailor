@@ -28,7 +28,7 @@ every screenshot at 1440×900 and 390×844. Evidence, not taste, first.
 |---|---|---|
 | D1 | **Fraunces cannot set a number in a column.** Measured at 100px: the string `111111` is 214.9px wide, `000000` is 355.7px. `font-variant-numeric: tabular-nums` changes nothing — Fraunces ships no working `tnum`. Every headline figure in the product is set in Fraunces: `89%` match, `78%` personalisation, `100/100`, `R$ 149`, all eight admin stat cards. | `scratchpad/design/tnum-probe.mjs` |
 | D2 | **The printed document is a different brand from the app.** Four of the six `.doc-*` print themes (`modern`, `compact`, `bold`, `designed`) are built on `#4f46e5` indigo and Inter. The app is oxblood and Fraunces. The `.docx` export (`lib/resume/export.ts:29,53`) is Calibri. One résumé, three identities. | `app/globals.css`, `lib/resume/export.ts` |
-| D3 | **The header breaks at 1440px when signed in.** Eight nav items plus e‑mail, credits and a CTA overflow, so `ATS check`, `Am I a fit?`, `Compare jobs`, `My CVs`, `Sign out` and `Start free` each wrap onto two lines. | `08-library-1440.png`, `09-editor-1440.png`, `11-applications-1440.png`, `18-admin-1440.png` |
+| D3 | **The header breaks at 1440px when signed in.** Seven nav items (eight for an admin) plus the e‑mail address, a credits pill, the language switch and a CTA overflow the row, so `ATS check`, `Am I a fit?`, `Compare jobs`, `My CVs`, `Sign out` and `Start free` each wrap onto two lines. | `08-library-1440.png`, `09-editor-1440.png`, `11-applications-1440.png`, `18-admin-1440.png` |
 | D4 | **The library row destroys its own content.** The kit title renders as `Alex …` (8 characters) and its metadata wraps over eight lines inside a ~55px column, because `min-w-0 flex-1` competes with eight unshrinkable buttons in one `flex-wrap` row. | `08-library-1440.png` |
 | D5 | **The résumé is never shown at delivery.** On the unlocked kit screen the tailored résumé — the thing that was bought — exists only behind a *Save as PDF / Print* button. Ten stacked panels appear before it. | `07-kit-unlocked-1440.png` |
 | D6 | **Three meters, three designs.** Match (41→89), Personalisation (78%) and Sounds human (100/100) each use a different bar, a different label position and a different numeral treatment on the same screen. | `07-kit-unlocked-1440.png` |
@@ -43,8 +43,8 @@ every screenshot at 1440×900 and 390×844. Evidence, not taste, first.
   for a feature blurb, a form, a price, a metric, a list row and an empty state. When every object has
   the same silhouette, nothing has rank. Depth comes only from that one shadow; there is no use of
   rules, insets, background steps or margin as structure.
-- **The page is a stack of bands.** The landing is seven full-bleed sections, each `py-20`, each with a
-  left-aligned heading in the same place, each followed by an equal-width grid. There is no column
+- **The page is a stack of bands.** The landing is nine full-bleed bands, seven of them `py-20`, each with
+  a left-aligned heading in the same place, each followed by an equal-width grid. There is no column
   system, no asymmetry, no change of measure, and nothing anchors the eye.
 - **Eleven equal feature cards.** `01`–`11` in a three-column grid leaves two orphans on the last row.
   It is the banned "three equal feature cards" pattern with the count turned up.
@@ -702,7 +702,7 @@ Where each one currently bites:
 | Three equal feature cards | 11 of them on the landing, 3 on the library, 3 in the kit's e-mail row | `L-editorial` 7/4 with unequal blocks (§14) |
 | Decorative gradient | the oxblood CTA band and the `-rotate-1` fake paper stack behind the hero demo | Nothing. A rule and a sheet. |
 | A hero that is centred text + buttons | the landing's final CTA section | A left-set closing line in the 7 column with one `primary` |
-| Fake dashboards in screenshots | the "What's new" showcase renders 9 miniature fake UIs | Real, live components at real size |
+| Fake dashboards in screenshots | `FeatureShowcase` draws 9 miniature UIs in CSS at `min-h-12` (48px) with invented figures — `41→89`, `92`, `8.4`, `84`, `R$ 6.1k`, “2 ‘um’” — plus ✓ ◐ ✕ ⚠ 📡 as icons | The miniature idea is kept (drawn, themed, localised — better than a screenshot), but redrawn at a legible size in the sprite and the type scale, labelled as an illustration, and fed the live demo's real numbers where one exists |
 
 ### Also banned here, specific to this product
 
