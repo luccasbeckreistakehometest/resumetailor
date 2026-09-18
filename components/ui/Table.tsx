@@ -89,20 +89,28 @@ export function Table<T>({
               key={getKey(row, i)}
               className={`group transition-colors duration-[var(--dur-1)] hover:bg-[var(--sunken)] ${zebra && i % 2 === 1 ? "bg-[var(--zebra)]" : ""}`}
             >
-              {columns.map((c, ci) => (
-                <td
-                  key={c.key}
-                  className={`h-[var(--row-h)] border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--cell-y)]
-                    align-middle text-[length:var(--density-body)] text-[color:var(--ink-2)]
-                    ${c.mono ? "font-mono tabular-nums" : ""}
-                    ${c.align === "right" ? "text-right tabular-nums text-[color:var(--ink)]" : c.align === "center" ? "text-center" : "text-left"}
-                    ${c.clamp === 2 ? "whitespace-normal [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden" : "truncate"}
-                    ${stickyFirst && ci === 0 ? "sticky left-0 bg-[var(--page)] group-hover:bg-[var(--sunken)]" : ""}`}
-                  style={c.clamp === 2 ? { height: "var(--row-h-2)" } : undefined}
-                >
-                  {c.cell(row)}
-                </td>
-              ))}
+              {columns.map((c, ci) => {
+                const value = c.cell(row);
+                return (
+                  <td
+                    key={c.key}
+                    title={typeof value === "string" ? value : undefined}
+                    className={`border-b border-[var(--rule-hairline)] px-[var(--cell-x)] py-[var(--cell-y)]
+                      align-middle text-[length:var(--density-body)] text-[color:var(--ink-2)]
+                      ${c.mono ? "font-mono tabular-nums" : ""}
+                      ${c.align === "right" ? "text-right tabular-nums text-[color:var(--ink)]" : c.align === "center" ? "text-center" : "text-left"}
+                      ${stickyFirst && ci === 0 ? "sticky left-0 bg-[var(--page)] group-hover:bg-[var(--sunken)]" : ""}`}
+                    style={{ height: c.clamp === 2 ? "var(--row-h-2)" : "var(--row-h)" }}
+                  >
+                    {/* The clamp lives on an inner block, never on the cell: overflow:hidden on a
+                        td clips its own bottom border, so the row's rule sits half a pixel out of
+                        line with its neighbours and the text stops centring. Seen at 3×. */}
+                    <span className={c.clamp === 2 ? "block overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]" : "block truncate"}>
+                      {value}
+                    </span>
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
