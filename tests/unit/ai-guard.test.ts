@@ -14,6 +14,10 @@ const tts = await import("@/lib/server/tts");
 const { getDb } = await import("@/lib/server/db");
 const { extra } = await import("@/app/i18n/extra");
 
+/** A caller as withOwner resolves one: anonymity is `userId === null`, never the shape of `key`. */
+const visitor = (key: string, ip = "1.1.1.1") => ({ userId: null, key, ip });
+const member = (key: string, ip = "1.1.1.1") => ({ userId: key, key, ip });
+
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined) => { if (!(k in saved)) saved[k] = process.env[k]; if (v === undefined) delete process.env[k]; else process.env[k] = v; };
 afterEach(() => { for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; delete saved[k]; } health.__resetAiHealth(); });
@@ -68,21 +72,21 @@ describe("spend ceiling and the AI gate", () => {
   it("records every call and pauses AI once today's spend reaches the ceiling", async () => {
     await health.probeAi(fake(200));
     setEnv("AI_DAILY_BUDGET_USD", "0.05");
-    expect(aiGate({ ownerKey: "o1" })).toBeNull();
-    const ok = await runAi("unit", { ownerKey: "o1", ip: "1.1.1.1" }, async () => ({ costUsd: 0.03, model: "m" }));
+    expect(aiGate(member("o1"))).toBeNull();
+    const ok = await runAi("unit", member("o1"), async () => ({ costUsd: 0.03, model: "m" }));
     expect(ok.ok).toBe(true);
     expect(spend.spentToday()).toBeCloseTo(0.03, 5);
-    const failed = await runAi("unit", { ownerKey: "o1" }, async () => { throw new Error("rate limit exceeded"); });
+    const failed = await runAi("unit", member("o1"), async () => { throw new Error("rate limit exceeded"); });
     expect(failed.ok).toBe(false);
     if (!failed.ok) expect(failed.reply).toMatchObject({ status: 503, body: { error: "ai_busy" } });
     expect(spend.recentAiErrors().some((e) => e.feature === "unit" && /rate/.test(e.error ?? ""))).toBe(true);
-    await runAi("unit", {}, async () => ({ costUsd: 0.03 }));
+    await runAi("unit", member("o2"), async () => ({ costUsd: 0.03 }));
     expect(spend.overBudget()).toBe(true);
-    const blocked = await runAi("unit", {}, async () => ({ costUsd: 0 }));
+    const blocked = await runAi("unit", member("o2"), async () => ({ costUsd: 0 }));
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.reply).toMatchObject({ status: 503, body: { error: "ai_busy" } });
     setEnv("AI_DAILY_BUDGET_USD", "1000");
-    expect(aiGate({ ownerKey: "o1" })).toBeNull();
+    expect(aiGate(member("o1"))).toBeNull();
   });
 
   it("anonymous visitors stop at their own slice of the budget; signed-in people keep the rest", async () => {
@@ -91,19 +95,19 @@ describe("spend ceiling and the AI gate", () => {
     setEnv("AI_DAILY_BUDGET_USD", "1");
     setEnv("AI_ANON_DAILY_BUDGET_USD", undefined);
     expect(spend.anonDailyBudget()).toBeCloseTo(0.2, 5);          // a fifth of the ceiling by default
-    const anon = { ownerKey: "anon_abc123", ip: "9.9.9.9" };
+    const anon = visitor("anon_abc123", "9.9.9.9");
     for (let i = 0; i < 4; i++) expect((await runAi("fit", anon, async () => ({ costUsd: 0.05 }))).ok).toBe(true);
     // 0.20 spent by visitors without an account: they are paused, a signed-in user is not.
     expect(aiGate(anon)).toMatchObject({ status: 503, body: { error: "ai_busy" } });
-    expect(aiGate({ ownerKey: "anon_someone_else" })).toMatchObject({ status: 503 });
-    expect(aiGate({})).toMatchObject({ status: 503 });
-    expect(aiGate({ ownerKey: "usr_paying" })).toBeNull();
+    expect(aiGate(visitor("zz"))).toMatchObject({ status: 503 });   // a forged cookie value is still anonymous
+    expect(aiGate(visitor("usr_1"))).toMatchObject({ status: 503 });  // …and so is one that looks like an account id
+    expect(aiGate(member("usr_paying"))).toBeNull();
     expect(spend.spentTodayAnonymous()).toBeCloseTo(0.2, 5);
-    expect((await runAi("generate", { ownerKey: "usr_paying" }, async () => ({ costUsd: 0.5 }))).ok).toBe(true);
+    expect((await runAi("generate", member("usr_paying"), async () => ({ costUsd: 0.5 }))).ok).toBe(true);
     expect(spend.spentTodayAnonymous()).toBeCloseTo(0.2, 5);      // signed-in spend is not in the anonymous slice
     // The overall ceiling still applies to everyone.
-    expect((await runAi("generate", { ownerKey: "usr_paying" }, async () => ({ costUsd: 0.3 }))).ok).toBe(true);
-    expect(aiGate({ ownerKey: "usr_paying" })).toMatchObject({ status: 503, body: { error: "ai_busy" } });
+    expect((await runAi("generate", member("usr_paying"), async () => ({ costUsd: 0.3 }))).ok).toBe(true);
+    expect(aiGate(member("usr_paying"))).toMatchObject({ status: 503, body: { error: "ai_busy" } });
     // An explicit slice is honoured, never above the ceiling; a negative one removes it.
     setEnv("AI_ANON_DAILY_BUDGET_USD", "5");
     expect(spend.anonDailyBudget()).toBe(1);
@@ -118,7 +122,7 @@ describe("spend ceiling and the AI gate", () => {
   it("a dead key answers ai_unavailable without calling the model", async () => {
     await health.probeAi(fake(401));
     let called = false;
-    const res = await runAi("unit", {}, async () => { called = true; return { costUsd: 0 }; });
+    const res = await runAi("unit", member("o2"), async () => { called = true; return { costUsd: 0 }; });
     expect(called).toBe(false);
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.reply).toMatchObject({ status: 503, body: { error: "ai_unavailable" } });

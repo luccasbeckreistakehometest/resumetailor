@@ -33,6 +33,9 @@ também trata qualquer valor começando com `#` como vazio, mas não conte com i
 | `AI_DAILY_BUDGET_USD` | recomendado | teto diário de gasto de IA (padrão 25). Atingiu → IA e voz pausam até 00:00 UTC; aparece no /admin |
 | `AI_ANON_DAILY_BUDGET_USD` | opcional | fatia do teto que visitantes sem conta podem gastar (padrão 20% do teto; negativo = sem fatia). Esgotou → só quem está logado segue usando IA até 00:00 UTC |
 | `TAVILY_COST_PER_SEARCH_USD` | opcional | custo estimado por busca do Tavily, somado ao gasto dos insights (padrão 0.008) |
+| `AI_CALL_ESTIMATE_USD` | opcional | quanto uma chamada de IA "reserva" do teto antes de rodar (padrão 0.05), acertado com o custo real quando ela volta. É o que impede um punhado de chamadas paralelas de passar juntas pelo teto. Dá pra afinar por recurso: `AI_ESTIMATE_GENERATE_USD`, `AI_ESTIMATE_FIT_USD`, … |
+| `AI_FAILED_CALL_FLOOR_USD` | opcional | custo mínimo lançado quando a chamada falha (padrão 0.002): o provedor cobra os tokens de entrada mesmo assim |
+| `TRUSTED_PROXY_HOPS` | opcional | quantos proxies entre o app e o visitante escrevem no `X-Forwarded-For` (padrão 0 — só o Caddy, que substitui o cabeçalho). Colocou uma CDN na frente e confiou nela no Caddy? Passe 1, senão todo visitante cai no mesmo balde de limite por IP |
 | `ELEVENLABS_API_KEY` / `OPENAI_API_KEY` | opcional | voz da IA; vazio = só texto |
 | `TAVILY_API_KEY` | opcional | insights da empresa; vazio = recurso e textos somem |
 | `SUPPORT_EMAIL` / `SUPPORT_WHATSAPP` | opcional | só aparecem se preenchidos (lidos em tempo de execução, sem rebuild). O formulário de contato sempre funciona. |

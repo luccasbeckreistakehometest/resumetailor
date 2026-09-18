@@ -25,7 +25,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const kit = ownedKit(id, owner, { unlocked: true });
     if ("reply" in kit) return kit.reply;
     if (!parsed.success) return bad("answer_short");
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) return limited(over);
@@ -44,7 +44,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         return true;
       }).immediate();
       if (!claimed) return { body: { error: "limit" }, status: 429 };
-      const ran = await runAi("pitch_feedback", { ownerKey: owner.key, ip: owner.ip }, () =>
+      const ran = await runAi("pitch_feedback", owner, () =>
         pitchFeedback({ transcript: parsed.data.transcript, delivery, seconds: parsed.data.target, lang, role: kit.row.targetRole }));
       if (!ran.ok) { db.prepare("DELETE FROM pitch_takes WHERE id = ?").run(takeId); return ran.reply; }
       db.prepare("UPDATE pitch_takes SET feedback = ?, costUsd = ? WHERE id = ?").run(JSON.stringify(ran.value.feedback), ran.value.costUsd, takeId);

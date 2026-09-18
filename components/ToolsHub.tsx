@@ -7,7 +7,16 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Container, Stamp } from "@/components/ui";
 import type { FeatureKey } from "@/app/i18n/r3/showcase";
 
-const ALL: FeatureKey[] = ["ats", "fit", "compare", "calculator", "voice", "tracker", "match", "meter", "codes", "truth", "human", "numbers", "editor", "interview", "pitch", "letters", "linkedin", "webcv", "intl"];
+/**
+ * The order tools are shown in. `satisfies` is the point: add a feature to FeatureKey and this
+ * stops compiling until it is placed here too, so nothing can ship and be missing from the one
+ * page whose headline promises everything.
+ */
+const ORDER = {
+  ats: 1, fit: 2, compare: 3, calculator: 4, voice: 5, tracker: 6, match: 7, meter: 8, codes: 9, truth: 10,
+  human: 11, numbers: 12, editor: 13, interview: 14, pitch: 15, letters: 16, linkedin: 17, webcv: 18, intl: 19,
+} satisfies Record<FeatureKey, number>;
+export const HUB_FEATURES: readonly FeatureKey[] = (Object.keys(ORDER) as FeatureKey[]).sort((a, b) => ORDER[a] - ORDER[b]);
 
 /** /tools · /pt/recursos · /es/recursos — every tool, free ones first, each a link. The tour ends here. */
 export function ToolsHub() {
@@ -28,11 +37,11 @@ export function ToolsHub() {
         <p className="mt-2 max-w-2xl text-lg text-ink-2">{S.hubIntro}</p>
         <section className="mt-8" data-tour="free-tools">
           <p className="eyebrow">{S.hubFree}</p>
-          <div className="mt-3"><FeatureShowcase keys={ALL.filter(isFree)} links={links} testId="hub-free" /></div>
+          <div className="mt-3"><FeatureShowcase keys={HUB_FEATURES.filter(isFree)} links={links} testId="hub-free" /></div>
         </section>
         <section className="mt-10">
           <p className="eyebrow">{S.hubKit}</p>
-          <div className="mt-3"><FeatureShowcase keys={ALL.filter((k) => !isFree(k))} links={links} testId="hub-kit" /></div>
+          <div className="mt-3"><FeatureShowcase keys={HUB_FEATURES.filter((k) => !isFree(k))} links={links} testId="hub-kit" /></div>
         </section>
       </Container>
       <SiteFooter />

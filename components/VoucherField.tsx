@@ -27,7 +27,7 @@ function Field() {
     await refresh();
   }
   return (
-    <div id="code" className="rounded-xl border border-dashed border-edge-2 bg-paper p-4" data-testid="voucher">
+    <div className="rounded-xl border border-dashed border-edge-2 bg-paper p-4" data-testid="voucher">
       <p className="text-sm font-semibold text-ink">🎟 {C.haveCode}</p>
       <div className="mt-2 flex flex-wrap gap-2">
         <input aria-label={C.codePh} placeholder={C.codePh} className="field max-w-xs !py-2 uppercase" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void redeem(); }} data-testid="voucher-code" />
@@ -40,5 +40,8 @@ function Field() {
 
 /** "Tem um código?" — on pricing and the account page; /resgatar/<code> arrives pre-filled. */
 export function VoucherField() {
-  return <Suspense fallback={null}><Field /></Suspense>;
+  // The anchor lives out here, not on the field: `Field` reads the query string, so Next leaves
+  // that subtree out of the prerendered HTML and a browser following /pricing#code would land on
+  // nothing. This wrapper is in the HTML from the first byte.
+  return <div id="code"><Suspense fallback={null}><Field /></Suspense></div>;
 }

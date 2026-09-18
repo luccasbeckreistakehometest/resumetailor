@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const anonSlot = owner.userId ? null
       : reserveSpecs([{ bucket: "ANON_PREVIEW_IP_DAY", key: owner.ip, max: envNumber("ANON_PREVIEWS_PER_IP_PER_DAY", 3), windowSec: 86_400 }]);
     if (anonSlot && !anonSlot.ok) return limited(anonSlot.failed, "account_required");
-    const ran = await runAi("generate", { ownerKey: owner.key, ip: owner.ip }, () => generateKit({ ...b, spoken: spokenText || undefined }));
+    const ran = await runAi("generate", owner, () => generateKit({ ...b, spoken: spokenText || undefined }));
     if (!ran.ok) { if (anonSlot?.ok) anonSlot.release(); return ran.reply; }
     const { kit, model, costUsd } = ran.value;
     const row = saveGeneration({

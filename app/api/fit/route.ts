@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       if (usage.left <= 0) return { body: { error: "limit", resetsAt: usage.resetsAt }, status: 429 };
       const over = takeAll([["FIT_IP_HOUR", owner.ip], ["FIT_IP_DAY", owner.ip]]);
       if (over) return limited(over);
-      const ran = await runAi("fit", { ownerKey: owner.key, ip: owner.ip }, () => analyseFit({ posting, resume, lang }));
+      const ran = await runAi("fit", owner, () => analyseFit({ posting, resume, lang }));
       if (!ran.ok) return ran.reply;
       const { result, model, costUsd } = ran.value;
       const row = saveFit({ ownerKey: owner.key, hash, lang, result, model, costUsd });

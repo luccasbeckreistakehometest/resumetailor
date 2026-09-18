@@ -72,6 +72,29 @@ export function verifySession(token: string | undefined): SessionPayload | null 
 
 export const newAnonId = () => `anon_${randomBytes(12).toString("hex")}`;
 
+const ANON_ID = /^anon_[0-9a-f]{24}$/;
+
+/**
+ * The visitor cookie is signed, exactly like a session. Without a signature the value is just
+ * text the caller chose, and every per-visitor cap (AI budget slice, daily quotas, "a visitor we
+ * already know") could be reset by inventing a new one on each request.
+ */
+export const signAnonId = (id: string) => `${id}.${sign(id)}`;
+
+/**
+ * Reads an rt_anon cookie. `signed: false` means the value is a well-formed id from before the
+ * cookie was signed — it may still be a real returning visitor, so the caller decides whether to
+ * honour it (see `ownerKey`). Anything else is null: not minted here.
+ */
+export function readAnonCookie(value: string | undefined): { id: string; signed: boolean } | null {
+  if (!value) return null;
+  const dot = value.indexOf(".");
+  if (dot < 0) return ANON_ID.test(value) ? { id: value, signed: false } : null;
+  const id = value.slice(0, dot);
+  if (!ANON_ID.test(id) || !safeEqual(value.slice(dot + 1), sign(id))) return null;
+  return { id, signed: true };
+}
+
 /** A readable one-time password for admin resets: no ambiguous characters. */
 export function oneTimePassword(length = 14): string {
   const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";

@@ -63,14 +63,14 @@ export async function POST(request: Request, ctx: Ctx) {
       const used = langsOf((db.prepare("SELECT intlLangs FROM generations WHERE id = ?").get(id) as { intlLangs: string }).intlLangs);
       db.prepare("UPDATE generations SET intlLangs = ? WHERE id = ?").run(JSON.stringify(used.filter((l) => l !== target)), id);
     }).immediate();
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) { release(); return gate; }
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) { release(); return limited(over); }
     const slot = lease("INTL_INFLIGHT", `${id}:${target}`, 180);
     if (!slot.ok) { release(); return bad("rate_limited", 429); }
     try {
-      const ran = await runAi("intl", { ownerKey: owner.key, ip: owner.ip }, () => generateIntl({ kit: k, from, target, role: kit.row.targetRole }));
+      const ran = await runAi("intl", owner, () => generateIntl({ kit: k, from, target, role: kit.row.targetRole }));
       if (!ran.ok) { release(); return ran.reply; }
       saveVariant({ generationId: id, kind: `intl:${target}`, variant: { subject: "", body: JSON.stringify(ran.value.version) }, model: ran.value.model, costUsd: ran.value.costUsd });
       return { body: view(target, ran.value.version, k, false, claim) };

@@ -44,7 +44,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ sid: strin
     try {
       const lang = row.lang as Lang;
       const { answer, source } = parsed.data;
-      const scored = await runAi("interview_answer", { ownerKey: owner.key, ip: owner.ip }, () =>
+      const scored = await runAi("interview_answer", owner, () =>
         scoreAnswer({ question: questions[turns.length], answer, targetRole: gen.targetRole, background: backgroundFor(gen), lang }));
       if (!scored.ok) return scored.reply;
       const { result, costUsd } = scored.value;
@@ -53,7 +53,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ sid: strin
       let updated = appendTurn(row.id, turn, costUsd);
       if (!updated) return bad("answer_current_first", 409);
       if (turns.length + 1 >= questions.length) {
-        const s = await runAi("interview_summary", { ownerKey: owner.key, ip: owner.ip }, () => summariseSession({ questions, turns: [...turns, turn], targetRole: gen.targetRole, lang }));
+        const s = await runAi("interview_summary", owner, () => summariseSession({ questions, turns: [...turns, turn], targetRole: gen.targetRole, lang }));
         // The answer is saved either way; a failed summary can be retried with "finish".
         if (!s.ok) return { body: serialiseSession(updated, { title: gen.title, targetRole: gen.targetRole }) };
         updated = finishSession(row.id, s.value.result as SessionSummary, s.value.costUsd);

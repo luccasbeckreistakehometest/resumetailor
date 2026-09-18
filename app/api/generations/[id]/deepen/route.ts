@@ -2,7 +2,8 @@ import { withOwner, bad, limited } from "@/lib/server/http";
 import { aiGate, runAi } from "@/lib/ai/guard";
 import { takeAll } from "@/lib/server/ratelimit";
 import { generateKit, type Kit, type Lang } from "@/lib/ai/kit";
-import { DEEPEN_MAX, deepenGeneration, getGeneration, ownsGeneration, releaseDeepen, reserveDeepen, serialise } from "@/lib/server/generations";
+import { DEEPEN_MAX, deepenGeneration, releaseDeepen, reserveDeepen, serialise } from "@/lib/server/generations";
+import { ownedKit } from "@/lib/server/kitAccess";
 import { personalisation } from "@/lib/ats/personalisation";
 import { recordEvent } from "@/lib/server/onboarding";
 
@@ -10,18 +11,22 @@ export const runtime = "nodejs";
 
 /**
  * "Go deeper": re-runs tailoring with the posting's must-haves — the terms the current draft
- * misses — emphasised, and replaces the kit in place. It never costs a credit; an unlocked kit
- * stays unlocked. Bounded per kit (the pass is claimed before the generation runs, so parallel
- * requests cannot exceed it), per owner and per IP, because every run is a full generation.
+ * misses — emphasised, and replaces the kit in place. The kit must already be unlocked; the pass
+ * itself costs no further credit. Bounded per kit (the pass is claimed before the generation
+ * runs, so parallel requests cannot exceed it), per owner and per IP, because every run is a
+ * full generation.
  */
 export async function POST(_: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   return withOwner(async (owner) => {
-    const row = getGeneration(id);
-    if (!row || !ownsGeneration(row, owner.userId, owner.anonId)) return bad("not_found", 404);
+    // Every AI extra needs the kit open first: a deepen pass is a whole new generation, and a
+    // locked preview is free. Without this, a visitor with no account and no credit got three.
+    const owned = ownedKit(id, owner, { unlocked: true });
+    if ("reply" in owned) return owned.reply;
+    const row = owned.row;
     if (row.mode !== "tailor") return bad("kit_not_tailored", 409);
     if (row.deepened >= DEEPEN_MAX) return { body: { error: "limit" }, status: 429 };
-    const gate = aiGate({ ownerKey: owner.key, ip: owner.ip });
+    const gate = aiGate(owner);
     if (gate) return gate;
     const input = JSON.parse(row.input) as { jobDescription?: string; resume?: string };
     const kit = JSON.parse(row.result) as Kit;
@@ -31,7 +36,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
     const over = takeAll([["KIT_EXTRAS_OWNER_HOUR", owner.key], ["KIT_EXTRAS_IP_HOUR", owner.ip]]);
     if (over) return limited(over);
     if (!reserveDeepen(id)) return { body: { error: "limit" }, status: 429 };
-    const ran = await runAi("deepen", { ownerKey: owner.key, ip: owner.ip }, () => generateKit({
+    const ran = await runAi("deepen", owner, () => generateKit({
       mode: "tailor", targetRole: row.targetRole, lang: (["en", "pt", "es"].includes(row.lang) ? row.lang : "en") as Lang,
       jobDescription: input.jobDescription, resume: input.resume, deepen: { mustHaves },
     }));

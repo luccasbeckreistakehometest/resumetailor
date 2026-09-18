@@ -23,7 +23,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ sid: string }> }
     if (!turns.length) return bad("answer_first", 409);
     const over = takeAll([["INTERVIEW_IP_HOUR", owner.ip], ["INTERVIEW_OWNER_HOUR", owner.key]]);
     if (over) return limited(over);
-    const s = await runAi("interview_summary", { ownerKey: owner.key, ip: owner.ip }, () =>
+    const s = await runAi("interview_summary", owner, () =>
       summariseSession({ questions: JSON.parse(row.questions) as Question[], turns, targetRole: gen.targetRole, lang: row.lang as Lang }));
     if (!s.ok) return s.reply;
     const updated = finishSession(row.id, s.value.result, s.value.costUsd);

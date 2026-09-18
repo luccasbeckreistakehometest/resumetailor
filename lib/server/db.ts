@@ -252,6 +252,13 @@ function migrate(d: Database.Database): void {
   addColumnIfMissing(d, "referrals", "reversedAt", "TEXT");
   d.exec("CREATE INDEX IF NOT EXISTS idx_payments_ref ON payments(provider, providerRef)");
   d.exec("CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signupIp, createdAt)");
+  // AI spend: whether the caller had an account (the anonymous slice is counted from this, not
+  // from the shape of ownerKey), and whether the row is a hold placed before the call returned.
+  addColumnIfMissing(d, "ai_usage", "isAnon", "INTEGER");
+  addColumnIfMissing(d, "ai_usage", "pending", "INTEGER NOT NULL DEFAULT 0");
+  d.exec("UPDATE ai_usage SET isAnon = CASE WHEN ownerKey IS NULL OR ownerKey LIKE 'anon\\_%' ESCAPE '\\' THEN 1 ELSE 0 END WHERE isAnon IS NULL");
+  // Partial: the sweep for abandoned holds then reads only the handful in flight, never the day.
+  d.exec("CREATE INDEX IF NOT EXISTS idx_ai_usage_pending ON ai_usage(createdAt) WHERE pending = 1");
 }
 
 /** Round 3: saved profile, résumé versions, analytics, pitch takes, job imports, vouchers, referrals. */

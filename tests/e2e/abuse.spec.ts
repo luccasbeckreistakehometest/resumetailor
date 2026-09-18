@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { BUILD_PROFILE, buildKitByText, signUp, skipTour } from "./helpers";
+import { BUILD_PROFILE, SAMPLE_JOB, SAMPLE_RESUME, buildKitByText, signUp, skipTour } from "./helpers";
 
 const kitBody = (role = "Marketing Analyst") => ({ mode: "build", targetRole: role, lang: "en", profile: `${BUILD_PROFILE.edu}\n${BUILD_PROFILE.skills}` });
 
@@ -48,6 +48,41 @@ test.describe("abuse and cost limits", () => {
     await other.close();
     const own = await page.request.post("/api/voice/extract", { data: { transcript: "I studied marketing and want an analyst role", lang: "en", briefingId } });
     expect((await own.json()).briefingId).toBe(briefingId);
+  });
+
+  test("a made-up visitor cookie is not a visitor we know, however many are tried", async ({ browser, page }) => {
+    // "Only visitors the app already knows" is the guard in front of the free AI tools. It used to
+    // mean "sent any rt_anon at all", so a new invented value per request was a new quota each time.
+    const codes: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      const forged = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.207.0.3", cookie: `rt_anon=forged-${i}` } });
+      codes.push((await forged.request.post("http://localhost:3100/api/fit", { data: { posting: `p${i}`.repeat(30), resume: "r".repeat(40), lang: "en" } })).status());
+      await forged.close();
+    }
+    expect(codes).toEqual([403, 403, 403, 403]);
+    // A value that looks exactly like a real id is no better: it was not signed here.
+    const shaped = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": "10.207.0.4", cookie: `rt_anon=anon_${"a".repeat(24)}` } });
+    expect((await shaped.request.post("http://localhost:3100/api/fit", { data: { posting: "p".repeat(40), resume: "r".repeat(40), lang: "en" } })).status()).toBe(403);
+    await shaped.close();
+    // What the server hands a real visitor is signed, and that one works.
+    await page.goto("/");
+    await skipTour(page);
+    const anon = (await page.context().cookies("http://localhost:3100")).find((c) => c.name === "rt_anon");
+    expect(anon?.value).toMatch(/^anon_[0-9a-f]{24}\.[A-Za-z0-9_-]+$/);
+    expect((await page.request.post("/api/fit", { data: { posting: "p".repeat(40), resume: "r".repeat(40), lang: "en" } })).status()).toBe(200);
+  });
+
+  test("a locked kit refuses the AI extras that cost a generation", async ({ page }) => {
+    await page.goto("/");
+    await skipTour(page);
+    const made = await page.request.post("/api/generate", { data: { mode: "tailor", targetRole: "Growth Marketing Manager", jobDescription: SAMPLE_JOB, resume: SAMPLE_RESUME, lang: "en" } });
+    expect(made.status()).toBe(200);
+    const { id, unlocked } = await made.json();
+    expect(unlocked).toBe(false);
+    // Deepening is a whole new kit generation: free previews do not get two of them for nothing.
+    const codes = await Promise.all(Array.from({ length: 3 }, () => page.request.post(`/api/generations/${id}/deepen`).then((r) => r.status())));
+    expect(codes).toEqual([403, 403, 403]);
+    expect((await (await page.request.get(`/api/generations/${id}`)).json()).deepened).toBe(0);
   });
 
   test("a GET never creates tour rows, and the text-to-speech endpoint needs a visitor cookie", async ({ request }) => {

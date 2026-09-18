@@ -2,13 +2,32 @@ import { getDb } from "@/lib/server/db";
 import { envNumber } from "@/lib/server/env";
 
 /**
- * The caller's IP. Caddy (the only way in, in production) replaces X-Forwarded-For with the real
- * client address, so the first entry is trustworthy there. Locally it falls back to "local".
+ * The caller's IP, for the per-IP limits.
+ *
+ * X-Forwarded-For grows left to right: each proxy appends the address it received the request
+ * from, so the rightmost entries are the proxies and the caller is further left. Which entry is
+ * the real client therefore depends on how many proxies we trust:
+ *
+ *  - Today (verified on the server): Caddy is the only way in, it runs with
+ *    `trusted_proxies static private_ranges`, and a public visitor is never in a private range —
+ *    so Caddy REPLACES whatever header the visitor sent with a single entry it wrote itself.
+ *    One entry, zero trusted hops, and the header cannot be forged past it. The container
+ *    publishes no host port, so nothing reaches the app except through Caddy.
+ *  - Put a CDN in front and add it to Caddy's trusted_proxies and the header becomes
+ *    `client, cdn-edge`: one trusted hop to skip from the right. Set TRUSTED_PROXY_HOPS to the
+ *    number of proxies that append an entry, rather than guessing from the position.
+ *
+ * Reading a fixed end of the list is what goes wrong silently: the leftmost entry is caller-
+ * written whenever nothing trustworthy overwrites it, and the rightmost becomes the CDN — one
+ * bucket for every visitor at once. X-Real-IP is only a last resort for direct calls in
+ * development; Caddy does not set it here.
  */
 export function clientIp(headers: Headers): string {
-  const xff = headers.get("x-forwarded-for");
-  const first = xff?.split(",")[0]?.trim();
-  if (first) return first.slice(0, 64);
+  const parts = (headers.get("x-forwarded-for") ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length) {
+    const hops = Math.max(0, Math.trunc(envNumber("TRUSTED_PROXY_HOPS", 0)));
+    return parts[Math.max(0, parts.length - 1 - hops)].slice(0, 64);
+  }
   return headers.get("x-real-ip")?.trim().slice(0, 64) || "local";
 }
 
