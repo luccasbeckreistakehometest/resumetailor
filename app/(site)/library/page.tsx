@@ -143,7 +143,7 @@ export default function LibraryPage() {
                       {g.publicResume!.enabled ? x.publish.on : x.library.locked} · {g.publicResume!.views === 0 ? x.publish.noViews : x.publish.views(g.publicResume!.views)}{g.publicResume!.hasPin ? ` · ${x.publish.pinOn}` : ""}
                     </p>
                   </div>
-                  {g.publicResume!.enabled && <Button size="sm" variant="outline" icon="external" iconEnd href={`/cv/${g.publicResume!.slug}`}>{x.publish.open}</Button>}
+                  {g.publicResume!.enabled && <Button size="sm" variant="outline" icon="external" iconEnd newTab href={`/cv/${g.publicResume!.slug}`}>{x.publish.open}</Button>}
                   <Button size="sm" variant="quiet" href={`/start?gen=${g.id}`}>{x.library.open}</Button>
                 </li>
               ))}

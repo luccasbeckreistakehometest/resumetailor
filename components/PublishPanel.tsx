@@ -62,7 +62,7 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
             <p className="eyebrow">{P.link}</p>
             <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-[var(--s-3)]">
               <Input readOnly className="min-w-0 flex-1 font-mono text-[length:var(--mn-13)]" value={url} onFocus={(e) => e.currentTarget.select()} data-testid="publish-url" aria-label={P.link} />
-              <Button href={url} size="sm" icon="external" iconEnd data-testid="publish-open">{P.open}</Button>
+              <Button href={url} newTab size="sm" icon="external" iconEnd data-testid="publish-open">{P.open}</Button>
             </div>
             <div className="mt-[var(--s-3)]"><ShareBar url={url} text={P.shareText(gen.title)} labels={{ share: P.share, copy: P.copy, copied: P.copied, whatsapp: P.whatsapp, linkedin: P.linkedin }} testId="publish" /></div>
           </div>

@@ -157,7 +157,7 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
         <div id="ats-result" className="mt-[var(--s-8)] scroll-mt-24 border-t-2 border-[var(--ink)] pt-[var(--s-7)]" data-testid="ats-result">
           <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
             <div>
-              <p className="font-mono text-[length:var(--mn-40)] font-medium tabular-nums leading-none text-[color:var(--ink)]" data-testid="ats-score">{result.score}<span className="text-[length:var(--ui-17)] text-[color:var(--ink-muted)]">/100</span></p>
+              <p className="font-mono text-[length:var(--mn-40)] font-medium tabular-nums leading-none text-[color:var(--ink)]"><span data-testid="ats-score">{result.score}</span><span className="text-[length:var(--ui-17)] text-[color:var(--ink-muted)]">/100</span></p>
               <p className="eyebrow mt-[var(--s-3)]">{A.scoreLabel}</p>
             </div>
             <div>

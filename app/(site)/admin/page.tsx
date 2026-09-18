@@ -86,6 +86,7 @@ export default function AdminPage() {
                 onChange={(t) => setTab(t as typeof tab)}
                 tabs={(["recent", "acquisition", "codes", "users", "payments", "onboarding", "voice", "interviews", "messages"] as const).map((t) => ({
                   id: t,
+                  testId: `admin-tab-${t}`,
                   label: { recent: x.admin.recent, acquisition: r.acquisition.tab, codes: r.codes.admin.tab, users: x.admin.users, payments: x.admin.payments, onboarding: x.admin.onboarding, voice: x.admin.voice, interviews: x.admin.interviews, messages: `${l.admin.messages}${data.totals.messagesNew ? ` (${data.totals.messagesNew})` : ""}` }[t],
                 }))}
               />

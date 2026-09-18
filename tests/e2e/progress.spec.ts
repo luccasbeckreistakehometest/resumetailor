@@ -30,7 +30,9 @@ test("two sessions on a kit draw a trend, name the weakest dimension and the nex
   await expect(page.getByTestId("progress-latest")).toContainText(String(second));
   const delta = Number(await page.getByTestId("progress-delta").getAttribute("data-delta"));
   expect(delta).toBeCloseTo(Math.round((second - first) * 10) / 10, 1);
-  await expect(page.getByTestId("progress-delta")).toContainText("▲");
+  // The direction is the sign and the colour now, not a ▲ glyph (docs/DESIGN.md §9): a rise
+  // still has to be legible as a rise.
+  await expect(page.getByTestId("progress-delta")).toContainText("+");
   await expect(page.getByTestId("progress-svg").locator("path")).toHaveCount(1);
   await expect(page.getByTestId("progress-svg").locator("circle")).toHaveCount(2);
   await expect(page.getByTestId("progress-strongest")).not.toBeEmpty();
@@ -45,7 +47,7 @@ test("two sessions on a kit draw a trend, name the weakest dimension and the nex
   await page.goto("/library");
   await expect(page.getByTestId("library-trend")).toBeVisible();
   await expect(page.getByTestId("library-trend")).toContainText(String(second));
-  await expect(page.getByTestId("library-trend-delta")).toContainText("▲");
+  await expect(page.getByTestId("library-trend-delta")).toContainText("+");
   await page.getByTestId("library-trend").click();
   await expect(page).toHaveURL(/\/interview$/);
 

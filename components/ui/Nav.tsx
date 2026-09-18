@@ -52,7 +52,7 @@ export function Stepper({
 export function Tabs({
   tabs, value, onChange, className = "",
 }: {
-  tabs: readonly { id: string; label: ReactNode }[];
+  tabs: readonly { id: string; label: ReactNode; testId?: string }[];
   value: string;
   onChange: (id: string) => void;
   className?: string;
@@ -84,6 +84,7 @@ export function Tabs({
             key={t.id}
             role="tab"
             type="button"
+            data-testid={t.testId}
             aria-selected={on}
             tabIndex={on ? 0 : -1}
             onClick={() => onChange(t.id)}

@@ -60,12 +60,14 @@ export type ButtonProps = {
   /** Required when there is no visible label. */
   label?: string;
   href?: string;
+  /** Opens in a new tab, with the rel a new tab needs. For the print view and anything external. */
+  newTab?: boolean;
   className?: string;
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
 export function Button({
   children, variant = "primary", size = "md", icon, iconEnd = false, loading = false,
-  label, href, className = "", disabled, ...rest
+  label, href, newTab = false, className = "", disabled, ...rest
 }: ButtonProps) {
   const iconOnly = !children && (icon || label);
   const cls = [
@@ -87,8 +89,21 @@ export function Button({
   );
 
   if (href) {
+    // `rest` goes onto the link too. It did not at first, and a Button rendered as a link silently
+    // dropped its data-testid and its onClick — which is how "Practice interview" stopped being
+    // findable and eleven e2e specs timed out waiting for it.
+    const { type: _type, ...linkRest } = rest as Record<string, unknown>;
+    void _type;
     return (
-      <Link href={href as never} className={cls} aria-label={label} aria-disabled={disabled || undefined}>
+      <Link
+        href={href as never}
+        className={cls}
+        aria-label={label}
+        aria-disabled={disabled || undefined}
+        target={newTab ? "_blank" : undefined}
+        rel={newTab ? "noopener noreferrer" : undefined}
+        {...linkRest}
+      >
         {inner}
       </Link>
     );

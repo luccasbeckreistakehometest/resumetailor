@@ -19,7 +19,9 @@ type Type = { family: string; size: string; leading: string; colour: string; h2S
 async function documentType(page: Page, selector: string): Promise<Type> {
   return page.locator(selector).evaluate((root) => {
     const doc = root.querySelector('[class^="doc-"], [class*=" doc-"]') ?? root;
-    const body = doc.querySelector("p") ?? doc;
+    // NOT the first <p>: the line right under the name is the contact line, and the stylesheet
+    // deliberately sets that one in the interface face. Measure a paragraph of the document's body.
+    const body = doc.querySelector("h2 ~ p") ?? doc.querySelectorAll("p")[1] ?? doc;
     const h2 = doc.querySelector("h2") ?? doc;
     const b = getComputedStyle(body as Element);
     const h = getComputedStyle(h2 as Element);

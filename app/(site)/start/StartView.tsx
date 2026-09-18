@@ -389,7 +389,7 @@ function StartInner() {
                       <div className="doc-modern"><ReactMarkdown>{gen.kit.resume}</ReactMarkdown></div>
                     </Sheet>
                     <div className="flex flex-wrap items-center gap-[var(--s-3)]">
-                      <Button href={`/print?id=${gen.id}`} icon="download">{d.print.save}</Button>
+                      <Button href={`/print?id=${gen.id}`} newTab icon="download">{d.print.save}</Button>
                       <Button href={`/edit/${gen.id}`} variant="outline" icon="pencil" data-testid="edit-kit">{r.editor.cta}</Button>
                       <Button href={`/interview/${gen.id}`} variant="outline" icon="mic" data-testid="practice">{x.interview.practice}</Button>
                       <MoreActions gen={gen} />
