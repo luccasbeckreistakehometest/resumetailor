@@ -152,3 +152,126 @@ the system, not an accident:
 | Table cell prose next to a numeric column | 15px | 13px |
 
 Never set the two faces at the same px value in the same line of reading.
+
+---
+
+## 4. Type scale
+
+Two scales and a readout, each with its own ratio because they do different jobs. Sizes are in px so
+they can be read against the screenshots; ship them as rem.
+
+### 4.1 Document scale — Source Serif 4, ratio 6∶5 (1.2) from an 18px base
+
+| Token | Size / line-height | Tracking | Weight | `opsz` | Used for |
+|---|---|---|---|---|---|
+| `doc-64` | 64 / 64 (1.00) | −0.024em | 600 | 60 | One display line per marketing page. Never two. |
+| `doc-45` | 45 / 48 (1.07) | −0.020em | 600 | 44 | Page title on a funnel or tool page |
+| `doc-31` | 31 / 38 (1.23) | −0.012em | 600 | 30 | Section head |
+| `doc-26` | 26 / 34 (1.31) | −0.008em | 600 | 24 | Sub-section, panel title, résumé name line |
+| `doc-21` | 21.5 / 32 (1.49) | −0.003em | 400 / 600 | 20 | Lead paragraph (400), small heading (600) |
+| `doc-18` | 18 / 29 (1.61) | 0 | 400 | 14 | **Base prose.** Résumé body, cover letter, article copy |
+| `doc-15` | 15 / 24 (1.60) | +0.004em | 400 | 10 | Dense prose, résumé bullets in the preview |
+| `doc-12` | 12.5 / 19 (1.52) | +0.010em | 400 | 8 | Footnotes, source lines, print captions |
+
+Tracking is negative above 26px and positive below 15px, because that is what optical sizing cannot
+do on its own. `font-optical-sizing: auto` is on globally; the `opsz` column is set explicitly only
+on `doc-64`, `doc-45` and `doc-12`, where the rendered size and the intended drawing differ.
+
+### 4.2 Interface scale — Public Sans, ratio 9∶8 (1.125) from a 15px base
+
+| Token | Size / line-height | Tracking | Weight | Used for |
+|---|---|---|---|---|
+| `ui-21` | 21 / 28 (1.33) | −0.008em | 600 | Dialog title, rail heading |
+| `ui-19` | 19 / 26 (1.37) | −0.005em | 600 | Toolbar title |
+| `ui-17` | 17 / 24 (1.41) | −0.002em | 600 | Primary button, prominent value |
+| `ui-15` | 15 / 22 (1.47) | 0 | 400 / 500 | **Base interface text.** Field values, list rows, buttons |
+| `ui-13` | 13 / 18 (1.38) | +0.005em | 400 / 500 | Metadata, help text, table header (500) |
+| `ui-12` | 12 / 16 (1.33) | +0.010em | 500 | Dense table cell, chip, badge |
+| `ui-11c` | 11 / 14 (1.27) | **+0.09em**, uppercase | 700 | The one micro-label (`eyebrow`). Caps need the tracking. |
+
+`ui-11c` is the only uppercase style in the system. Anything else set in caps is a bug.
+
+### 4.3 Machine readout — IBM Plex Mono
+
+| Token | Size / line-height | Tracking | Weight | Used for |
+|---|---|---|---|---|
+| `mn-40` | 40 / 40 | −0.02em | 500 | The match score, the ATS score — the machine's verdict |
+| `mn-24` | 24 / 28 | −0.01em | 500 | Secondary readouts (personalisation, keyword count) |
+| `mn-15` | 15 / 24 | 0 | 400 | Extracted résumé text, the text a parser sees |
+| `mn-13` | 13 / 20 | 0 | 400 / 500 | Keyword tokens, version ids, share URLs, redeem codes |
+
+**Rule.** A number the *machine* produced is mono. A number the *person* pays or writes is Source
+Serif 4 (which is duplexed, so it still aligns). Prices are serif. Scores are mono. This is the
+difference between `R$ 149` and `89%`, and it should be visible without reading the label.
+
+### 4.4 Measure
+
+`--measure: 66ch` on prose, which resolves to roughly 600px at `doc-18`. Hard rules:
+
+- Running prose never exceeds `--measure`, on any page, at any width.
+- Résumé and cover-letter body inside the sheet: the sheet's own 816px minus margins ≈ 78ch. That is
+  above the comfortable maximum on purpose — it is what prints, and parity beats comfort here.
+- Table cells and form help are exempt.
+- Hanging punctuation on pull quotes and on the résumé's bullet list: `hanging-punctuation: first
+  allow-end` where supported, with `text-indent: -0.4em; padding-left: 0.4em` as the fallback so the
+  bullet's own glyph optically aligns with the text above it.
+
+---
+
+## 5. Space, grid and radius
+
+### 5.1 Spacing scale
+
+A 4px grid. Only these values exist; anything else is a bug.
+
+```
+--s-1   2px     hairline nudges, icon optical centring
+--s-2   4px     inside a chip
+--s-3   8px     label → field
+--s-4   12px    between related rows
+--s-5   16px    block padding (compact)
+--s-6   20px    block padding (default)
+--s-7   24px    panel padding, grid gutter
+--s-8   32px    between blocks
+--s-9   40px    between sub-sections
+--s-10  56px    between sections (mobile)
+--s-11  72px    between sections (tablet)
+--s-12  96px    between sections (desktop)
+--s-13  128px   above a page-ending mark
+```
+
+Vertical rhythm: every vertical margin is a multiple of 4; inside prose, multiples of 8. Section
+padding is `--s-10 / --s-11 / --s-12` by breakpoint — never one `py-20` for every section, which is
+what flattens the landing today.
+
+### 5.2 Grid
+
+12 columns, `--gutter: 24px` desktop / `16px` below 768px, content `max-width: 1200px`. Four named
+layouts; a screen picks one and states which.
+
+| Layout | Shape | For |
+|---|---|---|
+| `L-prose` | 1 column, `--measure`, offset to columns 2–8 of 12 (not centred) | Legal, FAQ, article, long help |
+| `L-editorial` | **7 / 1 / 4** — content, gutter, margin column | Landing sections, tool pages, the kit screen |
+| `L-document` | 816px sheet + 320px rail, rail on the right ≥1280px, below the sheet under that | Kit delivery, editor, print preview, public CV |
+| `L-tool` | 320px fixed rail + fluid pane, 1px rule between, no gap | Admin, applications board, library |
+
+`L-editorial`'s 7/4 asymmetry is the default and does the most work: headings, prose and forms sit in
+the 7, while meters, sources, notes and secondary actions sit in the 4. It replaces today's habit of
+a centred `max-w-6xl` with a full-width grid of equal cards.
+
+### 5.3 Radius
+
+Radius encodes how much of a *document* an object is. The document itself has square corners,
+because paper does.
+
+```
+--r-0    0px     the sheet, tables, the print preview, section rules, the proof band
+--r-1    2px     inputs, chips, tokens, badges, checkboxes
+--r-2    4px     buttons, menus, panels, popovers
+--r-3    8px     dialogs and the mobile sheet only
+--r-pill 999px   the language switch and avatars only
+```
+
+Uniform `rounded-2xl` on every surface is banned (§13). If two adjacent objects have the same radius
+and the same border, one of them is wrong.
