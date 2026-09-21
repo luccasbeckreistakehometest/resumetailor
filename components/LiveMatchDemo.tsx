@@ -1,97 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Meter, Token } from "@/components/ui";
 
 const KW = ["Stakeholder mgmt", "Data analysis", "KPIs", "Roadmap", "Cross-functional", "Budget ownership"];
+const FROM = 38;
+const TO = 91;
 
+/**
+ * The landing demo (surface 10). It used to be a 128px conic-gradient donut in emerald against a
+ * slate track, with the keywords as coloured pills — three colour systems that appear nowhere else
+ * in the product. It is now the same Meter the kit screen uses and the same Tokens the coverage
+ * table uses, so the page is showing the real object rather than an illustration of one.
+ *
+ * The loop is the only motion on the landing and it stops entirely under prefers-reduced-motion,
+ * where it renders the finished state — which is also what the tests and the printed page see.
+ */
 export function LiveMatchDemo() {
-  const [pct, setPct] = useState(38);
-  const [revealed, setRevealed] = useState(0);
-  const [done, setDone] = useState(false);
+  const [t, setT] = useState<number | null>(null);
 
   useEffect(() => {
-    let t = 0;
-    const id = setInterval(() => {
-      t = (t + 1) % 150; // ~7.5s loop at 50ms
-      if (t < 14) {
-        setDone(false);
-        setPct(38);
-        setRevealed(0);
-      } else if (t < 56) {
-        setDone(false);
-        const p = (t - 14) / 42;
-        setPct(Math.round(38 + p * (91 - 38)));
-        setRevealed(Math.min(KW.length, Math.floor(p * KW.length) + 1));
-      } else {
-        setDone(true);
-        setPct(91);
-        setRevealed(KW.length);
-      }
-    }, 50);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => setT((v) => ((v ?? 0) + 1) % 78), 100);
     return () => clearInterval(id);
   }, []);
 
+  // t === null: the finished state, which is what renders on the server and under reduced motion.
+  const p = t === null ? 1 : t < 7 ? 0 : t < 35 ? (t - 7) / 28 : 1;
+  const pct = Math.round(FROM + p * (TO - FROM));
+  const revealed = p === 0 ? 0 : Math.min(KW.length, Math.floor(p * KW.length) + 1);
+  const done = p === 1;
+
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-edge bg-surface p-6 shadow-2xl shadow-indigo-950/40">
-      {/* Header row */}
-      <div className="flex items-center justify-between">
-        <span className="rounded-full bg-paper-2 px-2.5 py-1 text-xs font-medium text-muted">Senior Product Manager</span>
+    <figure className="m-0 border border-[var(--rule)] bg-[var(--raised)]">
+      <figcaption className="flex items-center justify-between gap-[var(--s-4)] border-b border-[var(--rule-hairline)] px-[var(--s-6)] py-[var(--s-4)]">
+        <span className="truncate font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]">Senior Product Manager</span>
         <span
-          className={
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition " +
-            (done ? "bg-moss-2 text-moss" : "bg-gold-2 text-oxblood")
-          }
+          className="shrink-0 font-mono text-[length:var(--mn-13)] tabular-nums"
+          style={{ color: done ? "var(--kept)" : "var(--ink-muted)" }}
+          aria-live="off"
         >
-          {done ? (
-            "Tailored ✓"
-          ) : (
-            <>
-              <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-edge border-t-indigo-600" />
-              Analyzing…
-            </>
-          )}
+          {done ? "tailored" : "reading…"}
         </span>
+      </figcaption>
+
+      <div className="px-[var(--s-6)] py-[var(--s-6)]">
+        <Meter label="Match" value={pct} before={FROM} caption={`${FROM}% before the rewrite · 6 of the job's terms`} />
+
+        <p className="mt-[var(--s-6)] font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]">Keywords the job screens for</p>
+        <ul className="mt-[var(--s-3)] flex flex-wrap gap-[var(--s-2)]">
+          {KW.map((k, i) => (
+            <li key={k}>
+              <Token state={revealed > i ? "kept" : "missing"}>{k}</Token>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Gauge */}
-      <div className="mt-6 flex items-center gap-5">
-        <div className="relative h-32 w-32 flex-none">
-          <div
-            className="h-full w-full rounded-full transition-all duration-100"
-            style={{ background: `conic-gradient(#10b981 ${pct * 3.6}deg, #e2e8f0 0deg)` }}
-          />
-          <div className="absolute inset-[12px] flex flex-col items-center justify-center rounded-full bg-surface">
-            <span className="text-3xl font-extrabold tabular-nums text-ink">{pct}%</span>
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted">match</span>
-          </div>
-        </div>
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-muted">
-            Started at <span className="font-semibold text-muted">38%</span>
-          </div>
-          <div className="mt-1 text-sm font-semibold text-ink">Keywords the job screens for:</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {KW.map((k, i) => (
-              <span
-                key={k}
-                className={
-                  "rounded-full px-2 py-0.5 text-[11px] font-medium transition-all duration-300 " +
-                  (revealed > i
-                    ? "bg-moss-2 text-moss ring-1 ring-moss/30"
-                    : "bg-paper text-paper-2 ring-1 ring-edge")
-                }
-              >
-                {revealed > i ? "+ " : ""}
-                {k}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 rounded-lg bg-paper p-3 text-center text-xs text-muted">
-        Resume + cover letter + LinkedIn — <span className="font-semibold text-ink-2">ready in 30s</span>
-      </div>
-    </div>
+      <p className="border-t border-[var(--rule-hairline)] px-[var(--s-6)] py-[var(--s-4)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">
+        Resume, cover letter and LinkedIn About — <span className="text-[color:var(--ink-2)]">ready in 30 seconds</span>
+      </p>
+    </figure>
   );
 }

@@ -37,7 +37,7 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
           <ul className="mt-6 space-y-2.5">{a.bullets.map((b) => <li key={b} className="flex items-start gap-3 text-ink-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-oxblood" />{b}</li>)}</ul>
           <Link href={startHref(via)} onClick={cta("hero")} className="btn btn-primary mt-8 !px-7 !py-4 !text-base" data-testid="lp-cta">{d.lp.cta}</Link>
           <p className="mt-3 text-sm text-muted">{d.lp.secondary}</p>
-          <p className="mt-4 text-sm"><Link href={to("ats")} onClick={cta("ats")} className="font-medium text-oxblood underline-offset-4 hover:underline" data-testid="lp-ats">{d.lp.atsCta}</Link></p>
+          <p className="mt-4 text-sm"><Link href={to("ats")} onClick={cta("ats")} className="font-medium text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-4 hover:underline" data-testid="lp-ats">{d.lp.atsCta}</Link></p>
         </div>
         <div className="card p-5"><LiveMatchDemo /></div>
       </Container>
@@ -49,7 +49,7 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
         </Container>
       </section>
 
-      <section className="border-y border-edge bg-surface" data-testid="lp-free">
+      <section className="border-y border-edge bg-raised" data-testid="lp-free">
         <Container className="py-12">
           <p className="font-display text-3xl text-ink">{S.freeTitle}</p>
           <p className="mt-1 text-ink-2">{S.freeIntro}</p>
@@ -81,19 +81,19 @@ export function LpView({ angle: key }: { angle: AngleKey }) {
         </Container>
       </section>
 
-      <section className="border-t border-edge bg-surface">
+      <section className="border-t border-edge bg-raised">
         <Container className="grid gap-6 py-10 sm:grid-cols-3">
           {PROOF_STATS.slice(0, 3).map((s, i) => (
-            <div key={i}><p className="font-display text-3xl text-oxblood">{s.value}</p><p className="mt-1 text-sm text-ink-2">{d.landing.proof.labels[i] ?? s.label}</p><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted underline-offset-2 hover:underline">{d.landing.proof.sourcePrefix} {s.source}</a></div>
+            <div key={i}><p className="font-display text-3xl text-[color:var(--ink)] decoration-[var(--rule-field)]">{s.value}</p><p className="mt-1 text-sm text-ink-2">{d.landing.proof.labels[i] ?? s.label}</p><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted underline-offset-2 hover:underline">{d.landing.proof.sourcePrefix} {s.source}</a></div>
           ))}
         </Container>
       </section>
 
-      <section className="bg-oxblood text-white">
+      <section className="bg-[var(--ink)] text-[color:var(--on-ink)]">
         <Container className="py-14 text-center">
           <p className="font-display text-3xl sm:text-4xl">{a.title}</p>
-          <Link href={startHref(via)} onClick={cta("final")} className="btn btn-ink mt-6 !bg-paper !text-ink hover:!bg-white">{S.ctaFinal}</Link>
-          <p className="mt-3 text-sm text-white/80">{S.noSub}</p>
+          <Link href={startHref(via)} onClick={cta("final")} className="btn mt-6 bg-[var(--on-ink)] text-[color:var(--ink)] hover:opacity-90">{S.ctaFinal}</Link>
+          <p className="mt-3 text-sm opacity-80">{S.noSub}</p>
         </Container>
       </section>
       {/* Ad landings keep one path forward; the footer carries only what the law asks for. */}

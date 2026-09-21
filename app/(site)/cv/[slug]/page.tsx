@@ -13,6 +13,7 @@ import { baseUrl } from "@/lib/server/env";
 import { launch } from "@/app/i18n/launch";
 import { PinForm } from "./PinForm";
 import { ShareBar } from "./ShareBar";
+import { Icon } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -59,10 +60,10 @@ export default async function PublicResumePage({ params }: Props) {
   if (access === "pin") {
     return (
       <Shell lang={lang}>
-        <div className="card mx-auto mt-16 max-w-md p-8 text-center" data-testid="cv-pin">
-          <p className="text-4xl">🔒</p>
-          <h1 className="font-display mt-4 text-2xl text-ink">{C.pinTitle}</h1>
-          <p className="mt-2 text-sm text-ink-2">{C.pinIntro}</p>
+        <div className="mx-auto mt-[var(--s-12)] max-w-[420px] rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] p-[var(--s-7)]" data-testid="cv-pin">
+          <span className="text-[color:var(--ink-muted)]"><Icon name="lock" /></span>
+          <h1 className="doc-26 mt-[var(--s-4)] text-[color:var(--ink)]">{C.pinTitle}</h1>
+          <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{C.pinIntro}</p>
           <PinForm slug={slug} labels={{ placeholder: C.pinPh, submit: C.pinSubmit, wrong: C.pinWrong, locked: launch[lang].pin.locked }} />
         </div>
       </Shell>
@@ -77,18 +78,21 @@ export default async function PublicResumePage({ params }: Props) {
   return (
     <Shell lang={lang}>
       {isOwner && <OwnerBar row={row} gen={{ id: gen.id }} copy={C} />}
-      <div className="mx-auto mt-6 flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-1">
+      <div className="mx-auto mt-[var(--s-7)] flex w-full max-w-[816px] flex-wrap items-center justify-between gap-[var(--s-4)]">
         <p className="eyebrow">{C.eyebrow}</p>
         <ShareBar url={shareUrl} text={C.shareText(gen.title)} labels={{ share: C.share, copy: C.copy, copied: C.copied, whatsapp: C.whatsapp, linkedin: C.linkedin }} />
       </div>
-      <article className="mx-auto mt-3 w-full max-w-[210mm] rounded-2xl bg-white p-6 shadow-lg sm:p-[14mm]" data-testid="cv-document" data-template={row.template}>
+      {/* The same sheet, the same document stylesheet, as the editor preview and /print. */}
+      <article className="sheet mx-auto mt-[var(--s-3)] w-full max-w-[816px] p-[var(--s-7)] sm:p-[56px]" data-testid="cv-document" data-template={row.template}>
         <div className={`doc-${row.template}`}><ReactMarkdown>{markdown}</ReactMarkdown></div>
-        {row.hideContact === 1 && <p className="mt-6 border-t border-edge pt-3 text-xs text-muted" data-testid="cv-contact-hidden">{C.contactHidden}</p>}
+        {row.hideContact === 1 && (
+          <p className="mt-[var(--s-7)] border-t border-[var(--rule-hairline)] pt-[var(--s-3)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]" data-testid="cv-contact-hidden">{C.contactHidden}</p>
+        )}
       </article>
-      <p className="mx-auto mt-8 max-w-[210mm] text-center text-xs text-muted">
-        {C.madeWith} · <Link href="/" className="font-medium text-oxblood underline-offset-4 hover:underline">{C.makeYours}</Link>
-        {" · "}<Link href={`/legal/privacy?lang=${lang}`} className="underline-offset-4 hover:underline">{launch[lang].footer.privacy}</Link>
-        {" · "}<Link href={`/legal/terms?lang=${lang}`} className="underline-offset-4 hover:underline">{launch[lang].footer.terms}</Link>
+      <p className="mx-auto mt-[var(--s-9)] max-w-[816px] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">
+        {C.madeWith} · <Link href="/" className="font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]">{C.makeYours}</Link>
+        {" · "}<Link href={`/legal/privacy?lang=${lang}`} className="underline-offset-2 hover:underline">{launch[lang].footer.privacy}</Link>
+        {" · "}<Link href={`/legal/terms?lang=${lang}`} className="underline-offset-2 hover:underline">{launch[lang].footer.terms}</Link>
       </p>
     </Shell>
   );
@@ -96,11 +100,11 @@ export default async function PublicResumePage({ params }: Props) {
 
 function Shell({ children, lang }: { children: React.ReactNode; lang: Lang }) {
   return (
-    <div className="min-h-screen bg-paper-2 px-4 pb-16 pt-6 sm:px-6" lang={lang === "pt" ? "pt-BR" : lang}>
-      <div className="mx-auto flex max-w-[210mm] items-center justify-between">
-        <Link href="/" className="flex items-center gap-2" aria-label="ResumeTailor">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-ink font-display text-base leading-none text-paper">R</span>
-          <span className="font-display text-lg tracking-tight text-ink">Resume<span className="text-oxblood">Tailor</span></span>
+    <div className="min-h-screen bg-[var(--page)] px-[var(--s-5)] pb-[var(--s-12)] pt-[var(--s-6)] sm:px-[var(--s-7)]" lang={lang === "pt" ? "pt-BR" : lang}>
+      <div className="mx-auto flex max-w-[816px] items-center justify-between">
+        <Link href="/" className="flex items-center gap-[var(--s-3)]" aria-label="ResumeTailor">
+          <span className="grid h-7 w-7 place-items-center rounded-[var(--r-0)] bg-[var(--ink)] font-serif text-[15px] font-semibold leading-none text-[color:var(--on-ink)]">R</span>
+          <span className="font-serif text-[19px] font-semibold leading-none tracking-[-0.014em] text-[color:var(--ink)]">Resume<span className="font-normal text-[color:var(--ink-2)]">Tailor</span></span>
         </Link>
       </div>
       {children}
@@ -110,9 +114,9 @@ function Shell({ children, lang }: { children: React.ReactNode; lang: Lang }) {
 
 function OwnerBar({ row, gen, copy }: { row: PublicResumeRow; gen: { id: string }; copy: (typeof extra)["en"]["cv"] }) {
   return (
-    <div className="mx-auto mt-4 flex max-w-[210mm] flex-wrap items-center justify-between gap-2 rounded-xl border border-gold bg-gold-2 px-4 py-2 text-sm text-ink" data-testid="cv-owner">
+    <div className="mx-auto mt-[var(--s-5)] flex max-w-[816px] flex-wrap items-center justify-between gap-[var(--s-3)] rounded-[var(--r-1)] bg-[var(--query-wash)] px-[var(--s-5)] py-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-2)]" style={{ borderLeft: "2px solid var(--query)" }} data-testid="cv-owner">
       <span>{copy.owner(row.views)}</span>
-      <Link href={`/start?gen=${gen.id}`} className="font-medium text-oxblood underline-offset-4 hover:underline">{copy.edit} →</Link>
+      <Link href={`/start?gen=${gen.id}`} className="font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]">{copy.edit} →</Link>
     </div>
   );
 }

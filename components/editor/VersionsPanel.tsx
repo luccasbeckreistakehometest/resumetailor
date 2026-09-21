@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import type { GenerationView } from "@/lib/server/generations";
+import { Badge, Button } from "@/components/ui";
 
 type Version = { id: string; source: string; createdAt: string; updatedAt: string; chars: number };
 
@@ -28,23 +29,29 @@ export function VersionsPanel({ genId, stamp, onRestored }: { genId: string; sta
   const original = items.length ? items[items.length - 1] : null;
 
   return (
-    <details className="card p-4" data-testid="versions">
-      <summary className="cursor-pointer font-semibold text-ink">🕘 {E.versions} {items.length > 0 && <span className="text-muted">({items.length})</span>}</summary>
-      {items.length === 0 ? <p className="mt-2 text-sm text-muted">{E.versionsEmpty}</p> : (
+    <details className="border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="versions">
+      <summary className="eyebrow cursor-pointer">
+        {E.versions}{items.length > 0 && <span className="ml-[var(--s-2)] font-mono tabular-nums normal-case tracking-normal text-[color:var(--ink-muted)]">{items.length}</span>}
+      </summary>
+      {items.length === 0 ? <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{E.versionsEmpty}</p> : (
         <>
-          {original?.source === "ai" && items.length > 1 && <button type="button" onClick={() => void restore(original.id)} className="btn btn-ghost mt-3 !py-1.5 !text-sm" data-testid="back-to-ai">↩ {E.backToAi}</button>}
-          <ul className="mt-3 space-y-1.5 text-sm">
+          {original?.source === "ai" && items.length > 1 && (
+            <Button variant="outline" size="sm" icon="history" className="mt-[var(--s-4)]" onClick={() => void restore(original.id)} data-testid="back-to-ai">{E.backToAi}</Button>
+          )}
+          <ul className="mt-[var(--s-4)] border-t border-[var(--rule-hairline)]">
             {items.map((v, i) => (
-              <li key={v.id} className="flex items-center gap-3" data-testid="version-item" data-source={v.source}>
-                <span className="w-20 shrink-0 rounded-full bg-paper-2 px-2 py-0.5 text-center text-xs font-semibold text-ink">{E.source[v.source] ?? v.source}</span>
-                <span className="flex-1 text-muted">{when(v.updatedAt)}</span>
-                {i > 0 && <button type="button" onClick={() => void restore(v.id)} className="text-xs font-semibold text-oxblood" data-testid="version-restore">{E.restore}</button>}
+              <li key={v.id} className="flex items-center gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-2)]" data-testid="version-item" data-source={v.source}>
+                <Badge>{E.source[v.source] ?? v.source}</Badge>
+                <span className="flex-1 font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">{when(v.updatedAt)}</span>
+                {i > 0 && (
+                  <button type="button" onClick={() => void restore(v.id)} className="font-sans text-[length:var(--ui-12)] font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]" data-testid="version-restore">{E.restore}</button>
+                )}
               </li>
             ))}
           </ul>
         </>
       )}
-      {note && <p className="mt-2 text-sm text-moss" role="status">{note}</p>}
+      {note && <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--kept)]" role="status">{note}</p>}
     </details>
   );
 }

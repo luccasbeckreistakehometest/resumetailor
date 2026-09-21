@@ -9,9 +9,10 @@ test.describe("landing", () => {
     await skipTour(page);
     await page.goto("/");
     await expect(page.locator("h1")).toContainText(/interview|entrevista/i);
-    // serif display face is the identity — it must actually be applied
+    // The document face is the identity — it must actually be applied, not just declared.
+    // Source Serif 4 replaced Fraunces in September 2026 (docs/DESIGN.md §3.4).
     const font = await page.locator("h1").evaluate((el) => getComputedStyle(el).fontFamily);
-    expect(font.toLowerCase()).toContain("fraunces");
+    expect(font.toLowerCase()).toContain("source serif 4");
     await page.getByRole("link", { name: /match score|nota/i }).first().click();
     await expect(page).toHaveURL(/\/start/);
     expect(errors).toEqual([]);

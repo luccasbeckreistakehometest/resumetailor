@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { signUp, skipTour } from "./helpers";
+import { signOut, signUp, skipTour } from "./helpers";
 
 test.describe("sign in and sign up", () => {
   test("'Sign in' and /login open sign-in; /signup and unlock open signup; Escape closes; focus stays inside", async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe("sign in and sign up", () => {
     await page.goto("/signup");
     await skipTour(page);
     await signUp(page, email, "password123");
-    await page.getByTestId("signout").click();
+    await signOut(page);
 
     await page.getByRole("button", { name: "PT" }).click();
     await page.goto("/login");

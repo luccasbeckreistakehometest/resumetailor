@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { test, expect } from "./fixtures";
-import { tailorKitByText, unlockedTailorKit } from "./helpers";
+import { kitAction, tailorKitByText, unlockedTailorKit } from "./helpers";
 
 type W = { __rtVoiceHear: (t: string) => void; __rtVoiceTest: boolean };
 
@@ -16,7 +16,7 @@ test.describe("pitch studio", () => {
       const type = r.headers()["content-type"] ?? "";
       if (r.method() !== "GET" && (/^(video|audio)\//.test(type) || (r.postDataBuffer()?.length ?? 0) > 50_000)) uploads.push(`${r.url()} ${type}`);
     });
-    await page.getByTestId("pitch-link").first().click();
+    await kitAction(page, "pitch-link");
     await expect(page).toHaveURL(new RegExp(`/pitch/${id}$`));
     await page.getByTestId("pitch-write").click();
     await expect(page.getByTestId("pitch-text")).toHaveValue(/\[demo · 60s\]/);

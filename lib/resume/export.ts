@@ -3,6 +3,15 @@ import { AlignmentType, Document, HeadingLevel, LevelFormat, Packer, Paragraph, 
 /**
  * Word and plain-text exports of a kit's documents. Single column, real headings and real bullet
  * lists, no tables or images — what applicant tracking systems parse best. Built in memory.
+ *
+ * THE ONE PLACE THE TYPE SYSTEM DOES NOT APPLY, deliberately (docs/DESIGN.md §14, surface 3).
+ * On screen and on paper this product sets Source Serif 4 and Public Sans; a .docx cannot carry
+ * them, and a font the reader's Word does not have is SUBSTITUTED, which reflows the page — the
+ * one thing a résumé must never do. The design spec proposed Cambria for the body; I did not adopt
+ * it, because Cambria ships with Office but not with Google Docs, where a great many of these
+ * files are opened, and I could not verify the substitution behaviour from here. Calibri is what
+ * every target has. Do not "fix" this to match the screen without opening the result in a real
+ * Word and a real Google Docs first.
  */
 export type ExportDoc = "resume" | "cover";
 export type ExportLang = "en" | "pt" | "es";

@@ -60,7 +60,7 @@ export function AcquisitionPanel() {
         <div className="card p-4">
           <p className="eyebrow">{A.daily}</p>
           <svg viewBox={`0 0 ${data.daily.length * 12} 60`} className="mt-2 h-16 w-full" preserveAspectRatio="none" role="img" aria-label={A.daily}>
-            {data.daily.map((d, i) => <rect key={String(d.day)} x={i * 12 + 2} width="8" y={60 - (Number(d.visitors) / maxDay) * 56} height={(Number(d.visitors) / maxDay) * 56} fill="var(--oxblood)"><title>{`${d.day}: ${d.visitors} / ${d.previews} / ${d.signups}`}</title></rect>)}
+            {data.daily.map((d, i) => <rect key={String(d.day)} x={i * 12 + 2} width="8" y={60 - (Number(d.visitors) / maxDay) * 56} height={(Number(d.visitors) / maxDay) * 56} fill="var(--ink)"><title>{`${d.day}: ${d.visitors} / ${d.previews} / ${d.signups}`}</title></rect>)}
           </svg>
         </div>
       )}

@@ -25,34 +25,34 @@ export default function InterviewOverviewPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-4xl py-12">
+      <Container width="reading" className="py-[var(--s-11)]">
         <div data-tour="progress">
           <Eyebrow>{P.eyebrow}</Eyebrow>
-          <h1 className="font-display mt-2 text-4xl text-ink">{P.title}</h1>
-          <p className="mt-2 max-w-2xl text-ink-2">{P.intro}</p>
+          <h1 className="doc-45 mt-[var(--s-3)] text-[color:var(--ink)]">{P.title}</h1>
+          <p className="mt-[var(--s-4)] max-w-[var(--measure)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[color:var(--ink-2)]">{P.intro}</p>
         </div>
 
         {sessions && trend.sessions === 0 && (
-          <div className="card mt-8 p-10 text-center" data-testid="progress-empty">
-            <p className="text-ink-2">{P.empty}</p>
-            <Link href="/library" className="btn btn-primary mt-6">{x.interview.toLibrary}</Link>
+          <div className="mt-[var(--s-8)]" data-testid="progress-empty">
+            <p className="doc-21 text-[color:var(--ink)]">{P.empty}</p>
+            <Link href="/library" className="btn btn-primary mt-[var(--s-5)]">{x.interview.toLibrary}</Link>
           </div>
         )}
 
         {trend.sessions > 0 && trend.latest && (
           <>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="progress-tiles">
-              <div className="card p-4"><p className="eyebrow">{P.tiles.sessions}</p><p className="font-display mt-1 text-3xl text-ink" data-testid="progress-sessions">{trend.sessions}</p><p className="text-xs text-muted">{P.answers(trend.answers)}</p></div>
-              <div className="card p-4 border-2 !border-ink">
+            <div className="mt-[var(--s-8)] grid border-t border-[var(--rule)] sm:grid-cols-2 sm:gap-x-[var(--gutter)] lg:grid-cols-4" data-testid="progress-tiles">
+              <div className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]"><p className="eyebrow">{P.tiles.sessions}</p><p className="mt-[var(--s-2)] font-mono text-[length:var(--mn-24)] font-medium tabular-nums text-[color:var(--ink)]" data-testid="progress-sessions">{trend.sessions}</p><p className="text-xs text-muted">{P.answers(trend.answers)}</p></div>
+              <div className="border-b-2 border-[var(--ink)] py-[var(--s-4)]">
                 <p className="eyebrow">{P.tiles.latest}</p>
-                <p className="font-display mt-1 text-3xl text-ink" data-testid="progress-latest">{trend.latest.overall}<span className="text-sm text-muted">/10</span></p>
-                {trend.sessions > 1 && <p className={"text-xs font-semibold " + (trend.delta > 0 ? "text-moss" : trend.delta < 0 ? "text-oxblood" : "text-muted")} data-testid="progress-delta" data-delta={trend.delta}>{trend.delta > 0 ? "▲" : trend.delta < 0 ? "▼" : "–"} {signed(trend.delta)} {P.sinceFirst}</p>}
+                <p className="mt-[var(--s-2)] font-mono text-[length:var(--mn-24)] font-medium tabular-nums text-[color:var(--ink)]" data-testid="progress-latest">{trend.latest.overall}<span className="text-sm text-muted">/10</span></p>
+                {trend.sessions > 1 && <p className={"text-xs font-semibold " + (trend.delta > 0 ? "text-moss" : trend.delta < 0 ? "text-oxblood" : "text-muted")} data-testid="progress-delta" data-delta={trend.delta}>{signed(trend.delta)} {P.sinceFirst}</p>}
               </div>
-              <div className="card p-4"><p className="eyebrow">{P.tiles.strongest}</p><p className="mt-1 font-semibold text-moss" data-testid="progress-strongest">{trend.strongest ? x.interview.scores[trend.strongest] : "—"}</p><p className="text-xs text-muted">{trend.strongest ? `${trend.averages[trend.strongest]}/10` : ""}</p></div>
-              <div className="card p-4"><p className="eyebrow">{P.tiles.weakest}</p><p className="mt-1 font-semibold text-oxblood" data-testid="progress-weakest">{trend.weakest ? x.interview.scores[trend.weakest] : "—"}</p><p className="text-xs text-muted">{trend.weakest ? `${trend.averages[trend.weakest]}/10` : ""}</p></div>
+              <div className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]"><p className="eyebrow">{P.tiles.strongest}</p><p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--kept)]" data-testid="progress-strongest">{trend.strongest ? x.interview.scores[trend.strongest] : "—"}</p><p className="text-xs text-muted">{trend.strongest ? `${trend.averages[trend.strongest]}/10` : ""}</p></div>
+              <div className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]"><p className="eyebrow">{P.tiles.weakest}</p><p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--query)]" data-testid="progress-weakest">{trend.weakest ? x.interview.scores[trend.weakest] : "—"}</p><p className="text-xs text-muted">{trend.weakest ? `${trend.averages[trend.weakest]}/10` : ""}</p></div>
             </div>
 
-            <div className="card mt-6 p-6" data-testid="progress-chart">
+            <div className="mt-[var(--s-8)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="progress-chart">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div><p className="eyebrow">{P.chartTitle}</p><p className="mt-1 text-sm text-ink-2">{P.chartHint}</p></div>
                 <p className="text-xs text-muted">{dateOf(trend.first!.createdAt)} → {dateOf(trend.latest.createdAt)}</p>
@@ -60,13 +60,13 @@ export default function InterviewOverviewPage() {
               <div className="mt-4 overflow-x-auto"><TrendChart values={trend.points.map((p) => p.overall)} width={640} height={120} className="h-auto w-full max-w-2xl" testId="progress-svg" /></div>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {DIMENSIONS.map((d) => (
-                  <div key={d} className="rounded-lg bg-paper px-3 py-2 text-sm"><span className="text-ink-2">{x.interview.scores[d]}</span><span className="float-right font-semibold text-ink">{trend.averages[d]}</span></div>
+                  <div key={d} className="border-b border-[var(--rule-hairline)] px-0 py-[var(--s-2)] font-sans text-[length:var(--ui-13)]"><span className="text-ink-2">{x.interview.scores[d]}</span><span className="float-right font-semibold text-ink">{trend.averages[d]}</span></div>
                 ))}
               </div>
             </div>
 
             {trend.next && (
-              <div className="mt-6 rounded-xl border border-gold bg-gold-2 p-5" data-testid="progress-next">
+              <div className="mt-[var(--s-7)] bg-[var(--query-wash)] p-[var(--s-5)]" style={{ borderLeft: "2px solid var(--query)" }} data-testid="progress-next">
                 <p className="eyebrow">{P.nextTitle}</p>
                 <p className="mt-1 font-display text-2xl text-ink">{x.interview.scores[trend.next.dimension]}</p>
                 <p className="mt-1 text-sm text-ink-2">{P.advice[trend.next.dimension]}</p>

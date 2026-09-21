@@ -4,6 +4,7 @@ import { useId, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { extractTextFromFile, ImportFailure, type ImportError } from "@/lib/client/extract-file";
 import type { Extracted } from "@/lib/text/extract";
+import { Icon } from "@/components/ui";
 
 type Status = { kind: "idle" } | { kind: "busy"; name: string } | { kind: "done"; name: string; words: number } | { kind: "error"; code: ImportError };
 
@@ -50,9 +51,9 @@ export function ImportDrop({ onText, testId = "import", hint, className = "", to
       <div {...imp.dragProps} onClick={() => input.current?.click()} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.current?.click(); } }}
         className={"flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-dashed px-4 py-3 text-sm transition " + (imp.over ? "border-ink bg-gold-2" : "border-edge-2 bg-paper hover:border-ink")}
         data-testid={`${testId}-drop`}>
-        <span aria-hidden>📄</span>
+        <span aria-hidden className="text-[color:var(--ink-muted)]"><Icon name="document" size={16} /></span>
         <span className="font-medium text-ink">{x.importer.drop}</span>
-        <span className="text-oxblood underline-offset-4 hover:underline">{x.importer.choose}</span>
+        <span className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{x.importer.choose}</span>
         <span className="text-xs text-muted">{hint ?? x.importer.privacy}</span>
       </div>
       <input ref={input} type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="hidden"

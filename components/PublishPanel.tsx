@@ -7,6 +7,7 @@ import { ShareBar } from "@/app/(site)/cv/[slug]/ShareBar";
 import { TEMPLATES, type Template } from "@/lib/resume/public";
 import type { GenerationView } from "@/lib/server/generations";
 import type { PublicResumeView } from "@/lib/server/publicResumes";
+import { Badge, Button, Checkbox, Chip, Icon, Input, Notice } from "@/components/ui";
 
 type Patch = { enabled?: boolean; template?: Template; hideContact?: boolean; indexable?: boolean; pin?: string | null };
 
@@ -45,59 +46,64 @@ export function PublishPanel({ gen, onUpdate }: { gen: GenerationView; onUpdate?
   const dateOf = (iso: string) => new Date(iso).toLocaleDateString(lang === "pt" ? "pt-BR" : lang);
 
   return (
-    <div className="rounded-xl border border-edge bg-surface p-5" data-testid="publish" data-enabled={pub?.enabled ? "1" : "0"}>
-      {pub?.takenDown && <p className="mb-3 rounded-lg bg-gold-2 px-3 py-2 text-sm text-ink" role="status" data-testid="publish-taken-down">{l.apiErrors.taken_down}</p>}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-ink-2">{P.title}</h3>
-          <p className="mt-1 text-xs text-muted">{P.subtitle}</p>
-        </div>
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-ink">
-          <input type="checkbox" className="h-4 w-4 accent-[var(--oxblood)]" checked={!!pub?.enabled} disabled={busy} onChange={(e) => void save({ enabled: e.target.checked })} data-testid="publish-toggle" />
-          {pub?.enabled ? P.on : P.toggle}
-        </label>
+    <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="publish" data-enabled={pub?.enabled ? "1" : "0"}>
+      {pub?.takenDown && (
+        <Notice tone="query" className="mb-[var(--s-4)]"><span role="status" data-testid="publish-taken-down">{l.apiErrors.taken_down}</span></Notice>
+      )}
+      <p className="eyebrow">{P.title}</p>
+      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{P.subtitle}</p>
+      <div className="mt-[var(--s-4)]">
+        <Checkbox checked={!!pub?.enabled} disabled={busy} onChange={(e) => void save({ enabled: e.target.checked })} data-testid="publish-toggle" label={pub?.enabled ? P.on : P.toggle} />
       </div>
 
       {pub?.enabled && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-[var(--s-6)] flex flex-col gap-[var(--s-6)]">
           <div>
             <p className="eyebrow">{P.link}</p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-2">
-              <input readOnly className="field min-w-0 flex-1 !py-2 !text-xs" value={url} onFocus={(e) => e.currentTarget.select()} data-testid="publish-url" aria-label={P.link} />
-              <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-ink !py-2 !text-sm" data-testid="publish-open">{P.open} ↗</a>
+            <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-[var(--s-3)]">
+              <Input readOnly className="min-w-0 flex-1 font-mono text-[length:var(--mn-13)]" value={url} onFocus={(e) => e.currentTarget.select()} data-testid="publish-url" aria-label={P.link} />
+              <Button href={url} newTab size="sm" icon="external" iconEnd data-testid="publish-open">{P.open}</Button>
             </div>
-            <div className="mt-2"><ShareBar url={url} text={P.shareText(gen.title)} labels={{ share: P.share, copy: P.copy, copied: P.copied, whatsapp: P.whatsapp, linkedin: P.linkedin }} testId="publish" /></div>
+            <div className="mt-[var(--s-3)]"><ShareBar url={url} text={P.shareText(gen.title)} labels={{ share: P.share, copy: P.copy, copied: P.copied, whatsapp: P.whatsapp, linkedin: P.linkedin }} testId="publish" /></div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-ink-2">{P.template}:</span>
-            {TEMPLATES.map((t) => (
-              <button key={t} onClick={() => void save({ template: t })} disabled={busy} className={"rounded-full border px-2.5 py-1 text-xs font-medium transition " + (pub.template === t ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2 hover:border-ink")} data-testid={`publish-template-${t}`}>{d.print.templates[t]}</button>
-            ))}
+          <div>
+            <p className="eyebrow">{P.template}</p>
+            <div className="mt-[var(--s-3)] flex flex-wrap gap-[var(--s-2)]">
+              {TEMPLATES.map((t) => (
+                <Chip key={t} selected={pub.template === t} disabled={busy} onClick={() => void save({ template: t })} data-testid={`publish-template-${t}`}>{d.print.templates[t]}</Chip>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <label className="flex items-center gap-2 text-sm text-ink-2"><input type="checkbox" className="h-4 w-4 accent-[var(--oxblood)]" checked={pub.hideContact} disabled={busy} onChange={(e) => void save({ hideContact: e.target.checked })} data-testid="publish-hide" />{P.hideContact}</label>
-            <label className="flex items-center gap-2 text-sm text-ink-2"><input type="checkbox" className="h-4 w-4 accent-[var(--oxblood)]" checked={pub.indexable} disabled={busy} onChange={(e) => void save({ indexable: e.target.checked })} data-testid="publish-index" />{P.indexable}</label>
+          <div className="flex flex-col gap-[var(--s-3)]">
+            <Checkbox checked={pub.hideContact} disabled={busy} onChange={(e) => void save({ hideContact: e.target.checked })} data-testid="publish-hide" label={P.hideContact} />
+            <Checkbox checked={pub.indexable} disabled={busy} onChange={(e) => void save({ indexable: e.target.checked })} data-testid="publish-index" label={P.indexable} />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-ink-2">{P.pin}:</span>
-            {pub.hasPin && <span className="rounded-full bg-moss-2 px-2 py-0.5 text-[11px] font-semibold text-moss ring-1 ring-moss/30" data-testid="publish-has-pin">🔒 {P.pinOn}</span>}
-            <input className="field w-36 !py-1.5 !text-sm" value={pin} onChange={(e) => setPin(e.target.value)} placeholder={P.pinPh} maxLength={12} data-testid="publish-pin" aria-label={P.pin} />
-            <button onClick={() => { void save({ pin }); setPin(""); }} disabled={busy || !pin} className="btn btn-ghost !py-1.5 !text-xs" data-testid="publish-pin-save">{P.pinSet}</button>
-            {pub.hasPin && <button onClick={() => void save({ pin: null })} disabled={busy} className="text-xs text-muted hover:text-oxblood" data-testid="publish-pin-clear">{P.pinClear}</button>}
-            <span className="text-xs text-muted">{P.pinHint}</span>
+          <div>
+            <div className="flex flex-wrap items-baseline gap-[var(--s-3)]">
+              <p className="eyebrow">{P.pin}</p>
+              {pub.hasPin && <span data-testid="publish-has-pin"><Badge tone="kept">{P.pinOn}</Badge></span>}
+            </div>
+            <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-[var(--s-3)]">
+              <Input className="w-[150px]" value={pin} onChange={(e) => setPin(e.target.value)} placeholder={P.pinPh} maxLength={12} data-testid="publish-pin" aria-label={P.pin} />
+              <Button variant="outline" size="sm" onClick={() => { void save({ pin }); setPin(""); }} disabled={busy || !pin} data-testid="publish-pin-save">{P.pinSet}</Button>
+              {pub.hasPin && <Button variant="quiet" size="sm" onClick={() => void save({ pin: null })} disabled={busy} data-testid="publish-pin-clear">{P.pinClear}</Button>}
+            </div>
+            <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{P.pinHint}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-edge pt-3 text-sm">
-            <span className="font-medium text-ink" data-testid="publish-views">👁 {pub.views === 0 ? P.noViews : P.views(pub.views)}</span>
-            {pub.lastViewedAt && <span className="text-xs text-muted">{P.lastViewed(dateOf(pub.lastViewedAt))}</span>}
-            <button onClick={refresh} className="text-xs text-muted underline-offset-2 hover:underline" data-testid="publish-refresh">↻</button>
+          <div className="flex flex-wrap items-center gap-[var(--s-4)] border-t border-[var(--rule-hairline)] pt-[var(--s-4)]">
+            <span className="flex items-center gap-[var(--s-2)] font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-2)]" data-testid="publish-views">
+              <Icon name="eye" size={16} />{pub.views === 0 ? P.noViews : P.views(pub.views)}
+            </span>
+            {pub.lastViewedAt && <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{P.lastViewed(dateOf(pub.lastViewedAt))}</span>}
+            <button onClick={refresh} className="text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]" aria-label={P.link} data-testid="publish-refresh"><Icon name="history" size={16} /></button>
           </div>
         </div>
       )}
-      {error && <p className="mt-3 text-sm text-oxblood" role="alert" data-testid="publish-error">{error}</p>}
-    </div>
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="publish-error">{error}</span></Notice>}
+    </section>
   );
 }

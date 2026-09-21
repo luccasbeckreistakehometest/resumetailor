@@ -1,237 +1,658 @@
 @import "tailwindcss";
 
 /*
-  ResumeTailor — "Paper & Ink".
-  A résumé is a document, so the product looks like one: warm paper, black ink, an oxblood
-  stamp for the one thing you should press, and a serif with real optical sizing for headings.
-  Deliberately not a dark SaaS gradient. Single committed look; no dark mode.
+  ResumeTailor — OFÍCIO DO DOCUMENTO. The design system: docs/DESIGN.md.
+
+  The page is paper, the type is ink, and the only colour is a mark made on the page. Three voices:
+  Source Serif 4 for the document, Public Sans for the interface, IBM Plex Mono for the machine.
+  Red (--mark) is a proofreader's pencil, never a button.
+
+  Reading order in this file
+    1. Tokens, light ("Paper")            :root
+    2. Tokens, dark ("Desk lamp")         the two blocks that MUST stay identical
+    3. Tailwind theme bridge              @theme inline
+    4. Base: document, focus, selection, grain, print
+    5. Type utilities                     .doc-*, .ui-*, .mn-*
+    6. Compatibility layer                the old .card/.btn/.field classes, re-cut on new tokens
+    7. The document                       .doc-* — one stylesheet for screen and paper
+
+  Every colour ratio in the comments was measured with scratchpad/design/contrast.mjs, not guessed.
 */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. Tokens — light, "Paper"
+   ───────────────────────────────────────────────────────────────────────── */
 :root {
-  --paper: #f4efe6;
-  --paper-2: #ece5d8;
-  --surface: #fffdf9;
-  --ink: #1b1713;
-  --ink-2: #3d3630;
-  --muted: #6f655b;
-  --edge: #ddd3c2;
-  --edge-2: #c9bda8;
-  --oxblood: #8a2432;
-  --oxblood-2: #6f1c28;
-  --moss: #2e5d4e;
-  --moss-2: #e4efe9;
-  --gold: #b8862b;
-  --gold-2: #f6ecd6;
-  --shadow: 0 1px 0 rgba(27,23,19,.06), 0 12px 32px -16px rgba(27,23,19,.35);
+  color-scheme: light;
+
+  /* Surfaces */
+  --sheet: #fffdf8;          /* the document. Nothing else uses it            */
+  --page: #faf6ee;           /* app and marketing ground                      */
+  --raised: #fffdf8;         /* a panel lifted off the page (same stock)      */
+  --sunken: #f2ece0;         /* wells, extract blocks, disabled fields        */
+  --zebra: #ede6d8;          /* table banding, above 12 rows only             */
+  --field: #fffdf8;          /* the ground of an input — paper, in light       */
+  --skeleton: #f2ece0;       /* a bar standing in for content not here yet     */
+
+  /* Rules — three weights, by job */
+  --rule-hairline: #e2d9c7;  /* decorative separator inside a panel   1.30:1  */
+  --rule: #d3c8b2;           /* structural rule, table rule, panel    1.54:1  */
+  --rule-field: #968970;     /* every interactive edge                3.19:1  */
+
+  /* Ink ramp */
+  --ink-40: #8a7e68;         /* placeholder + disabled ONLY           3.70:1  */
+  --ink-muted: #756a56;      /* metadata, help, captions              4.93:1  */
+  --ink-2: #514839;          /* secondary body, table cell prose      8.34:1  */
+  --ink: #1c1913;            /* primary text, primary button ground  16.26:1  */
+  --ink-hover: #000000;      /* the ink ground, pressed harder                */
+  --on-ink: #faf6ee;         /* label on an ink ground                        */
+
+  /* Semantics — what a mark on a document can mean */
+  --mark: #8e2433;           /* unverified, invalid, removed, destructive     */
+  --mark-deep: #6e1b27;
+  --mark-wash: #f6e7e6;
+  --on-mark: #ffffff;        /* 8.57:1 on --mark                              */
+  --kept: #2c5a4a;           /* verified, added, true                         */
+  --kept-wash: #e6efe9;
+  --query: #8a6318;          /* an open question awaiting an answer           */
+  --query-wash: #f7edd8;
+  --select: #f0dfa8;         /* ::selection ground; ink on it 13.21:1         */
+
+  /* Depth. Reach for a rule, then a step, then an inset, then — last — a shadow. */
+  --shadow-pop: 0 1px 2px rgba(28, 25, 19, 0.06), 0 8px 24px -12px rgba(28, 25, 19, 0.28);
+  --shadow-sheet: 0 1px 0 rgba(28, 25, 19, 0.05), 0 24px 48px -32px rgba(28, 25, 19, 0.35);
+  --grain-ink: rgba(28, 25, 19, 0.022);
+  --grain-light: rgba(255, 255, 255, 0.5);
+
+  /* Type — document scale, Source Serif 4, ratio 6:5 from an 18px base */
+  --doc-64: 4rem;      --doc-64-lh: 1;      --doc-64-ls: -0.024em;
+  --doc-45: 2.8125rem; --doc-45-lh: 1.0667; --doc-45-ls: -0.02em;
+  --doc-31: 1.9375rem; --doc-31-lh: 1.2258; --doc-31-ls: -0.012em;
+  --doc-26: 1.625rem;  --doc-26-lh: 1.3077; --doc-26-ls: -0.008em;
+  --doc-21: 1.34375rem;--doc-21-lh: 1.4884; --doc-21-ls: -0.003em;
+  --doc-18: 1.125rem;  --doc-18-lh: 1.6111; --doc-18-ls: 0em;
+  --doc-15: 0.9375rem; --doc-15-lh: 1.6;    --doc-15-ls: 0.004em;
+  --doc-12: 0.78125rem;--doc-12-lh: 1.52;   --doc-12-ls: 0.01em;
+
+  /* Type — interface scale, Public Sans, ratio 9:8 from a 15px base */
+  --ui-21: 1.3125rem;  --ui-21-lh: 1.3333; --ui-21-ls: -0.008em;
+  --ui-19: 1.1875rem;  --ui-19-lh: 1.3684; --ui-19-ls: -0.005em;
+  --ui-17: 1.0625rem;  --ui-17-lh: 1.4118; --ui-17-ls: -0.002em;
+  --ui-15: 0.9375rem;  --ui-15-lh: 1.4667; --ui-15-ls: 0em;
+  --ui-13: 0.8125rem;  --ui-13-lh: 1.3846; --ui-13-ls: 0.005em;
+  --ui-12: 0.75rem;    --ui-12-lh: 1.3333; --ui-12-ls: 0.01em;
+  --ui-11c: 0.6875rem; --ui-11c-lh: 1.2727;--ui-11c-ls: 0.09em;
+
+  /* Type — machine readout, IBM Plex Mono */
+  --mn-40: 2.5rem;     --mn-40-lh: 1;      --mn-40-ls: -0.02em;
+  --mn-24: 1.5rem;     --mn-24-lh: 1.1667; --mn-24-ls: -0.01em;
+  --mn-15: 0.9375rem;  --mn-15-lh: 1.6;    --mn-15-ls: 0em;
+  --mn-13: 0.8125rem;  --mn-13-lh: 1.5385; --mn-13-ls: 0em;
+
+  --measure: 66ch;
+
+  /* Space — a 4px grid. Anything not on this list is a bug. */
+  --s-1: 2px;  --s-2: 4px;  --s-3: 8px;   --s-4: 12px; --s-5: 16px;
+  --s-6: 20px; --s-7: 24px; --s-8: 32px;  --s-9: 40px; --s-10: 56px;
+  --s-11: 72px; --s-12: 96px; --s-13: 128px;
+  --gutter: 24px;
+  --page-max: 1200px;
+
+  /* Radius encodes how much of a document an object is. Paper has square corners. */
+  --r-0: 0px;    /* sheet, tables, rules, the print preview      */
+  --r-1: 2px;    /* inputs, chips, tokens, badges, checkboxes    */
+  --r-2: 4px;    /* buttons, menus, panels, popovers             */
+  --r-3: 8px;    /* dialogs and the mobile sheet only            */
+  --r-pill: 999px; /* the language switch and avatars only       */
+
+  /* Motion */
+  --dur-1: 120ms; /* a control changing state       */
+  --dur-2: 180ms; /* a thing appearing in place     */
+  --dur-3: 260ms; /* a thing arriving from elsewhere*/
+  --ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.9, 0.3);
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* The masthead is one row, always. 60px on the comfortable scale; density never touches it. */
+  --header-h: 60px;
+
+  /* Density — comfortable is the default; a surface states its own (§7.1) */
+  --control-h: 44px;
+  --control-h-sm: 36px;
+  --row-h: 56px;
+  --row-h-2: 76px;
+  --cell-y: 12px;
+  --cell-x: 16px;
+  --pane-pad: 24px;
+  --density-body: var(--ui-15);
+  --density-body-lh: var(--ui-15-lh);
+  --density-label: var(--ui-13);
+  --density-label-lh: var(--ui-13-lh);
 }
 
+[data-density="compact"] {
+  --control-h: 32px;
+  --control-h-sm: 28px;
+  --row-h: 36px;
+  --row-h-2: 54px;
+  --cell-y: 6px;
+  --cell-x: 12px;
+  --pane-pad: 16px;
+  --density-body: var(--ui-13);
+  --density-body-lh: var(--ui-13-lh);
+  --density-label: var(--ui-12);
+  --density-label-lh: var(--ui-12-lh);
+}
+
+/* A phone is never dense. */
+@media (pointer: coarse) {
+  [data-density="compact"] {
+    --control-h: 44px;
+    --control-h-sm: 36px;
+    --row-h: 48px;
+    --row-h-2: 72px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. Tokens — dark, "Desk lamp"
+
+   Declared twice on purpose (docs/DESIGN.md §6.3): once for the system preference, once for an
+   explicit choice, so no colour has its only definition inside a media query. The two blocks are
+   byte-identical and tests/unit/theme-tokens.test.ts fails the build if they ever drift.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+/* THEME:DARK:BEGIN */
+  color-scheme: dark;
+  /* Surfaces. The desk, not the paper. */
+  --page: #14120e;
+  --raised: #1d1a15;
+  --sunken: #0e0c09;
+  --zebra: #1a1712;            /* 1.05 step off the desk; ink on it 15.30:1 */
+  --field: #0e0c09;            /* an input is NOT the document: it sinks into the desk.
+                                  ink 16.72:1, placeholder 5.01:1, edge 3.84:1 */
+  --skeleton: #332c20;         /* a skeleton must be lighter than a dark ground to read (1.36) */
+  /* THE SHEET NEVER INVERTS. It only dims, as if lit by a lamp; print restores pure white. */
+  --sheet: #ede7d9;
+  --rule-hairline: #2a251d;
+  --rule: #3a3327;
+  --rule-field: #786d57;       /* 3.67:1 on the desk, 3.41:1 on a raised panel */
+  --ink-40: #8a806c;           /* 4.80:1 */
+  --ink-muted: #a0957f;        /* 6.32:1 on desk, 5.86:1 raised */
+  --ink-2: #c0b6a0;            /* 9.30:1 */
+  --ink: #f2ede1;              /* 16.01:1 — and the primary button ground */
+  --ink-hover: #ffffff;        /* on a dark ground the ink brightens, not darkens */
+  --on-ink: #14120e;           /* 16.01:1 on that ground */
+  --mark: #e08a93;             /* 7.33:1 */
+  --mark-deep: #eda3aa;        /* 9.28:1 — lighter on hover, because the ground is dark */
+  --mark-wash: #2a1418;
+  --on-mark: #14120e;          /* 7.33:1 */
+  --kept: #7fc4ac;             /* 9.26:1 */
+  --kept-wash: #132520;
+  --query: #d8a94a;            /* 8.64:1 */
+  --query-wash: #241b0e;
+  --select: #4a3c18;           /* ink on it 9.22:1 */
+  /* Shadows do not read on a dark ground: a rule plus the raised step does the work (§7.2). */
+  --shadow-pop: 0 0 0 1px var(--rule), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-sheet: 0 0 0 1px var(--rule), 0 24px 48px -32px rgba(0, 0, 0, 0.7);
+  --grain-ink: rgba(0, 0, 0, 0.12);
+  --grain-light: rgba(255, 255, 255, 0.015);
+/* THEME:DARK:END */
+  }
+}
+
+:root[data-theme="dark"] {
+/* THEME:DARK:BEGIN */
+  color-scheme: dark;
+  /* Surfaces. The desk, not the paper. */
+  --page: #14120e;
+  --raised: #1d1a15;
+  --sunken: #0e0c09;
+  --zebra: #1a1712;            /* 1.05 step off the desk; ink on it 15.30:1 */
+  --field: #0e0c09;            /* an input is NOT the document: it sinks into the desk.
+                                  ink 16.72:1, placeholder 5.01:1, edge 3.84:1 */
+  --skeleton: #332c20;         /* a skeleton must be lighter than a dark ground to read (1.36) */
+  /* THE SHEET NEVER INVERTS. It only dims, as if lit by a lamp; print restores pure white. */
+  --sheet: #ede7d9;
+  --rule-hairline: #2a251d;
+  --rule: #3a3327;
+  --rule-field: #786d57;       /* 3.67:1 on the desk, 3.41:1 on a raised panel */
+  --ink-40: #8a806c;           /* 4.80:1 */
+  --ink-muted: #a0957f;        /* 6.32:1 on desk, 5.86:1 raised */
+  --ink-2: #c0b6a0;            /* 9.30:1 */
+  --ink: #f2ede1;              /* 16.01:1 — and the primary button ground */
+  --ink-hover: #ffffff;        /* on a dark ground the ink brightens, not darkens */
+  --on-ink: #14120e;           /* 16.01:1 on that ground */
+  --mark: #e08a93;             /* 7.33:1 */
+  --mark-deep: #eda3aa;        /* 9.28:1 — lighter on hover, because the ground is dark */
+  --mark-wash: #2a1418;
+  --on-mark: #14120e;          /* 7.33:1 */
+  --kept: #7fc4ac;             /* 9.26:1 */
+  --kept-wash: #132520;
+  --query: #d8a94a;            /* 8.64:1 */
+  --query-wash: #241b0e;
+  --select: #4a3c18;           /* ink on it 9.22:1 */
+  /* Shadows do not read on a dark ground: a rule plus the raised step does the work (§7.2). */
+  --shadow-pop: 0 0 0 1px var(--rule), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-sheet: 0 0 0 1px var(--rule), 0 24px 48px -32px rgba(0, 0, 0, 0.7);
+  --grain-ink: rgba(0, 0, 0, 0.12);
+  --grain-light: rgba(255, 255, 255, 0.015);
+/* THEME:DARK:END */
+}
+
+/* The sheet carries its own small block rather than inheriting the desk's: on the dimmed sheet
+   --ink-muted would fall to 4.31:1 and fail, so it darkens to 5.07:1 and the field edge to 3.84:1. */
+:root[data-theme="dark"] .sheet,
+:root:not([data-theme="light"]) .sheet {
+  --ink-muted: #6a5f4d;
+  --ink-2: #514839;
+  --ink: #1c1913;
+  --rule-field: #7e7259;
+  --rule: #cdc2ad;
+  --rule-hairline: #ddd4c1;
+  --sunken: #e3dccb;
+  --page: var(--sheet);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. Tailwind bridge. `inline` so every utility resolves to var(--token) and follows the theme.
+   The first group is the vocabulary of the new system; the second keeps the ~1,400 legacy class
+   uses in the product compiling, pointed at the new ramp, until each surface is rebuilt.
+   ───────────────────────────────────────────────────────────────────────── */
 @theme inline {
-  --color-paper: var(--paper);
-  --color-paper-2: var(--paper-2);
-  --color-surface: var(--surface);
-  --color-ink: var(--ink);
+  /* The fallback stack lives in ONE place — components/fonts.ts, where next/font also measures
+     it for the metric override. Repeating it here printed every family twice in computed style. */
+  --font-serif: var(--ff-serif), serif;
+  --font-sans: var(--ff-sans), sans-serif;
+  --font-mono: var(--ff-mono), monospace;
+  --font-display: var(--ff-serif), serif;
+
+  --color-page: var(--page);
+  --color-sheet: var(--sheet);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-zebra: var(--zebra);
+  --color-field: var(--field);
+  --color-rule-hairline: var(--rule-hairline);
+  --color-rule: var(--rule);
+  --color-rule-field: var(--rule-field);
+  --color-ink-40: var(--ink-40);
+  --color-ink-muted: var(--ink-muted);
   --color-ink-2: var(--ink-2);
-  --color-muted: var(--muted);
-  --color-edge: var(--edge);
-  --color-edge-2: var(--edge-2);
-  --color-oxblood: var(--oxblood);
-  --color-oxblood-2: var(--oxblood-2);
-  --color-moss: var(--moss);
-  --color-moss-2: var(--moss-2);
-  --color-gold: var(--gold);
-  --color-gold-2: var(--gold-2);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-fraunces);
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
+  --color-on-ink: var(--on-ink);
+  --color-mark: var(--mark);
+  --color-mark-deep: var(--mark-deep);
+  --color-mark-wash: var(--mark-wash);
+  --color-on-mark: var(--on-mark);
+  --color-kept: var(--kept);
+  --color-kept-wash: var(--kept-wash);
+  --color-query: var(--query);
+  --color-query-wash: var(--query-wash);
+
+  /* Compatibility: old name → new meaning. Deleted surface by surface (docs/DESIGN.md §14). */
+  --color-paper: var(--page);
+  --color-paper-2: var(--sunken);
+  --color-muted: var(--ink-muted);
+  --color-edge: var(--rule-hairline);
+  --color-edge-2: var(--rule);
+  --color-oxblood: var(--mark);
+  --color-oxblood-2: var(--mark-deep);
+  --color-moss: var(--kept);
+  --color-moss-2: var(--kept-wash);
+  --color-gold: var(--query);
+  --color-gold-2: var(--query-wash);
+
+  --radius-doc: var(--r-0);
+  --radius-field: var(--r-1);
+  --radius-control: var(--r-2);
+  --radius-dialog: var(--r-3);
+
+  --text-doc-64: var(--doc-64);
+  --text-doc-45: var(--doc-45);
+  --text-doc-31: var(--doc-31);
+  --text-doc-26: var(--doc-26);
+  --text-doc-21: var(--doc-21);
+  --text-doc-18: var(--doc-18);
+  --text-doc-15: var(--doc-15);
+  --text-doc-12: var(--doc-12);
+  --text-ui-21: var(--ui-21);
+  --text-ui-19: var(--ui-19);
+  --text-ui-17: var(--ui-17);
+  --text-ui-15: var(--ui-15);
+  --text-ui-13: var(--ui-13);
+  --text-ui-12: var(--ui-12);
+  --text-mn-40: var(--mn-40);
+  --text-mn-24: var(--mn-24);
+  --text-mn-15: var(--mn-15);
+  --text-mn-13: var(--mn-13);
 }
 
-html { scroll-behavior: smooth; }
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. Base — the document itself
+   ───────────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  font-optical-sizing: auto;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
-  background: var(--paper);
+  background-color: var(--page);
   color: var(--ink);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--ui-15);
+  line-height: var(--ui-15-lh);
   -webkit-font-smoothing: antialiased;
-  /* paper grain: two faint noise layers, cheap and print-safe */
+  text-rendering: optimizeLegibility;
+  /* Paper grain: two faint noise layers on a 3px grid, at half the old strength — .035 visibly
+     dithered the edges of 13px type. Off inside the sheet and off in print. */
   background-image:
-    radial-gradient(rgba(27,23,19,.035) 1px, transparent 1px),
-    radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
+    radial-gradient(var(--grain-ink) 1px, transparent 1px),
+    radial-gradient(var(--grain-light) 1px, transparent 1px);
   background-size: 3px 3px, 5px 5px;
   background-position: 0 0, 1px 2px;
 }
 
-.font-display { font-family: var(--font-fraunces), Georgia, "Times New Roman", serif; font-variation-settings: "opsz" 144, "SOFT" 30; }
-.eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.rule { height: 1px; background: var(--edge); }
-.stamp {
-  display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .7rem; border-radius: 999px;
-  border: 1.5px dashed var(--oxblood); color: var(--oxblood); font-size: 11px; letter-spacing: .12em;
-  text-transform: uppercase; font-weight: 700; transform: rotate(-1.5deg);
+::selection { background: var(--select); color: var(--ink); }
+
+/* One focus ring, everywhere, keyboard only. Measured 7.95:1 on paper and 7.33:1 on the desk.
+   The offset keeps it clear of the control's own 1px edge. A 3px translucent box-shadow — what
+   this app used before — is invisible at 3:1 and is banned. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--mark);
+  outline-offset: 2px;
+  border-radius: inherit;
 }
-.card { background: var(--surface); border: 1px solid var(--edge); border-radius: 14px; box-shadow: var(--shadow); }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 10px; padding: .8rem 1.25rem; font-weight: 600; font-size: 15px; transition: transform .08s ease, background .15s ease, color .15s ease; cursor: pointer; }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: .55; cursor: not-allowed; }
-.btn-primary { background: var(--oxblood); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: var(--oxblood-2); }
-.btn-ink { background: var(--ink); color: var(--paper); }
-.btn-ink:hover:not(:disabled) { background: #000; }
-.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--edge-2); }
-.btn-ghost:hover:not(:disabled) { background: var(--surface); }
-.field { width: 100%; border: 1px solid var(--edge-2); background: var(--surface); border-radius: 10px; padding: .75rem .9rem; font-size: 15px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s; }
-.field:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(27,23,19,.08); }
-.field::placeholder { color: #a39889; }
-textarea.field { line-height: 1.5; resize: vertical; }
-.ink-underline { background-image: linear-gradient(transparent 62%, var(--gold-2) 62%); }
-.dropcap::first-letter { font-family: var(--font-fraunces), serif; font-size: 3.2em; float: left; line-height: .85; padding-right: .12em; color: var(--oxblood); }
+:where(a, button, input, select, textarea, summary, [tabindex]):focus:not(:focus-visible) { outline: none; }
+
+/* Longer languages break better with these two on by default (§12). */
+:where(h1, h2, h3, h4) { text-wrap: pretty; }
+:where(p, li) { hyphens: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. Type utilities. Each one sets size, line-height, tracking and face together, because a size
+   without its tracking is not a style. Use these, not ad-hoc text-[2.75rem].
+   ───────────────────────────────────────────────────────────────────────── */
+.doc-64, .doc-45, .doc-31, .doc-26, .doc-21, .doc-18, .doc-15, .doc-12 {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+}
+.doc-64 { font-size: var(--doc-64); line-height: var(--doc-64-lh); letter-spacing: var(--doc-64-ls); font-weight: 600; font-variation-settings: "opsz" 60; }
+.doc-45 { font-size: var(--doc-45); line-height: var(--doc-45-lh); letter-spacing: var(--doc-45-ls); font-weight: 600; font-variation-settings: "opsz" 44; }
+.doc-31 { font-size: var(--doc-31); line-height: var(--doc-31-lh); letter-spacing: var(--doc-31-ls); font-weight: 600; }
+.doc-26 { font-size: var(--doc-26); line-height: var(--doc-26-lh); letter-spacing: var(--doc-26-ls); font-weight: 600; }
+.doc-21 { font-size: var(--doc-21); line-height: var(--doc-21-lh); letter-spacing: var(--doc-21-ls); font-weight: 400; }
+.doc-18 { font-size: var(--doc-18); line-height: var(--doc-18-lh); letter-spacing: var(--doc-18-ls); font-weight: 400; }
+.doc-15 { font-size: var(--doc-15); line-height: var(--doc-15-lh); letter-spacing: var(--doc-15-ls); font-weight: 400; }
+.doc-12 { font-size: var(--doc-12); line-height: var(--doc-12-lh); letter-spacing: var(--doc-12-ls); font-weight: 400; font-variation-settings: "opsz" 8; }
+
+.ui-21, .ui-19, .ui-17, .ui-15, .ui-13, .ui-12, .ui-11c { font-family: var(--font-sans); }
+.ui-21 { font-size: var(--ui-21); line-height: var(--ui-21-lh); letter-spacing: var(--ui-21-ls); font-weight: 600; }
+.ui-19 { font-size: var(--ui-19); line-height: var(--ui-19-lh); letter-spacing: var(--ui-19-ls); font-weight: 600; }
+.ui-17 { font-size: var(--ui-17); line-height: var(--ui-17-lh); letter-spacing: var(--ui-17-ls); font-weight: 600; }
+.ui-15 { font-size: var(--ui-15); line-height: var(--ui-15-lh); letter-spacing: var(--ui-15-ls); }
+.ui-13 { font-size: var(--ui-13); line-height: var(--ui-13-lh); letter-spacing: var(--ui-13-ls); }
+.ui-12 { font-size: var(--ui-12); line-height: var(--ui-12-lh); letter-spacing: var(--ui-12-ls); font-weight: 500; }
+.ui-11c { font-size: var(--ui-11c); line-height: var(--ui-11c-lh); letter-spacing: var(--ui-11c-ls); font-weight: 700; text-transform: uppercase; }
+
+.mn-40, .mn-24, .mn-15, .mn-13 { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.mn-40 { font-size: var(--mn-40); line-height: var(--mn-40-lh); letter-spacing: var(--mn-40-ls); font-weight: 500; }
+.mn-24 { font-size: var(--mn-24); line-height: var(--mn-24-lh); letter-spacing: var(--mn-24-ls); font-weight: 500; }
+.mn-15 { font-size: var(--mn-15); line-height: var(--mn-15-lh); }
+.mn-13 { font-size: var(--mn-13); line-height: var(--mn-13-lh); }
+
+/* The one uppercase style in the system. Anything else in caps is a bug. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--ui-11c); line-height: var(--ui-11c-lh); letter-spacing: var(--ui-11c-ls);
+  font-weight: 700; text-transform: uppercase; color: var(--ink-muted);
+}
+
+.measure { max-width: var(--measure); }
+.tnum { font-variant-numeric: tabular-nums; }
+/* A bulleted line whose glyph optically aligns with the text above it. */
+.hang { hanging-punctuation: first allow-end; text-indent: -0.4em; padding-left: 0.4em; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. Compatibility layer
+
+   These class names are used ~1,400 times across the product. They are not deleted yet — that
+   happens surface by surface (docs/DESIGN.md §14) as each screen moves to the primitives in
+   components/ui/. What IS deleted is what they used to look like: the 14px radius on everything,
+   the drop shadow as the only depth cue, the red primary button and the invisible focus ring.
+   Re-cut on the new tokens, every screen in the product inherits the system tonight.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The wordmark and any legacy display heading. Fraunces' opsz/SOFT settings are gone with it. */
+.font-display { font-family: var(--font-serif); font-optical-sizing: auto; font-weight: 600; letter-spacing: -0.012em; }
+
+.rule { height: 1px; background: var(--rule); border: 0; }
+
+/* The seal: the one decorative element, once per page, only on a claim of fact. */
+.stamp {
+  display: inline-flex; align-items: center; gap: var(--s-3);
+  padding: 6px 10px; border-radius: var(--r-1);
+  border: 1.5px dashed var(--mark); color: var(--mark);
+  font-family: var(--font-sans);
+  font-size: var(--ui-11c); line-height: var(--ui-11c-lh); letter-spacing: var(--ui-11c-ls);
+  text-transform: uppercase; font-weight: 700;
+  transform: rotate(-1.5deg);
+}
+
+/* A panel that sits IN the page: a rule and a background step. No shadow (§7.2). */
+.card {
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-2);
+  box-shadow: none;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-3);
+  min-height: var(--control-h); padding: 0 var(--s-6);
+  border-radius: var(--r-2);
+  font-family: var(--font-sans);
+  font-size: var(--ui-15); line-height: var(--ui-15-lh); font-weight: 600;
+  letter-spacing: 0;
+  transition: background-color var(--dur-1) var(--ease-move), color var(--dur-1) var(--ease-move), border-color var(--dur-1) var(--ease-move), transform var(--dur-1) var(--ease-move);
+  cursor: pointer;
+  text-align: center;
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+/* Disabled is real tokens, never opacity: 3.39:1 light, 5.01:1 dark, both readable. */
+.btn:disabled, .btn[aria-disabled="true"] {
+  background: var(--sunken); border: 1px solid var(--rule); color: var(--ink-40);
+  cursor: not-allowed; transform: none; opacity: 1;
+}
+/* Primary is INK. Red is a proofreader's mark, not a button (§6). */
+.btn-primary, .btn-ink { background: var(--ink); color: var(--on-ink); border: 1px solid var(--ink); }
+.btn-primary:hover:not(:disabled), .btn-ink:hover:not(:disabled) { background: var(--ink-hover); border-color: var(--ink-hover); }
+/* The corrective / destructive button, and nothing else. */
+.btn-mark { background: var(--mark); color: var(--on-mark); border: 1px solid var(--mark); }
+.btn-mark:hover:not(:disabled) { background: var(--mark-deep); border-color: var(--mark-deep); }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--rule-field); }
+.btn-ghost:hover:not(:disabled) { background: var(--sunken); }
+.btn-quiet { background: transparent; color: var(--ink-2); border: 1px solid transparent; }
+.btn-quiet:hover:not(:disabled) { background: var(--sunken); color: var(--ink); }
+
+.field {
+  width: 100%;
+  min-height: var(--control-h);
+  border: 1px solid var(--rule-field);
+  background: var(--field);
+  border-radius: var(--r-1);
+  padding: 10px var(--s-4);
+  font-family: var(--font-sans);
+  font-size: var(--ui-15); line-height: var(--ui-15-lh);
+  color: var(--ink);
+  transition: border-color var(--dur-1) var(--ease-move);
+}
+.field:hover:not(:disabled):not([readonly]) { border-color: var(--ink-40); }
+.field:focus { outline: none; border-color: var(--ink); }
+.field:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; border-color: var(--ink); }
+.field::placeholder { color: var(--ink-40); }
+.field:disabled { background: var(--sunken); border-color: var(--rule); color: var(--ink-40); cursor: not-allowed; }
+.field[aria-invalid="true"] { border-color: var(--mark); }
+textarea.field { line-height: var(--doc-15-lh); resize: vertical; }
+
+/* A highlighter drawn under a word, not a gradient: it stops 62% down the line box. */
+.ink-underline { background-image: linear-gradient(transparent 62%, var(--query-wash) 62%); }
+
+/* The document surface (docs/DESIGN.md §11.3). Surface 3 builds what goes inside it. */
+.sheet {
+  background: var(--sheet);
+  color: var(--ink);
+  border-radius: var(--r-0);
+  box-shadow: var(--shadow-sheet);
+  /* the document is clean paper: no grain */
+  background-image: none;
+}
 
 /* Tour spotlight */
 .tour-mask { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
-.tour-hole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(27,23,19,.62); transition: all .25s ease; }
+.tour-hole { position: absolute; border-radius: var(--r-2); box-shadow: 0 0 0 9999px rgba(28, 23, 19, 0.62); transition: all var(--dur-3) var(--ease-move); }
 .tour-card { position: fixed; z-index: 91; max-width: min(340px, calc(100vw - 24px)); }
 
-/* listening pulse */
-@keyframes pulse-ring { 0% { transform: scale(.9); opacity: .8 } 100% { transform: scale(1.9); opacity: 0 } }
-.pulse::before { content: ""; position: absolute; inset: 0; border-radius: 999px; border: 2px solid var(--oxblood); animation: pulse-ring 1.4s ease-out infinite; }
+/* Entering: ≤8px, opacity and transform only, one duration. Nothing slides across the screen. */
+@keyframes enter-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes enter-right { from { opacity: 0; transform: translateX(8px) } to { opacity: 1; transform: none } }
+.enter { animation: enter-up var(--dur-3) var(--ease-out) both; }
+.enter-x { animation: enter-right var(--dur-3) var(--ease-out) both; }
 
-/* ===== Resume print documents (PDF export) ===== */
-/* ATS / plain — maximally parseable */
-.doc-ats {
-  color: #111;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 11pt;
+/* A skeleton breathes; under reduced motion the global rule stops it on its first frame. */
+@keyframes skeleton-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .55 } }
+.skeleton { animation: skeleton-pulse 1.4s var(--ease-move) infinite; }
+
+/* The meter fills once, on first appearance — a CSS animation, so a re-render cannot replay it.
+   Under reduced motion the global rule collapses it to 1ms and it simply renders full. */
+@keyframes meter-fill { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.meter-fill { transform-origin: left center; animation: meter-fill var(--dur-3) var(--ease-out) both; }
+
+/* Listening pulse. Under reduced motion the base rule above freezes it into a static ring. */
+@keyframes pulse-ring { 0% { transform: scale(0.9); opacity: 0.8 } 100% { transform: scale(1.9); opacity: 0 } }
+.pulse::before { content: ""; position: absolute; inset: 0; border-radius: var(--r-pill); border: 2px solid var(--mark); animation: pulse-ring 1.4s var(--ease-out) infinite; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. The document itself (docs/DESIGN.md §14, surface 3).
+
+   One stylesheet, shared byte-for-byte by the editor preview, /print and the public web résumé,
+   which is what makes "what you see is what prints" true rather than hoped for
+   (tests/e2e/document-parity.spec.ts fails if the three ever drift).
+
+   Every size is in POINTS, because this object is a page before it is a screen. The four indigo
+   themes are gone: #4f46e5 was nobody's brand, and Arial/Inter is not the face this product sets.
+   What is left are five arrangements of the same two faces and one ink — they differ by STRUCTURE
+   (rule, band, leading, case), which is what actually distinguishes one résumé from another.
+
+     ats      plain    nothing a parser can trip on: no bands, no rules but the section rule
+     modern   ruled    the default — sans section labels over a full-measure rule
+     elegant  book     a serif name at 26pt, small-caps section heads, hairline rules
+     compact  tight    the ruled arrangement at 9.5pt/1.32 to hold one page
+     bold     ledger   the name reversed out of an ink band, section heads on a 3pt ink rule
+   ───────────────────────────────────────────────────────────────────────── */
+
+.doc-ats, .doc-modern, .doc-elegant, .doc-compact, .doc-bold, .doc-designed {
+  --doc-ink: #1c1913;
+  --doc-ink-2: #4a4335;
+  --doc-rule: #b8ad95;
+  color: var(--doc-ink);
+  font-family: var(--font-serif), "Source Serif Pro", Charter, Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-size: 10.5pt;
   line-height: 1.45;
+  /* Source Serif 4's figures are duplexed: columns of dates line up with no tnum needed. */
+  font-variant-numeric: lining-nums;
 }
-.doc-ats h1 { font-size: 20pt; font-weight: 700; margin: 0 0 2pt; }
-.doc-ats h2 {
-  font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-  border-bottom: 1px solid #000; margin: 14pt 0 6pt; padding-bottom: 2pt;
+.doc-ats h1, .doc-modern h1, .doc-elegant h1, .doc-compact h1, .doc-bold h1, .doc-designed h1 {
+  font-size: 22pt; font-weight: 600; letter-spacing: -0.012em; margin: 0 0 2pt;
+  font-variation-settings: "opsz" 32;
 }
-.doc-ats h3 { font-size: 11pt; font-weight: 700; margin: 8pt 0 2pt; }
-.doc-ats p { margin: 4pt 0; }
-.doc-ats ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-ats li { margin: 2pt 0; }
-.doc-ats hr { border: none; border-top: 1px solid #999; margin: 8pt 0; }
-.doc-ats a { color: #111; text-decoration: none; }
+/* The contact line right under the name: the one place the interface face appears in the document. */
+.doc-ats h1 + p, .doc-modern h1 + p, .doc-elegant h1 + p, .doc-compact h1 + p, .doc-bold h1 + p, .doc-designed h1 + p {
+  font-family: var(--font-sans), Arial, sans-serif;
+  font-size: 9pt; color: var(--doc-ink-2); margin: 0 0 10pt;
+}
+.doc-ats h2, .doc-modern h2, .doc-elegant h2, .doc-compact h2, .doc-bold h2, .doc-designed h2 {
+  font-family: var(--font-sans), Arial, sans-serif;
+  font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--doc-ink); margin: 15pt 0 5pt; padding-bottom: 2pt;
+  border-bottom: 0.75pt solid var(--doc-rule);
+}
+.doc-ats h3, .doc-modern h3, .doc-elegant h3, .doc-compact h3, .doc-bold h3, .doc-designed h3 {
+  font-size: 10.5pt; font-weight: 600; margin: 9pt 0 1pt;
+}
+.doc-ats p, .doc-modern p, .doc-elegant p, .doc-compact p, .doc-bold p, .doc-designed p { margin: 3pt 0; }
+.doc-ats ul, .doc-modern ul, .doc-elegant ul, .doc-compact ul, .doc-bold ul, .doc-designed ul {
+  margin: 3pt 0; padding-left: 13pt; list-style: disc;
+}
+.doc-ats li, .doc-modern li, .doc-elegant li, .doc-compact li, .doc-bold li, .doc-designed li { margin: 2pt 0; }
+.doc-ats li::marker, .doc-modern li::marker, .doc-elegant li::marker, .doc-compact li::marker,
+.doc-bold li::marker, .doc-designed li::marker { color: var(--doc-rule); }
+.doc-ats hr, .doc-modern hr, .doc-elegant hr, .doc-compact hr, .doc-bold hr, .doc-designed hr {
+  border: none; border-top: 0.75pt solid var(--doc-rule); margin: 8pt 0;
+}
+.doc-ats a, .doc-modern a, .doc-elegant a, .doc-compact a, .doc-bold a, .doc-designed a {
+  color: var(--doc-ink); text-decoration: none;
+}
+.doc-ats strong, .doc-modern strong, .doc-elegant strong, .doc-compact strong, .doc-bold strong,
+.doc-designed strong { font-weight: 600; }
+.doc-ats em, .doc-modern em, .doc-elegant em, .doc-compact em, .doc-bold em, .doc-designed em {
+  font-style: italic; color: var(--doc-ink-2);
+}
 
-/* Modern — clean professional, indigo accents */
-.doc-modern {
-  color: #1e293b;
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
-}
-.doc-modern h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
-.doc-modern h2 {
-  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
-  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
-}
-.doc-modern h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
-.doc-modern h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-modern p { margin: 4pt 0; }
-.doc-modern ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-modern li { margin: 3pt 0; }
-.doc-modern li::marker { color: #6366f1; }
-.doc-modern hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-modern a { color: #4f46e5; text-decoration: none; }
+/* ats — plain. A parser reads text, not rules: the section head keeps its case and loses its line. */
+.doc-ats h2 { border-bottom: none; letter-spacing: 0.06em; margin-bottom: 3pt; }
+.doc-ats ul { list-style: disc; }
 
-/* Elegant — serif headings, refined */
-.doc-elegant {
-  color: #1f2937;
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.55;
-}
-.doc-elegant h1 { font-family: Georgia, "Times New Roman", serif; font-size: 26pt; font-weight: 700; margin: 0 0 4pt; color: #111827; }
+/* elegant — the book. The name is the display size and the heads are small and letterspaced. */
+.doc-elegant h1 { font-size: 26pt; font-variation-settings: "opsz" 44; }
 .doc-elegant h2 {
-  font-family: Georgia, "Times New Roman", serif; font-size: 13pt; font-weight: 700; color: #111827;
-  border-bottom: 1px solid #9ca3af; margin: 16pt 0 6pt; padding-bottom: 3pt; letter-spacing: 0.02em;
+  font-family: var(--font-serif), Georgia, serif; font-size: 11pt; font-weight: 600;
+  text-transform: none; letter-spacing: 0.02em; border-bottom-width: 0.5pt;
 }
-.doc-elegant h3 { font-size: 10.5pt; font-weight: 700; margin: 8pt 0 2pt; }
-.doc-elegant p { margin: 4pt 0; }
-.doc-elegant ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-elegant li { margin: 3pt 0; }
-.doc-elegant hr { border: none; border-top: 1px solid #d1d5db; margin: 10pt 0; }
-.doc-elegant a { color: #111827; text-decoration: underline; }
+.doc-elegant a { text-decoration: underline; text-underline-offset: 2pt; }
 
-/* Compact — tight spacing to fit one page */
-.doc-compact {
-  color: #111827;
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 9.5pt;
-  line-height: 1.32;
-}
-.doc-compact h1 { font-size: 18pt; font-weight: 800; margin: 0 0 1pt; color: #111827; }
-.doc-compact h2 {
-  font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-  color: #4f46e5; border-bottom: 1px solid #e5e7eb; margin: 9pt 0 3pt; padding-bottom: 1pt;
-}
-.doc-compact h3 { font-size: 9.5pt; font-weight: 700; margin: 5pt 0 1pt; }
-.doc-compact p { margin: 2pt 0; }
-.doc-compact ul { margin: 2pt 0; padding-left: 14pt; list-style: disc; }
-.doc-compact li { margin: 1pt 0; }
-.doc-compact hr { border: none; border-top: 1px solid #e5e7eb; margin: 6pt 0; }
-.doc-compact a { color: #111827; text-decoration: none; }
+/* compact — the ruled arrangement, tightened until it holds one page. */
+.doc-compact { font-size: 9.5pt; line-height: 1.32; }
+.doc-compact h1 { font-size: 19pt; }
+.doc-compact h2 { font-size: 8.5pt; margin: 10pt 0 3pt; }
+.doc-compact h3 { font-size: 9.5pt; margin: 6pt 0 1pt; }
+.doc-compact p, .doc-compact li { margin: 1.5pt 0; }
 
-/* Bold — strong colored header band */
-.doc-bold {
-  color: #1e293b;
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
-}
+/* bold — the ledger. The name reverses out of an ink band; the heads sit on a 3pt ink rule. */
 .doc-bold h1 {
-  font-size: 24pt; font-weight: 800; color: #fff; background: #4f46e5;
-  margin: -4pt -8pt 8pt; padding: 14pt 14pt 12pt; border-radius: 8px; letter-spacing: -0.01em;
+  color: #fff; background: var(--doc-ink); margin: -6pt -8pt 8pt; padding: 12pt 10pt 10pt;
+  border-radius: 0; /* paper has square corners */
 }
 .doc-bold h2 {
-  font-size: 11pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;
-  margin: 14pt 0 5pt; border-left: 4px solid #6366f1; padding-left: 8px;
+  border-bottom: none; border-left: 3pt solid var(--doc-ink); padding: 1pt 0 1pt 7pt; margin: 14pt 0 4pt;
 }
-.doc-bold h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-bold p { margin: 4pt 0; }
-.doc-bold ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-bold li { margin: 3pt 0; }
-.doc-bold li::marker { color: #6366f1; }
-.doc-bold hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-bold a { color: #4f46e5; text-decoration: none; }
-
-/* Designed — for printing / handing over in person */
-.doc-designed {
-  color: #1e293b;
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.5;
-}
-.doc-designed h1 { font-size: 24pt; font-weight: 800; color: #4f46e5; margin: 0 0 2pt; letter-spacing: -0.01em; }
-.doc-designed h2 {
-  font-size: 11pt; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em;
-  margin: 16pt 0 6pt; display: flex; align-items: center; gap: 8px;
-}
-.doc-designed h2::after { content: ""; flex: 1; height: 2px; background: #e0e7ff; }
-.doc-designed h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 8pt 0 2pt; }
-.doc-designed p { margin: 4pt 0; }
-.doc-designed ul { margin: 4pt 0; padding-left: 16pt; list-style: disc; }
-.doc-designed li { margin: 3pt 0; }
-.doc-designed li::marker { color: #6366f1; }
-.doc-designed hr { border: none; border-top: 1px solid #e2e8f0; margin: 10pt 0; }
-.doc-designed a { color: #4f46e5; text-decoration: none; }
 
 @media print {
+  /* Paper is white and the ink is black; the desk lamp and the grain are a screen idea. */
+  :root, :root[data-theme="dark"] {
+    --page: #fff; --sheet: #fff; --raised: #fff; --sunken: #fff;
+    --ink: #111; --ink-2: #333; --ink-muted: #555; --ink-40: #777;
+    --rule: #999; --rule-hairline: #ccc; --rule-field: #999;
+  }
+  html, body { background: #fff !important; background-image: none !important; }
+  body { color: #111; }
   .no-print { display: none !important; }
+  .sheet { box-shadow: none; }
   @page { margin: 14mm; }
-  html, body { background: #fff !important; }
-}
-
-/* Subtle marquee for the role ticker */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 28s linear infinite;
+  p, li { orphans: 3; widows: 3; }
+  a[href^="http"] { text-decoration: none; color: #111; }
 }

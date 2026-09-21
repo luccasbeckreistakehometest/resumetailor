@@ -86,7 +86,10 @@ test.describe("public web résumé", () => {
     await expect(page.getByTestId("library-public-item")).toHaveAttribute("data-enabled", "1");
 
     // Off: the link dies for everyone, the slug is kept for when it comes back.
-    await page.getByRole("link", { name: /^open$|^abrir$/i }).first().click();
+    // Reopening the kit goes through the row's menu — the library row keeps one visible action
+    // (docs/DESIGN.md surface 8) and the published row's own "Open" says which page it opens.
+    await page.getByTestId("library-more").first().click();
+    await page.getByRole("menuitem", { name: /^open$|^abrir$/i }).click();
     await expect(page.getByTestId("publish")).toBeVisible();
     await page.getByTestId("publish-toggle").uncheck();
     await expect(page.getByTestId("publish")).toHaveAttribute("data-enabled", "0");

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { Icon } from "@/components/ui";
 
 type Insights = {
   enabled: boolean;
@@ -44,7 +45,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-edge bg-surface p-4">
+      <div className="rounded-xl border border-edge bg-raised p-4">
         <div className="flex items-center gap-2 text-sm text-muted">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-edge border-t-indigo-600" />
           {d.insights.loading}
@@ -58,7 +59,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
   return (
     <div className="rounded-xl border border-edge bg-gold-2/40 p-5">
       <div className="flex items-center gap-2">
-        <span className="text-base">🔎</span>
+        <span className="text-[color:var(--ink-muted)]"><Icon name="search" size={16} /></span>
         <h3 className="text-sm font-semibold text-ink">
           {d.insights.title}
           {data?.company ? ` · ${data.company}` : ""}
@@ -77,7 +78,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.techLabel}</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {data.tech.map((t) => (
-              <span key={t} className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-oxblood ring-1 ring-indigo-200">
+              <span key={t} className="rounded-[var(--r-1)] border border-[var(--rule)] bg-[var(--sunken)] px-[var(--s-3)] py-[2px] font-mono text-[length:var(--mn-13)] text-[color:var(--ink-2)]">
                 {t}
               </span>
             ))}
@@ -104,7 +105,7 @@ export function CompanyInsights({ jobDescription }: { jobDescription: string }) 
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">{d.insights.sourcesLabel}</div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
             {data.sources.map((s) => (
-              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-oxblood underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
+              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-2 hover:underline" style={{ maxWidth: "100%" }}>
                 {s.title} ↗
               </a>
             ))}

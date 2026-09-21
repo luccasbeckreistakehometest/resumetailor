@@ -9,6 +9,7 @@ import type { Briefing } from "@/lib/ai/voice";
 import type { ProfileFacts } from "@/lib/profile/facts";
 import type { Extra } from "@/app/i18n/extra";
 import type { Round3 } from "@/app/i18n/round3";
+import { Icon } from "@/components/ui";
 
 /**
  * The listening flow, hands-free. The AI voice (server TTS — never the browser's synthesiser)
@@ -188,7 +189,7 @@ function VoiceView(p: ViewProps) {
         <p className="text-[15px] leading-relaxed text-ink" data-testid="voice-prompt">“{p.prompt}”</p>
         {p.optionalAsk && <p className="mt-1 text-xs text-muted">{V.optional}</p>}
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {p.voiceOn && <button type="button" onClick={p.onReplay} className="text-xs font-semibold text-oxblood underline-offset-4 hover:underline" data-testid="voice-replay">▶ {x.voice.listenPrompt}</button>}
+          {p.voiceOn && <button type="button" onClick={p.onReplay} className="text-xs font-semibold text-[color:var(--ink)] underline-offset-4 hover:underline" data-testid="voice-replay">{x.voice.listenPrompt}</button>}
           {!p.voiceOn && <span className="text-xs text-muted">{x.voice.textOnly}</span>}
         </div>
       </div>
@@ -198,15 +199,15 @@ function VoiceView(p: ViewProps) {
           <button onClick={p.onBegin} className="btn btn-primary" data-testid="voice-start">{p.briefing ? x.voice.again : x.voice.start}</button>
         ) : (
           <>
-            <div className={"relative grid h-20 w-20 place-items-center rounded-full " + (phase === "listening" ? "pulse bg-oxblood text-white" : phase === "thinking" ? "bg-gold-2 text-ink" : "bg-paper-2 text-ink")} aria-hidden>
-              <span className="text-2xl">{phase === "listening" ? "🎙" : phase === "thinking" ? "…" : phase === "paused" ? "⏸" : "🔊"}</span>
+            <div className={"relative grid h-20 w-20 place-items-center rounded-full " + (phase === "listening" ? "pulse bg-[var(--mark)] text-[color:var(--on-mark)]" : phase === "thinking" ? "bg-[var(--query-wash)] text-[color:var(--ink)]" : "bg-[var(--sunken)] text-[color:var(--ink)]")} aria-hidden>
+              <Icon name={phase === "listening" ? "mic" : phase === "paused" ? "play" : "play"} />
             </div>
-            <p className="text-sm font-medium text-oxblood" role="status" data-testid={phase === "thinking" ? "voice-thinking" : "voice-status"}>{label}</p>
+            <p className="text-sm font-medium text-[color:var(--ink-2)]" role="status" data-testid={phase === "thinking" ? "voice-thinking" : "voice-status"}>{label}</p>
             {phase === "listening" && <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{p.speech.interim || V.autoHint}</p>}
             <div className="flex flex-wrap justify-center gap-2">
-              {phase === "listening" && <button onClick={p.onDone} className="btn btn-ink" data-testid="voice-stop">■ {V.done}</button>}
-              {phase === "speaking" && <button onClick={p.onTalkNow} className="btn btn-ink" data-testid="voice-talk-now">🎙 {V.talkNow}</button>}
-              {phase === "paused" ? <button onClick={p.onResume} className="btn btn-primary" data-testid="voice-resume">▶ {V.resume}</button>
+              {phase === "listening" && <button onClick={p.onDone} className="btn btn-ink" data-testid="voice-stop">{V.done}</button>}
+              {phase === "speaking" && <button onClick={p.onTalkNow} className="btn btn-ink" data-testid="voice-talk-now">{V.talkNow}</button>}
+              {phase === "paused" ? <button onClick={p.onResume} className="btn btn-primary" data-testid="voice-resume">{V.resume}</button>
                 : live && <button onClick={p.onPause} className="btn btn-ghost" data-testid="voice-pause">⏸ {V.pause}</button>}
             </div>
           </>

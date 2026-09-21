@@ -132,7 +132,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-3xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Eyebrow>{x.interview.eyebrow}{gen ? ` · ${gen.title}` : ""}</Eyebrow>
@@ -172,7 +172,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
 
             {phase === "listening" ? (
               <div className="mt-6 flex flex-col items-center gap-4">
-                <button onClick={speech.stop} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-oxblood text-white" aria-label={x.interview.done} data-testid="answer-stop"><span className="text-2xl">■</span></button>
+                <button onClick={speech.stop} className="pulse relative grid h-20 w-20 place-items-center rounded-full bg-[var(--mark)] text-[color:var(--on-mark)]" aria-label={x.interview.done} data-testid="answer-stop"><span className="text-2xl">■</span></button>
                 <p className="text-sm font-medium text-oxblood">{x.interview.listening}</p>
                 <p className="min-h-6 max-w-lg text-center text-sm text-muted" aria-live="polite">{speech.interim}</p>
                 <button onClick={speech.stop} className="btn btn-ink">{x.interview.done}</button>
@@ -189,7 +189,7 @@ export function InterviewSession({ generationId, initialSessionId }: { generatio
               </div>
             ) : (
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={listen} disabled={!canListen} className="btn btn-primary" data-testid="answer-voice">🎙 {x.interview.voiceAnswer}</button>
+                <button onClick={listen} disabled={!canListen} className="btn btn-primary" data-testid="answer-voice">{x.interview.voiceAnswer}</button>
                 <button onClick={() => setTyping(true)} className="btn btn-ghost" data-testid="answer-type">{x.interview.typeAnswer}</button>
                 {session.turns.length > 0 && <button onClick={() => void finishEarly()} className="ml-auto text-sm text-muted hover:text-ink" data-testid="answer-finish">{x.interview.finishEarly}</button>}
               </div>

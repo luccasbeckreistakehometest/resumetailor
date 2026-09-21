@@ -4,10 +4,15 @@ import { useState } from "react";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import type { GenerationView } from "@/lib/server/generations";
+import { Button, Meter, Notice, Token } from "@/components/ui";
 
 /**
- * The quality-over-volume guard on a tailored kit: how much of the résumé actually engages
- * with the posting, and one click to go deeper when it reads generic.
+ * The quality-over-volume guard on a tailored kit: how much of the résumé actually engages with
+ * the posting, and one click to go deeper when it reads generic (surface 5).
+ *
+ * This was the third meter design on one screen — its own bar, its own colour ramp, its own pills.
+ * It is the system's Meter now. "Generic" is a mark-toned notice rather than a red bar, because in
+ * this system red is a correction to make, not a score to read.
  */
 export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; onUpdate: (g: GenerationView) => void }) {
   const { x, l } = useI18n();
@@ -28,44 +33,46 @@ export function PersonalisationMeter({ gen, onUpdate }: { gen: GenerationView; o
     onUpdate(j);
   }
 
-  const tone = m.generic ? "text-oxblood" : m.score >= 75 ? "text-moss" : "text-ink";
-  const bar = m.generic ? "bg-oxblood" : m.score >= 75 ? "bg-moss" : "bg-gold";
   // The meter itself is computed server-side from the stored kit, so a locked preview can show it
   // without leaking the text. Deepening is a whole new generation, so it waits for the unlock.
   const canDeepen = gen.unlocked && !limit && gen.deepenLeft > 0;
 
   return (
-    <div className={"rounded-xl border p-5 " + (m.generic ? "border-oxblood/40 bg-oxblood/5" : "border-edge bg-surface")} data-testid="personalisation" data-generic={m.generic ? "1" : "0"}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-ink-2">{P.title}</h3>
-        <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-muted ring-1 ring-edge">{P.hint}</span>
-      </div>
-      <div className="mt-3 flex items-center gap-4">
-        <p className={"font-display text-4xl leading-none " + tone} data-testid="pers-score">{m.score}<span className="text-base text-muted">%</span></p>
-        <div className="flex-1">
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-paper-2"><div className={"h-full rounded-full transition-all " + bar} style={{ width: `${m.score}%` }} /></div>
-          <p className="mt-1.5 text-xs text-muted">{P.breakdown(m.coverage, m.specific, m.bullets)}</p>
-        </div>
-      </div>
-      {m.generic
-        ? <p className="mt-3 text-sm font-medium text-oxblood" data-testid="pers-generic">{P.generic}</p>
-        : <p className="mt-3 text-sm text-ink-2">{m.score >= 75 ? P.strong : P.okay}</p>}
+    <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="personalisation" data-generic={m.generic ? "1" : "0"}>
+      <Meter
+        label={P.title}
+        value={m.score}
+        caption={P.breakdown(m.coverage, m.specific, m.bullets)}
+        good={75}
+        poor={0}
+      />
+      <p className="sr-only" data-testid="pers-score">{m.score}</p>
+
+      {m.generic ? (
+        <Notice tone="mark" icon="flag" className="mt-[var(--s-5)]"><span data-testid="pers-generic">{P.generic}</span></Notice>
+      ) : (
+        <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{m.score >= 75 ? P.strong : P.okay}</p>
+      )}
+
       {m.missing.length > 0 && (
-        <div className="mt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{P.missing}</p>
-          <div className="mt-1.5 flex flex-wrap gap-1.5" data-testid="pers-missing">{m.missing.slice(0, 10).map((k) => <span key={k} className="rounded-full bg-paper px-2.5 py-1 text-xs font-medium text-ink-2 ring-1 ring-edge">{k}</span>)}</div>
+        <div className="mt-[var(--s-5)]">
+          <p className="eyebrow">{P.missing}</p>
+          <ul className="mt-[var(--s-3)] flex flex-wrap gap-[var(--s-2)]" data-testid="pers-missing">
+            {m.missing.slice(0, 10).map((k) => <li key={k}><Token state="missing">{k}</Token></li>)}
+          </ul>
         </div>
       )}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+
+      <div className="mt-[var(--s-5)] flex flex-wrap items-center gap-[var(--s-4)]">
         {canDeepen ? (
-          <button onClick={deepen} disabled={busy} className={"btn !py-2 !text-sm " + (m.generic ? "btn-primary" : "btn-ghost")} data-testid="deepen">{busy ? P.deepening : P.deepen}</button>
+          <Button size="sm" variant={m.generic ? "primary" : "outline"} onClick={deepen} loading={busy} data-testid="deepen">{busy ? P.deepening : P.deepen}</Button>
         ) : !gen.unlocked
-          ? <span className="text-xs text-muted" data-testid="deepen-locked">{P.locked}</span>
-          : <span className="text-xs text-muted" data-testid="deepen-limit">{P.limit}</span>}
-        {gen.deepened > 0 && <span className="text-xs text-muted">{P.deepenedTimes(gen.deepened)}</span>}
-        {error && <p className="text-sm text-oxblood" role="alert">{error}</p>}
+          ? <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]" data-testid="deepen-locked">{P.locked}</span>
+          : <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]" data-testid="deepen-limit">{P.limit}</span>}
+        {gen.deepened > 0 && <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{P.deepenedTimes(gen.deepened)}</span>}
       </div>
-      <p className="mt-3 text-[11px] text-muted">{P.honest}</p>
-    </div>
+      {error && <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--mark)]" role="alert">{error}</p>}
+      <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{P.honest}</p>
+    </section>
   );
 }

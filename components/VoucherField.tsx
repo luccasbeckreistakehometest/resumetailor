@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import { useAuth } from "@/components/AuthProvider";
+import { Button, Input } from "@/components/ui";
 
 function Field() {
   const { r, l, x } = useI18n();
@@ -27,13 +28,23 @@ function Field() {
     await refresh();
   }
   return (
-    <div className="rounded-xl border border-dashed border-edge-2 bg-paper p-4" data-testid="voucher">
-      <p className="text-sm font-semibold text-ink">🎟 {C.haveCode}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <input aria-label={C.codePh} placeholder={C.codePh} className="field max-w-xs !py-2 uppercase" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void redeem(); }} data-testid="voucher-code" />
-        <button type="button" onClick={() => void redeem()} disabled={busy || !code.trim()} className="btn btn-ink !py-2 !text-sm" data-testid="voucher-redeem">{busy ? C.redeeming : C.redeem}</button>
+    <div data-testid="voucher">
+      <p className="eyebrow">{C.haveCode}</p>
+      <div className="mt-[var(--s-3)] flex flex-wrap gap-[var(--s-3)]">
+        <Input
+          aria-label={C.codePh}
+          placeholder={C.codePh}
+          className="max-w-[260px] font-mono uppercase tracking-[0.04em]"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") void redeem(); }}
+          data-testid="voucher-code"
+        />
+        <Button variant="outline" onClick={() => void redeem()} loading={busy} disabled={busy || !code.trim()} data-testid="voucher-redeem">{busy ? C.redeeming : C.redeem}</Button>
       </div>
-      {note && <p className={"mt-2 text-sm " + (note.ok ? "text-moss" : "text-oxblood")} role={note.ok ? "status" : "alert"} data-testid="voucher-note">{note.text}</p>}
+      {note && (
+        <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)]" style={{ color: note.ok ? "var(--kept)" : "var(--mark)" }} role={note.ok ? "status" : "alert"} data-testid="voucher-note">{note.text}</p>
+      )}
     </div>
   );
 }

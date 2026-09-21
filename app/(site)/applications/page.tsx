@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useAuth } from "@/components/AuthProvider";
-import { Container, Eyebrow } from "@/components/ui";
+import { SiteFooter } from "@/components/SiteFooter";
+import { Button, Container, EmptyState, Icon, Input, Select, Table, Tabs, Textarea } from "@/components/ui";
 import { STAGES, nextSteps, todayIso, type Funnel, type Stage } from "@/lib/applications/logic";
 import type { ApplicationView } from "@/lib/server/applications";
 import type { GenerationView } from "@/lib/server/generations";
@@ -44,6 +45,8 @@ function ApplicationsInner() {
   const [edit, setEdit] = useState<Draft>(blank());
   // "now" is fixed for the render pass; the compiler treats Date.now() during render as impure.
   const [now] = useState(() => Date.now());
+  // Density is a decision per view: the board is comfortable, the table is a tool.
+  const [view, setView] = useState<"board" | "table">("board");
   const today = todayIso(new Date(now));
 
   const load = useCallback(() => fetch("/api/applications", { cache: "no-store" }).then((r) => r.json()).then((j) => { setItems(j.items ?? []); setFunnel(j.funnel ?? null); setAlerts(j.radar ?? []); }), []);
@@ -96,62 +99,72 @@ function ApplicationsInner() {
   const upcoming = items ? nextSteps(items, today) : [];
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="py-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <Container className="py-[var(--s-9)]">
+        <div className="flex flex-wrap items-end justify-between gap-[var(--s-5)] border-b border-[var(--rule)] pb-[var(--s-5)]">
           <div>
-            <Eyebrow>{A.eyebrow}</Eyebrow>
-            <h1 className="font-display mt-2 text-4xl text-ink">{A.title}</h1>
-            <p className="mt-2 max-w-2xl text-ink-2">{A.subtitle}</p>
-            {!user && <p className="mt-2 text-xs text-muted">{A.anonNote}</p>}
+            <p className="eyebrow">{A.eyebrow}</p>
+            <h1 className="doc-45 mt-[var(--s-3)] text-[color:var(--ink)]">{A.title}</h1>
+            <p className="mt-[var(--s-4)] max-w-[var(--measure)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[color:var(--ink-2)]">{A.subtitle}</p>
+            {!user && <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{A.anonNote}</p>}
           </div>
-          <button onClick={() => setAdding(!adding)} className="btn btn-primary" data-testid="app-open-add">+ {A.add}</button>
+          <Button onClick={() => setAdding(!adding)} icon="plus" data-testid="app-open-add">{A.add}</Button>
         </div>
 
         {items && items.length > 0 && <RadarStrip alerts={alerts} items={items} onSent={() => void load()} />}
 
+        {/* Six equal stat cards became one line of figures: the rate is the only one that is a
+            judgement, so it is the only one set at the larger size. */}
         {funnel && (
-          <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="funnel">
-            {([["total", funnel.total], ["applied", funnel.applied], ["interviews", funnel.interviews], ["rate", funnel.interviewRate === null ? "—" : `${funnel.interviewRate}%`], ["offers", funnel.offers], ["rejected", funnel.rejected]] as const).map(([k, v]) => (
-              <div key={k} className={"card p-4 " + (k === "rate" ? "border-2 !border-ink" : "")} data-testid={`funnel-${k}`}>
-                <p className="eyebrow">{A.funnel[k]}</p>
-                <p className="font-display mt-1 text-3xl text-ink">{v}</p>
-              </div>
-            ))}
-            <p className="text-xs text-muted sm:col-span-3 lg:col-span-6">{A.rateHint}</p>
-          </div>
+          <section className="mt-[var(--s-7)] border-b border-[var(--rule)] pb-[var(--s-5)]" data-testid="funnel">
+            <dl className="flex flex-wrap items-baseline gap-x-[var(--s-9)] gap-y-[var(--s-4)]">
+              {([["total", funnel.total], ["applied", funnel.applied], ["interviews", funnel.interviews], ["rate", funnel.interviewRate === null ? "—" : `${funnel.interviewRate}%`], ["offers", funnel.offers], ["rejected", funnel.rejected]] as const).map(([k, v]) => (
+                <div key={k} data-testid={`funnel-${k}`}>
+                  <dt className="eyebrow">{A.funnel[k]}</dt>
+                  <dd className={"mt-[var(--s-2)] font-mono tabular-nums text-[color:var(--ink)] " + (k === "rate" ? "text-[length:var(--mn-24)] font-medium" : "text-[length:var(--mn-15)]")}>{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{A.rateHint}</p>
+          </section>
         )}
 
         {adding && (
-          <div className="card mt-6 p-5" data-testid="app-add-form">
+          <div className="mt-[var(--s-7)] border border-[var(--rule)] p-[var(--s-6)]" data-testid="app-add-form">
             <p className="eyebrow">{A.addTitle}</p>
-            <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto_auto]">
-              <input className="field" placeholder={A.company} value={draft.company} onChange={(e) => setDraft({ ...draft, company: e.target.value })} data-testid="app-company" autoFocus />
-              <input className="field" placeholder={A.role} value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} data-testid="app-role" />
-              <input className="field" placeholder={A.link} value={draft.link} onChange={(e) => setDraft({ ...draft, link: e.target.value })} data-testid="app-link" />
-              <select className="field" value={draft.stage} onChange={(e) => setDraft({ ...draft, stage: e.target.value as Stage })} data-testid="app-stage" aria-label={A.stage}>
+            <div className="mt-[var(--s-4)] grid gap-[var(--s-4)] md:grid-cols-[1fr_1fr_1fr_auto_auto]">
+              <Input placeholder={A.company} value={draft.company} onChange={(e) => setDraft({ ...draft, company: e.target.value })} data-testid="app-company" aria-label={A.company} autoFocus />
+              <Input placeholder={A.role} value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} data-testid="app-role" aria-label={A.role} />
+              <Input placeholder={A.link} value={draft.link} onChange={(e) => setDraft({ ...draft, link: e.target.value })} data-testid="app-link" aria-label={A.link} />
+              <Select value={draft.stage} onChange={(e) => setDraft({ ...draft, stage: e.target.value as Stage })} data-testid="app-stage" aria-label={A.stage}>
                 {STAGES.map((s) => <option key={s} value={s}>{A.stages[s]}</option>)}
-              </select>
-              <select className="field" value={draft.generationId} onChange={(e) => setDraft({ ...draft, generationId: e.target.value })} data-testid="app-kit" aria-label={A.kit}>
+              </Select>
+              <Select value={draft.generationId} onChange={(e) => setDraft({ ...draft, generationId: e.target.value })} data-testid="app-kit" aria-label={A.kit}>
                 <option value="">{A.noKit}</option>
                 {kits.map((k) => <option key={k.id} value={k.id}>{k.title}{k.targetRole ? ` · ${k.targetRole}` : ""}</option>)}
-              </select>
+              </Select>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <button onClick={add} className="btn btn-ink !py-2 !text-sm" data-testid="app-add">{A.add}</button>
-              <button onClick={() => { setAdding(false); setError(""); }} className="text-sm text-muted hover:text-ink">{A.cancel}</button>
-              {error && <p className="text-sm text-oxblood" role="alert" data-testid="app-error">{error}</p>}
+            <div className="mt-[var(--s-4)] flex flex-wrap items-center gap-[var(--s-4)]">
+              <Button size="sm" onClick={add} data-testid="app-add">{A.add}</Button>
+              <Button size="sm" variant="quiet" onClick={() => { setAdding(false); setError(""); }}>{A.cancel}</Button>
+              {error && <p className="font-sans text-[length:var(--ui-13)] text-[color:var(--mark)]" role="alert" data-testid="app-error">{error}</p>}
             </div>
           </div>
         )}
 
         {items && items.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm" data-testid="next-steps">
-            <span className="eyebrow mr-1">{A.upcoming}</span>
-            {upcoming.length === 0 && <span className="text-muted">{A.noUpcoming}</span>}
+          <div className="mt-[var(--s-6)] flex flex-wrap items-center gap-[var(--s-3)]" data-testid="next-steps">
+            <span className="eyebrow">{A.upcoming}</span>
+            {upcoming.length === 0 && <span className="font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]">{A.noUpcoming}</span>}
             {upcoming.slice(0, 6).map(({ item, overdue }) => (
-              <span key={item.id} className={"rounded-full px-3 py-1 text-xs font-medium ring-1 " + (overdue ? "bg-oxblood/10 text-oxblood ring-oxblood/30" : "bg-surface text-ink-2 ring-edge")}>
+              <span
+                key={item.id}
+                className="inline-flex h-6 items-center rounded-[var(--r-1)] border px-[var(--s-3)] font-mono text-[length:var(--mn-13)] tabular-nums"
+                style={overdue
+                  ? { borderColor: "var(--mark)", color: "var(--mark)", background: "var(--mark-wash)" }
+                  : { borderColor: "var(--rule)", color: "var(--ink-2)", background: "var(--sunken)" }}
+              >
                 {fmt(item.nextStepAt!)} · {item.company || item.role}{overdue ? ` · ${A.overdue}` : ""}
               </span>
             ))}
@@ -159,80 +172,136 @@ function ApplicationsInner() {
         )}
 
         {items && items.length === 0 && !adding && (
-          <div className="card mt-8 p-10 text-center"><p className="text-ink-2">{A.empty}</p><button onClick={() => setAdding(true)} className="btn btn-primary mt-6">+ {A.add}</button></div>
+          <EmptyState title={A.empty} action={<Button icon="plus" onClick={() => setAdding(true)}>{A.add}</Button>} />
         )}
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5" data-tour="applications" data-testid="board">
+        {items && items.length > 0 && (
+          <Tabs
+            className="mt-[var(--s-8)]"
+            tabs={[{ id: "board", label: A.views.board }, { id: "table", label: A.views.table }]}
+            value={view}
+            onChange={(v) => setView(v as "board" | "table")}
+          />
+        )}
+
+        {view === "table" && items && items.length > 0 && (
+          <section className="mt-[var(--s-6)]" data-density="compact" data-testid="app-table">
+            <Table
+              rows={items}
+              getKey={(a) => a.id}
+              empty={A.empty}
+              minWidth="760px"
+              rowAttrs={(a) => ({ "data-testid": "app-row", "data-stage": a.stage })}
+              columns={[
+                {
+                  key: "company", header: A.company, width: "28%", cell: (a) => (
+                    <span className="block">
+                      <span className="block truncate font-medium text-[color:var(--ink)]">{a.company || a.role}</span>
+                      {a.company && a.role && <span className="mt-[2px] block truncate font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{a.role}</span>}
+                    </span>
+                  ),
+                },
+                {
+                  key: "stage", header: A.stage, width: "16%", raw: true, cell: (a) => (
+                    <Select className="h-8" value={a.stage} onChange={(e) => void patch(a.id, { stage: e.target.value as Stage })} aria-label={A.stage} data-testid="row-stage">
+                      {STAGES.map((s) => <option key={s} value={s}>{A.stages[s]}</option>)}
+                    </Select>
+                  ),
+                },
+                { key: "next", header: A.nextStep, width: "16%", mono: true, cell: (a) => a.nextStepAt ? fmt(a.nextStepAt) : "—" },
+                { key: "days", header: A.upcoming, width: "14%", align: "right", mono: true, cell: (a) => String(daysIn(a.stageChangedAt)) },
+                { key: "kit", header: A.kit, width: "18%", cell: (a) => a.kitTitle ?? A.noKit },
+                {
+                  key: "edit", header: "", width: "8%", align: "right", raw: true, cell: (a) => (
+                    <Button size="sm" variant="quiet" onClick={() => { setView("board"); startEdit(a); }} data-testid="row-edit">{A.edit}</Button>
+                  ),
+                },
+              ]}
+            />
+          </section>
+        )}
+
+        <div className={"mt-[var(--s-6)] grid gap-[var(--s-5)] md:grid-cols-2 lg:grid-cols-5 lg:gap-x-[var(--gutter)] " + (view === "table" ? "hidden" : "")} data-tour="applications" data-testid="board">
           {STAGES.map((stage) => {
             const col = (items ?? []).filter((a) => a.stage === stage);
             return (
-              <section key={stage} className="rounded-2xl border border-edge bg-paper-2/60 p-3" data-testid={`col-${stage}`}>
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-sm font-semibold text-ink">{A.stages[stage]}</p>
-                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-muted ring-1 ring-edge" data-testid={`count-${stage}`}>{col.length}</span>
+              <section key={stage} data-testid={`col-${stage}`} data-density="compact">
+                <div className="flex items-baseline justify-between gap-[var(--s-3)] border-b-2 border-[var(--ink)] pb-[var(--s-2)]">
+                  <p className="eyebrow">{A.stages[stage]}</p>
+                  <span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]" data-testid={`count-${stage}`}>{col.length}</span>
                 </div>
-                <ul className="mt-3 space-y-3">
+                <ul className="mt-[var(--s-4)] flex flex-col gap-[var(--s-4)]">
                   {col.map((a) => (
-                    <li key={a.id} className="card p-3.5" data-testid="app-card">
+                    <li key={a.id} className="border border-[var(--rule)] p-[var(--s-4)]" data-testid="app-card">
                       {editId === a.id ? (
-                        <div className="space-y-2" data-testid="app-edit">
-                          <input className="field !py-1.5 !text-sm" placeholder={A.company} value={edit.company} onChange={(e) => setEdit({ ...edit, company: e.target.value })} />
-                          <input className="field !py-1.5 !text-sm" placeholder={A.role} value={edit.role} onChange={(e) => setEdit({ ...edit, role: e.target.value })} />
-                          <input className="field !py-1.5 !text-sm" placeholder={A.link} value={edit.link} onChange={(e) => setEdit({ ...edit, link: e.target.value })} />
-                          <label className="block text-xs text-muted">{A.nextStep}<input type="date" className="field mt-1 !py-1.5 !text-sm" value={edit.nextStepAt} onChange={(e) => setEdit({ ...edit, nextStepAt: e.target.value })} data-testid="edit-next" /></label>
-                          <select className="field !py-1.5 !text-sm" value={edit.generationId} onChange={(e) => setEdit({ ...edit, generationId: e.target.value })} aria-label={A.kit}>
+                        <div className="flex flex-col gap-[var(--s-3)]" data-testid="app-edit">
+                          <Input placeholder={A.company} aria-label={A.company} value={edit.company} onChange={(e) => setEdit({ ...edit, company: e.target.value })} />
+                          <Input placeholder={A.role} aria-label={A.role} value={edit.role} onChange={(e) => setEdit({ ...edit, role: e.target.value })} />
+                          <Input placeholder={A.link} aria-label={A.link} value={edit.link} onChange={(e) => setEdit({ ...edit, link: e.target.value })} />
+                          <label className="block font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{A.nextStep}
+                            <Input type="date" className="mt-[var(--s-2)]" value={edit.nextStepAt} onChange={(e) => setEdit({ ...edit, nextStepAt: e.target.value })} data-testid="edit-next" />
+                          </label>
+                          <Select value={edit.generationId} onChange={(e) => setEdit({ ...edit, generationId: e.target.value })} aria-label={A.kit}>
                             <option value="">{A.noKit}</option>
                             {kits.map((k) => <option key={k.id} value={k.id}>{k.title}</option>)}
-                          </select>
-                          {edit.stage !== "saved" && <label className="block text-xs text-muted">{R.fields.appliedAt}<input type="date" className="field mt-1 !py-1.5 !text-sm" value={edit.appliedAt} max={today} onChange={(e) => setEdit({ ...edit, appliedAt: e.target.value })} data-testid="edit-applied" /></label>}
-                          <label className="block text-xs text-muted">{R.fields.interviewAt}<input type="datetime-local" className="field mt-1 !py-1.5 !text-sm" value={edit.interviewAtTime} onChange={(e) => setEdit({ ...edit, interviewAtTime: e.target.value })} data-testid="edit-interview" /></label>
-                          <input className="field !py-1.5 !text-sm" placeholder={R.fields.contactName} value={edit.contactName} onChange={(e) => setEdit({ ...edit, contactName: e.target.value })} data-testid="edit-contact-name" />
-                          <div className="grid grid-cols-[6rem_1fr] gap-1.5">
-                            <select className="field !py-1.5 !text-sm" value={edit.contactChannel} onChange={(e) => setEdit({ ...edit, contactChannel: e.target.value })} aria-label={R.fields.channel}>
+                          </Select>
+                          {edit.stage !== "saved" && (
+                            <label className="block font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{R.fields.appliedAt}
+                              <Input type="date" className="mt-[var(--s-2)]" value={edit.appliedAt} max={today} onChange={(e) => setEdit({ ...edit, appliedAt: e.target.value })} data-testid="edit-applied" />
+                            </label>
+                          )}
+                          <label className="block font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{R.fields.interviewAt}
+                            <Input type="datetime-local" className="mt-[var(--s-2)]" value={edit.interviewAtTime} onChange={(e) => setEdit({ ...edit, interviewAtTime: e.target.value })} data-testid="edit-interview" />
+                          </label>
+                          <Input placeholder={R.fields.contactName} aria-label={R.fields.contactName} value={edit.contactName} onChange={(e) => setEdit({ ...edit, contactName: e.target.value })} data-testid="edit-contact-name" />
+                          <div className="grid grid-cols-[6.5rem_1fr] gap-[var(--s-2)]">
+                            <Select value={edit.contactChannel} onChange={(e) => setEdit({ ...edit, contactChannel: e.target.value })} aria-label={R.fields.channel}>
                               {Object.entries(R.fields.channels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                            </select>
-                            <input className="field !py-1.5 !text-sm" placeholder={R.fields.contactValue} value={edit.contactValue} onChange={(e) => setEdit({ ...edit, contactValue: e.target.value })} />
+                            </Select>
+                            <Input placeholder={R.fields.contactValue} aria-label={R.fields.contactValue} value={edit.contactValue} onChange={(e) => setEdit({ ...edit, contactValue: e.target.value })} />
                           </div>
                           {edit.stage === "offer" && (
-                            <div className="grid grid-cols-[5rem_1fr] gap-1.5">
-                              <select className="field !py-1.5 !text-sm" value={edit.offerType} onChange={(e) => setEdit({ ...edit, offerType: e.target.value })} aria-label={R.fields.offerType} data-testid="edit-offer-type">
+                            <div className="grid grid-cols-[5.5rem_1fr] gap-[var(--s-2)]">
+                              <Select value={edit.offerType} onChange={(e) => setEdit({ ...edit, offerType: e.target.value })} aria-label={R.fields.offerType} data-testid="edit-offer-type">
                                 <option value="">—</option><option value="clt">{R.fields.clt}</option><option value="pj">{R.fields.pj}</option>
-                              </select>
-                              <input inputMode="decimal" className="field !py-1.5 !text-sm" placeholder={R.fields.offerAmount} value={edit.offerAmount} onChange={(e) => setEdit({ ...edit, offerAmount: e.target.value })} data-testid="edit-offer-amount" />
+                              </Select>
+                              <Input inputMode="decimal" placeholder={R.fields.offerAmount} aria-label={R.fields.offerAmount} value={edit.offerAmount} onChange={(e) => setEdit({ ...edit, offerAmount: e.target.value })} data-testid="edit-offer-amount" />
                             </div>
                           )}
-                          <textarea className="field !py-1.5 !text-sm" rows={3} placeholder={A.notes} value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} data-testid="edit-notes" />
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button onClick={saveEdit} className="btn btn-ink !py-1.5 !text-xs" data-testid="edit-save">{A.save}</button>
-                            <button onClick={() => setEditId(null)} className="text-xs text-muted hover:text-ink">{A.cancel}</button>
-                            <button onClick={() => remove(a.id)} className="ml-auto text-xs text-muted hover:text-oxblood" data-testid="app-delete">{A.delete}</button>
+                          <Textarea rows={3} placeholder={A.notes} aria-label={A.notes} value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} data-testid="edit-notes" />
+                          <div className="flex flex-wrap items-center gap-[var(--s-3)]">
+                            <Button size="sm" onClick={saveEdit} data-testid="edit-save">{A.save}</Button>
+                            <Button size="sm" variant="quiet" onClick={() => setEditId(null)}>{A.cancel}</Button>
+                            <Button size="sm" variant="quiet" className="ml-auto text-[color:var(--mark)]" onClick={() => remove(a.id)} data-testid="app-delete">{A.delete}</Button>
                           </div>
                         </div>
                       ) : (
                         <>
-                          <p className="truncate font-semibold text-ink">{a.company || a.role}</p>
-                          {a.company && a.role && <p className="truncate text-sm text-ink-2">{a.role}</p>}
-                          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
-                            {a.kitTitle && <span className="rounded-full bg-gold-2 px-2 py-0.5 font-medium text-ink" data-testid="app-kit-chip">📄 {a.kitTitle}</span>}
-                            {a.nextStepAt && <span className={"rounded-full px-2 py-0.5 font-medium ring-1 " + (a.nextStepAt < today && a.stage !== "rejected" ? "bg-oxblood/10 text-oxblood ring-oxblood/30" : "bg-surface text-ink-2 ring-edge")} data-testid="app-next">📅 {fmt(a.nextStepAt)}</span>}
-                            <span className="rounded-full bg-surface px-2 py-0.5 text-muted ring-1 ring-edge">{A.daysIn(daysIn(a.stageChangedAt))}</span>
-                            {a.interviewAtTime && <span className="rounded-full bg-moss-2 px-2 py-0.5 font-medium text-ink" data-testid="app-interview">{R.interviewChip(when(a.interviewAtTime))}</span>}
+                          <p className="truncate font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{a.company || a.role}</p>
+                          {a.company && a.role && <p className="truncate font-sans text-[length:var(--ui-13)] text-[color:var(--ink-2)]">{a.role}</p>}
+                          <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-x-[var(--s-4)] gap-y-[var(--s-2)] font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">
+                            {a.kitTitle && <span className="truncate" data-testid="app-kit-chip">{a.kitTitle}</span>}
+                            {a.nextStepAt && (
+                              <span data-testid="app-next" style={{ color: a.nextStepAt < today && a.stage !== "rejected" ? "var(--mark)" : undefined }}>{fmt(a.nextStepAt)}</span>
+                            )}
+                            <span>{A.daysIn(daysIn(a.stageChangedAt))}</span>
+                            {a.interviewAtTime && <span data-testid="app-interview" className="text-[color:var(--kept)]">{R.interviewChip(when(a.interviewAtTime))}</span>}
                           </div>
-                          {a.notes && <p className="mt-2 line-clamp-3 whitespace-pre-line text-xs text-ink-2" data-testid="app-notes">{a.notes}</p>}
-                          <div className="mt-3 flex items-center gap-1 border-t border-edge pt-2.5">
-                            <button onClick={() => move(a, -1)} disabled={a.stage === "saved"} className="rounded-md px-2 py-1 text-sm text-ink-2 hover:bg-paper disabled:opacity-30" aria-label={A.movePrev} title={A.movePrev} data-testid="move-prev">←</button>
-                            <select className="min-w-0 flex-1 rounded-md border border-edge bg-surface px-1.5 py-1 text-xs text-ink-2" value={a.stage} onChange={(e) => void patch(a.id, { stage: e.target.value as Stage })} aria-label={A.stage} data-testid="card-stage">
+                          {a.notes && <p className="mt-[var(--s-3)] line-clamp-3 whitespace-pre-line font-sans text-[length:var(--ui-12)] leading-[var(--ui-12-lh)] text-[color:var(--ink-2)]" data-testid="app-notes">{a.notes}</p>}
+                          <div className="mt-[var(--s-4)] flex items-center gap-[var(--s-2)] border-t border-[var(--rule-hairline)] pt-[var(--s-3)]">
+                            <Button size="sm" variant="quiet" icon="arrow-left" label={A.movePrev} onClick={() => move(a, -1)} disabled={a.stage === "saved"} data-testid="move-prev" />
+                            <Select className="h-8 min-w-0 flex-1" value={a.stage} onChange={(e) => void patch(a.id, { stage: e.target.value as Stage })} aria-label={A.stage} data-testid="card-stage">
                               {STAGES.map((s) => <option key={s} value={s}>{A.stages[s]}</option>)}
-                            </select>
-                            <button onClick={() => move(a, 1)} disabled={a.stage === "rejected"} className="rounded-md px-2 py-1 text-sm text-ink-2 hover:bg-paper disabled:opacity-30" aria-label={A.moveNext} title={A.moveNext} data-testid="move-next">→</button>
+                            </Select>
+                            <Button size="sm" variant="quiet" icon="arrow-right" label={A.moveNext} onClick={() => move(a, 1)} disabled={a.stage === "rejected"} data-testid="move-next" />
                           </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                            {a.link && <a href={a.link} target="_blank" rel="noopener noreferrer" className="text-oxblood underline-offset-2 hover:underline">{A.open} ↗</a>}
-                            {a.generationId && <Link href={`/start?gen=${a.generationId}`} className="text-muted hover:text-ink">{x.library.open}</Link>}
-                            {(a.stage === "interview" || a.interviewAtTime) && <Link href={`/brief/${a.id}`} className="text-oxblood" data-testid="app-brief">{R.brief}</Link>}
-                            {a.interviewAtTime && <a href={`/api/applications/${a.id}/ics?kind=interview&lang=${lang}`} className="text-oxblood" data-testid="app-ics">📅</a>}
-                            {a.stage === "offer" && lang === "pt" && <Link href={`${to("calculator")}?${a.offerType === "pj" ? "pj" : "clt"}=${a.offerAmount ?? ""}`} className="text-oxblood" data-testid="app-compare">{R.compare}</Link>}
-                            <button onClick={() => startEdit(a)} className="ml-auto text-muted hover:text-ink" data-testid="app-edit-btn">{A.edit}</button>
+                          <div className="mt-[var(--s-3)] flex flex-wrap items-center gap-[var(--s-4)] font-sans text-[length:var(--ui-12)]">
+                            {a.link && <a href={a.link} target="_blank" rel="noopener noreferrer" className="font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]">{A.open}</a>}
+                            {a.generationId && <Link href={`/start?gen=${a.generationId}`} className="text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]">{x.library.open}</Link>}
+                            {(a.stage === "interview" || a.interviewAtTime) && <Link href={`/brief/${a.id}`} className="font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]" data-testid="app-brief">{R.brief}</Link>}
+                            {a.interviewAtTime && <a href={`/api/applications/${a.id}/ics?kind=interview&lang=${lang}`} className="text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]" data-testid="app-ics" aria-label={R.fields.interviewAt}><Icon name="download" size={16} /></a>}
+                            {a.stage === "offer" && lang === "pt" && <Link href={`${to("calculator")}?${a.offerType === "pj" ? "pj" : "clt"}=${a.offerAmount ?? ""}`} className="font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px]" data-testid="app-compare">{R.compare}</Link>}
+                            <button onClick={() => startEdit(a)} className="ml-auto text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]" data-testid="app-edit-btn">{A.edit}</button>
                           </div>
                         </>
                       )}
@@ -244,6 +313,7 @@ function ApplicationsInner() {
           })}
         </div>
       </Container>
+      <SiteFooter />
     </div>
   );
 }

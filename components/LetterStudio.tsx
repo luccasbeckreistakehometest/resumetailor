@@ -6,6 +6,7 @@ import { apiErrorText } from "@/app/i18n/launch";
 import { COVER_TONES, EMAIL_KINDS, type CoverTone, type EmailKind, type VariantKind } from "@/lib/ai/variants";
 import type { GenerationView } from "@/lib/server/generations";
 import type { VariantView } from "@/lib/server/variants";
+import { Button, Notice } from "@/components/ui";
 
 type Tone = "original" | CoverTone;
 
@@ -53,57 +54,65 @@ export function LetterStudio({ gen }: { gen: GenerationView }) {
   const mailto = mail ? `mailto:?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}` : "";
 
   return (
-    <div className="mt-6" data-testid="letters">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="mt-[var(--s-8)] border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="letters">
+      <div className="flex flex-wrap items-baseline justify-between gap-[var(--s-4)]">
         <p className="eyebrow">{L.title}</p>
-        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={L.title}>
+        <div className="flex flex-wrap gap-[var(--s-2)]" role="tablist" aria-label={L.title}>
           {(["original", ...COVER_TONES] as Tone[]).map((t) => (
             <button key={t} role="tab" aria-selected={tone === t} onClick={() => pickTone(t)} title={t === "original" ? undefined : L.toneHint[t]}
-              className={"rounded-full border px-3 py-1 text-xs font-medium transition " + (tone === t ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2 hover:border-ink")} data-testid={`tone-${t}`}>
+              className={"inline-flex h-6 items-center rounded-[var(--r-1)] border px-[var(--s-3)] font-sans text-[length:var(--ui-12)] font-medium leading-none transition-colors " +
+                (tone === t ? "border-[var(--ink)] bg-[var(--ink)] text-[color:var(--on-ink)]" : "border-[var(--rule-hairline)] bg-[var(--sunken)] text-[color:var(--ink-2)] hover:border-[var(--rule)]")} data-testid={`tone-${t}`}>
               {L.tones[t]}{t !== "original" && ready[`cover:${t}`] ? " ·" : ""}
             </button>
           ))}
         </div>
       </div>
-      <p className="mt-1 text-xs text-muted">{L.subtitle}</p>
+      <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{L.subtitle}</p>
       {busy?.startsWith("cover:") ? (
-        <p className="mt-4 text-sm font-medium text-ink-2" data-testid="letter-busy">{L.rewriting}</p>
+        <p className="mt-[var(--s-5)] font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]" data-testid="letter-busy">{L.rewriting}</p>
       ) : letter && (
-        <div className="mt-3 rounded-xl border border-edge bg-paper p-4" data-testid="letter" data-tone={tone}>
-          <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink" data-testid="letter-body">{letter.body}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-edge pt-3">
-            <button onClick={() => void copy("letter", letter.body)} className="btn btn-ghost !py-1.5 !text-xs" data-testid="letter-copy">{copied === "letter" ? L.copied : L.copy}</button>
-            {letter.fresh && letter.cached && <span className="text-xs text-muted" data-testid="letter-cached">{L.cached}</span>}
+        /* A cover letter is a document too: it gets the sheet and the document face. */
+        <div className="sheet mt-[var(--s-4)] p-[var(--s-6)] sm:p-[var(--s-8)]" data-testid="letter" data-tone={tone}>
+          <p className="doc-15 max-w-[var(--measure)] whitespace-pre-line text-[color:var(--ink)]" data-testid="letter-body">{letter.body}</p>
+          <div className="mt-[var(--s-5)] flex flex-wrap items-center gap-[var(--s-4)] border-t border-[var(--rule-hairline)] pt-[var(--s-4)]">
+            <Button variant="outline" size="sm" icon="copy" onClick={() => void copy("letter", letter.body)} data-testid="letter-copy">{copied === "letter" ? L.copied : L.copy}</Button>
+            {letter.fresh && letter.cached && <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]" data-testid="letter-cached">{L.cached}</span>}
           </div>
         </div>
       )}
 
-      <p className="eyebrow mt-8">{L.emailsTitle}</p>
-      <p className="mt-1 text-xs text-muted">{L.emailsSubtitle}</p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+      <p className="eyebrow mt-[var(--s-9)]">{L.emailsTitle}</p>
+      <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{L.emailsSubtitle}</p>
+      <ul className="mt-[var(--s-4)] border-t border-[var(--rule-hairline)] sm:grid sm:grid-cols-3 sm:gap-x-[var(--s-6)]">
         {EMAIL_KINDS.map((k) => (
-          <button key={k} onClick={() => pickEmail(k)} className={"rounded-xl border p-3 text-left transition " + (email === k ? "border-ink bg-surface" : "border-edge-2 bg-paper hover:border-ink")} data-testid={`email-${k}`}>
-            <p className="text-sm font-semibold text-ink">{L.kinds[k]}{ready[`email:${k}`] ? " ·" : ""}</p>
-            <p className="mt-0.5 text-xs text-ink-2">{L.kindHint[k]}</p>
-          </button>
+          <li key={k} className="border-b border-[var(--rule-hairline)]">
+            <button onClick={() => pickEmail(k)} className="w-full py-[var(--s-4)] text-left" data-testid={`email-${k}`} aria-pressed={email === k}>
+              <span className="flex items-baseline gap-[var(--s-2)]">
+                <span className={"font-sans text-[length:var(--ui-13)] font-semibold " + (email === k ? "text-[color:var(--ink)]" : "text-[color:var(--ink-2)]")}>{L.kinds[k]}</span>
+                {ready[`email:${k}`] && <span className="h-1 w-1 rounded-full bg-[var(--kept)]" aria-hidden />}
+              </span>
+              <span className="mt-[var(--s-2)] block font-sans text-[length:var(--ui-12)] leading-[var(--ui-12-lh)] text-[color:var(--ink-muted)]">{L.kindHint[k]}</span>
+              {email === k && <span aria-hidden className="mt-[var(--s-3)] block h-[2px] w-[28px] bg-[var(--ink)]" />}
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
       {busy?.startsWith("email:") ? (
         <p className="mt-4 text-sm font-medium text-ink-2" data-testid="email-busy">{L.writing}</p>
       ) : mail && (
-        <div className="mt-3 rounded-xl border border-edge bg-paper p-4" data-testid="email" data-kind={email ?? ""}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{L.subject}</p>
-          <p className="mt-0.5 font-medium text-ink" data-testid="email-subject">{mail.subject}</p>
-          <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink" data-testid="email-body">{mail.body}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-edge pt-3">
-            <button onClick={() => void copy("email", `${mail.subject}\n\n${mail.body}`)} className="btn btn-ghost !py-1.5 !text-xs" data-testid="email-copy">{copied === "email" ? L.copied : L.copy}</button>
-            <a href={mailto} className="btn btn-ink !py-1.5 !text-xs" data-testid="email-mailto">{L.openMail}</a>
-            {mail.cached && <span className="text-xs text-muted" data-testid="email-cached">{L.cached}</span>}
+        <div className="sheet mt-[var(--s-4)] p-[var(--s-6)] sm:p-[var(--s-8)]" data-testid="email" data-kind={email ?? ""}>
+          <p className="eyebrow">{L.subject}</p>
+          <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-15)] font-medium text-[color:var(--ink)]" data-testid="email-subject">{mail.subject}</p>
+          <p className="doc-15 mt-[var(--s-5)] max-w-[var(--measure)] whitespace-pre-line text-[color:var(--ink)]" data-testid="email-body">{mail.body}</p>
+          <div className="mt-[var(--s-5)] flex flex-wrap items-center gap-[var(--s-3)] border-t border-[var(--rule-hairline)] pt-[var(--s-4)]">
+            <Button variant="outline" size="sm" icon="copy" onClick={() => void copy("email", `${mail.subject}\n\n${mail.body}`)} data-testid="email-copy">{copied === "email" ? L.copied : L.copy}</Button>
+            <Button size="sm" href={mailto} data-testid="email-mailto">{L.openMail}</Button>
+            {mail.cached && <span className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]" data-testid="email-cached">{L.cached}</span>}
           </div>
         </div>
       )}
-      {(letter || mail) && <p className="mt-3 text-[11px] text-muted">{L.placeholders}</p>}
-      {error && <p className="mt-3 text-sm text-oxblood" role="alert" data-testid="letters-error">{error}</p>}
+      {(letter || mail) && <p className="mt-[var(--s-4)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{L.placeholders}</p>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="letters-error">{error}</span></Notice>}
     </div>
   );
 }

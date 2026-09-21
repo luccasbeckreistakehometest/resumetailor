@@ -9,7 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthModal } from "@/components/AuthButton";
 import { useAuth } from "@/components/AuthProvider";
-import { Container, Eyebrow, Stamp } from "@/components/ui";
+import { Button, Container, Icon, Notice, Seal } from "@/components/ui";
 import { PACKS } from "@/lib/packs";
 import { VoucherField } from "@/components/VoucherField";
 import { checkoutEndpoint, checkoutOptions, currencyOf, priceLabel, unitPrice, type CheckoutProvider } from "@/lib/checkout";
@@ -68,63 +68,113 @@ export function PricingView() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <Container className="max-w-5xl py-12 sm:py-16">
-        <div className="max-w-2xl"><Eyebrow>{x.nav.pricing}</Eyebrow><h1 className="font-display mt-2 text-4xl text-ink sm:text-5xl">{c.title}</h1><p className="mt-4 text-ink-2">{c.subtitle}</p></div>
+      <Container className="py-[var(--s-10)]">
+        <div className="grid gap-[var(--gutter)] md:grid-cols-12">
+          <div className="min-w-0 md:col-span-5">
+            <p className="eyebrow">{x.nav.pricing}</p>
+            <h1 className="doc-45 mt-[var(--s-3)] text-[color:var(--ink)]">{c.title}</h1>
+            <p className="mt-[var(--s-5)] max-w-[var(--measure)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] text-[color:var(--ink-2)]">{c.subtitle}</p>
+            <Suspense fallback={null}><CanceledNotice text={l.pricing.canceled} /></Suspense>
 
-        <Suspense fallback={null}><CanceledNotice text={l.pricing.canceled} /></Suspense>
+            {options.length > 1 && (
+              <fieldset className="mt-[var(--s-7)]" data-testid="provider-choice">
+                <legend className="eyebrow">{l.pricing.payIn}</legend>
+                <div className="mt-[var(--s-3)] flex flex-wrap gap-[var(--s-2)]">
+                  {options.map((p) => (
+                    <label
+                      key={p}
+                      className={"inline-flex h-7 cursor-pointer items-center rounded-[var(--r-1)] border px-[var(--s-4)] font-sans text-[length:var(--ui-12)] font-medium " +
+                        (provider === p ? "border-[var(--ink)] bg-[var(--ink)] text-[color:var(--on-ink)]" : "border-[var(--rule)] bg-[var(--sunken)] text-[color:var(--ink-2)] hover:border-[var(--ink-40)]")}
+                    >
+                      <input type="radio" name="provider" value={p} checked={provider === p} onChange={() => setChosen(p)} className="sr-only" data-testid={`provider-${p}`} />
+                      {p === "mercadopago" ? l.pricing.optionMp : l.pricing.optionStripe}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
 
-        {options.length > 1 && (
-          <fieldset className="mt-8" data-testid="provider-choice">
-            <legend className="text-sm font-medium text-ink-2">{l.pricing.payIn}</legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {options.map((p) => (
-                <label key={p} className={"flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm " + (provider === p ? "border-ink bg-ink text-paper" : "border-edge-2 text-ink-2 hover:border-ink")}>
-                  <input type="radio" name="provider" value={p} checked={provider === p} onChange={() => setChosen(p)} className="sr-only" data-testid={`provider-${p}`} />
-                  {p === "mercadopago" ? l.pricing.optionMp : l.pricing.optionStripe}
-                </label>
-              ))}
+            <div className="mt-[var(--s-8)] max-w-[var(--measure)]"><VoucherField /></div>
+
+            <div className="mt-[var(--s-7)] flex flex-col gap-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]" data-testid="pricing-notes">
+              {provider === "mercadopago" && <p data-testid="brl-note">{l.pricing.brlNote}</p>}
+              {provider === "stripe" && <p>{l.pricing.usdNote}</p>}
+              {!provider && !loading && (
+                <Notice tone="query"><span data-testid="checkout-closed">{l.pricing.closed} <Link href="/start" className="font-medium text-[color:var(--ink)] underline underline-offset-[3px]">{l.menu.start} →</Link></span></Notice>
+              )}
+              <p>{l.pricing.prepaid} <Link href="/legal/refunds" className="underline underline-offset-[3px] hover:text-[color:var(--ink)]">{l.pricing.refundLink}</Link></p>
             </div>
-          </fieldset>
-        )}
-
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-4">
-          <div className="card p-6">
-            <p className="eyebrow">{c.free}</p>
-            <p className="font-display mt-2 text-4xl text-ink">{currency === "BRL" ? "R$ 0" : lang === "en" ? "$0" : "US$ 0"}</p>
-            <p className="mt-3 text-sm text-ink-2" data-testid="free-tier">{features.insights ? l.pricing.freeWithInsights : l.pricing.freeNoInsights}</p>
+            {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
           </div>
-          {PACKS.map((p, i) => (
-            <div key={p.key} className={"card relative p-6 " + (i === 1 ? "border-2 !border-ink" : "")} data-testid={`pack-${p.key}`}>
-              {i === 1 && <div className="absolute -top-3 left-5"><Stamp>{c.best}</Stamp></div>}
-              <p className="eyebrow">{x.credits.badge(p.credits)}</p>
-              <p className="font-display mt-2 text-3xl text-ink lg:text-4xl" data-testid={`price-${p.key}`}>{priceLabel(p, currency, lang)}</p>
-              <p className="mt-1 text-sm text-muted">{currency === "BRL" ? "R$" : lang === "en" ? "$" : "US$"}{unitPrice(p, currency).toFixed(0)} {c.perCv}{i > 0 && <span className="ml-2 text-moss">· {c.save} {Math.round((1 - unitPrice(p, currency) / unitPrice(PACKS[0], currency)) * 100)}%</span>}</p>
-              {provider && <button onClick={() => void buy(p.key)} disabled={busy !== null} className="btn btn-primary mt-6 w-full" data-testid={`buy-${p.key}`}>{busy === p.key ? x.auth.working : c.cta}</button>}
+
+          {/* The price table: packs are rows, and the saving is its own column rather than a
+              claim inside a card. Money the person pays is set in the document face. */}
+          <div className="min-w-0 md:col-span-7 md:col-start-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left font-sans" style={{ minWidth: "480px" }}>
+                <thead>
+                  <tr>
+                    {[x.nav.pricing, c.perCv, c.save, ""].map((h, i) => (
+                      <th key={i} scope="col" className={"border-b border-[var(--rule)] pb-[var(--s-3)] font-sans text-[length:var(--ui-12)] font-medium text-[color:var(--ink-muted)] " + (i === 1 || i === 2 ? "text-right" : i === 3 ? "text-right" : "")}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-testid="free-tier-row">
+                    <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] align-top">
+                      <p className="font-serif text-[length:var(--doc-26)] font-semibold leading-none text-[color:var(--ink)]">{currency === "BRL" ? "R$ 0" : lang === "en" ? "$0" : "US$ 0"}</p>
+                      <p className="mt-[var(--s-2)] max-w-[34ch] font-sans text-[length:var(--ui-12)] leading-[var(--ui-12-lh)] text-[color:var(--ink-muted)]" data-testid="free-tier">{features.insights ? l.pricing.freeWithInsights : l.pricing.freeNoInsights}</p>
+                    </td>
+                    <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">—</td>
+                    <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">—</td>
+                    <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top">
+                      <span className="eyebrow">{c.free}</span>
+                    </td>
+                  </tr>
+                  {PACKS.map((p, i) => {
+                    const saving = Math.round((1 - unitPrice(p, currency) / unitPrice(PACKS[0], currency)) * 100);
+                    return (
+                      <tr key={p.key} data-testid={`pack-${p.key}`} className={i === 1 ? "bg-[var(--sunken)]" : ""}>
+                        <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] align-top">
+                          <div className="flex items-baseline gap-[var(--s-3)]">
+                            <p className="font-serif text-[length:var(--doc-31)] font-semibold leading-none text-[color:var(--ink)]" data-testid={`price-${p.key}`}>{priceLabel(p, currency, lang)}</p>
+                            {i === 1 && <Seal>{c.best}</Seal>}
+                          </div>
+                          <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{x.credits.badge(p.credits)}</p>
+                        </td>
+                        <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-2)]">
+                          {currency === "BRL" ? "R$" : lang === "en" ? "$" : "US$"}{unitPrice(p, currency).toFixed(0)}
+                        </td>
+                        <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top font-mono text-[length:var(--mn-13)] tabular-nums" style={{ color: i > 0 ? "var(--kept)" : "var(--ink-muted)" }}>
+                          {i > 0 ? `−${saving}%` : "—"}
+                        </td>
+                        <td className="border-b border-[var(--rule-hairline)] py-[var(--s-5)] text-right align-top">
+                          {provider && (
+                            <Button size="sm" variant={i === 1 ? "primary" : "outline"} onClick={() => void buy(p.key)} loading={busy === p.key} disabled={busy !== null} data-testid={`buy-${p.key}`}>
+                              {busy === p.key ? x.auth.working : c.cta}
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
+
+            <section className="mt-[var(--s-9)] border-t-2 border-[var(--ink)] pt-[var(--s-5)]" data-testid="pricing-checklist">
+              <p className="doc-26 text-[color:var(--ink)]">{r.showcase.checklistTitle}</p>
+              <ul className="mt-[var(--s-5)] grid gap-x-[var(--s-7)] sm:grid-cols-2">
+                {r.showcase.checklist(limits).map((item) => (
+                  <li key={item} className="flex items-start gap-[var(--s-3)] border-b border-[var(--rule-hairline)] py-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">
+                    <span className="relative top-[2px] shrink-0 text-[color:var(--kept)]"><Icon name="check" size={16} /></span>{item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-[var(--s-5)] font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{r.showcase.checklistFooter}</p>
+            </section>
+          </div>
         </div>
-
-        <section className="mt-10 rounded-2xl border-2 border-ink p-6" data-testid="pricing-checklist">
-          <p className="font-display text-3xl text-ink">{r.showcase.checklistTitle}</p>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {r.showcase.checklist(limits).map((item) => <li key={item} className="flex gap-2 text-sm text-ink-2"><span className="text-moss">✓</span>{item}</li>)}
-          </ul>
-          <p className="mt-4 font-semibold text-ink">{r.showcase.checklistFooter}</p>
-        </section>
-
-        <div className="mt-8 max-w-xl"><VoucherField /></div>
-
-        <div className="mt-6 space-y-1 text-sm text-muted" data-testid="pricing-notes">
-          {provider === "mercadopago" && <p data-testid="brl-note">{l.pricing.brlNote}</p>}
-          {provider === "stripe" && <p>{l.pricing.usdNote}</p>}
-          {!provider && !loading && (
-            <p className="rounded-xl border border-edge bg-surface px-4 py-3 text-ink-2" data-testid="checkout-closed">
-              {l.pricing.closed} <Link href="/start" className="font-medium text-oxblood underline underline-offset-2">{l.menu.start} →</Link>
-            </p>
-          )}
-          <p>{l.pricing.prepaid} <Link href="/legal/refunds" className="underline underline-offset-2 hover:text-ink">{l.pricing.refundLink}</Link></p>
-        </div>
-        {error && <p className="mt-3 text-sm text-oxblood" role="alert">{error}</p>}
       </Container>
       <SiteFooter />
       {authOpen && <AuthModal initialMode="in" onClose={() => setAuthOpen(false)} onDone={() => { if (pending) setTimeout(() => void buy(pending), 150); }} />}

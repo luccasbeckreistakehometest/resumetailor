@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
-import { Eyebrow, Stamp } from "@/components/ui";
+import { Badge, Button, Icon, Notice, Seal, Textarea, Token } from "@/components/ui";
 import { ImportableTextarea } from "@/components/FileDrop";
 import { atsCheck, decodeShare, encodeShare, wordCount, type AtsResult, type Check, type Lang } from "@/lib/ats/check";
 import { ATS_COPY } from "./copy";
@@ -17,32 +17,38 @@ export function AtsSeo({ lang, forced, part }: { lang: Lang; forced: boolean; pa
   if (part === "head") {
     return (
       <div>
-        <Stamp>{c.badge}</Stamp>
-        <h1 className="font-display mt-5 text-[2.6rem] leading-[1.02] tracking-[-0.02em] text-ink sm:text-6xl">{c.h1}</h1>
-        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-2">{c.intro}</p>
-        <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+        <Seal>{c.badge}</Seal>
+        <h1 className="doc-45 mt-[var(--s-6)] text-[color:var(--ink)] lg:text-[length:var(--doc-64)] lg:leading-[var(--doc-64-lh)] lg:tracking-[var(--doc-64-ls)]">{c.h1}</h1>
+        <p className="doc-18 mt-[var(--s-6)] max-w-[var(--measure)] text-[color:var(--ink-2)]">{c.intro}</p>
+        <ol className="mt-[var(--s-7)] grid border-t border-[var(--rule)] sm:grid-cols-3 sm:gap-x-[var(--gutter)]">
           {c.steps.map((s, i) => (
-            <li key={i} className="flex gap-3 text-sm text-ink-2"><span className="font-display text-3xl leading-none text-edge-2">{i + 1}</span>{s}</li>
+            <li key={i} className="flex gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-4)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">
+              <span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-40)]">{String(i + 1).padStart(2, "0")}</span>{s}
+            </li>
           ))}
         </ol>
       </div>
     );
   }
   return (
-    <section className="mt-16">
-      <h2 className="font-display text-3xl text-ink">{c.faqTitle}</h2>
-      <div className="mt-4 divide-y divide-edge">
+    <section className="mt-[var(--s-12)]">
+      <h2 className="doc-31 text-[color:var(--ink)]">{c.faqTitle}</h2>
+      <div className="mt-[var(--s-6)] border-t border-[var(--rule)]">
         {c.faq.map((f) => (
-          <details key={f.q} className="group py-4">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-ink">{f.q}<span className="text-muted transition group-open:rotate-45">+</span></summary>
-            <p className="mt-3 text-sm leading-relaxed text-ink-2">{f.a}</p>
+          <details key={f.q} className="group border-b border-[var(--rule-hairline)] py-[var(--s-5)]">
+            <summary className="flex cursor-pointer list-none items-baseline justify-between gap-[var(--s-5)] font-sans text-[length:var(--ui-15)] font-medium text-[color:var(--ink)]">
+              {f.q}
+              <span className="relative top-[3px] shrink-0 text-[color:var(--ink-muted)] group-open:hidden"><Icon name="plus" size={16} /></span>
+              <span className="relative top-[3px] hidden shrink-0 text-[color:var(--ink-muted)] group-open:block"><Icon name="minus" size={16} /></span>
+            </summary>
+            <p className="mt-[var(--s-4)] max-w-[var(--measure)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{f.a}</p>
           </details>
         ))}
       </div>
-      <div className="mt-10 rounded-2xl bg-ink p-8 text-paper">
-        <p className="font-display text-3xl">{x.ats.cta.title}</p>
-        <p className="mt-2 max-w-2xl text-paper-2/85">{x.ats.cta.body}</p>
-        <Link href="/start" className="btn btn-primary mt-6">{x.ats.cta.button}</Link>
+      <div className="mt-[var(--s-10)] bg-[var(--ink)] p-[var(--s-8)] text-[color:var(--on-ink)]">
+        <p className="doc-31">{x.ats.cta.title}</p>
+        <p className="mt-[var(--s-4)] max-w-[var(--measure)] font-sans text-[length:var(--ui-15)] leading-[var(--ui-15-lh)] opacity-80">{x.ats.cta.body}</p>
+        <Link href="/start" className="mt-[var(--s-6)] inline-flex h-[var(--control-h)] items-center rounded-[var(--r-2)] bg-[var(--on-ink)] px-[var(--s-6)] font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)] hover:opacity-90">{x.ats.cta.button}</Link>
       </div>
     </section>
   );
@@ -120,42 +126,42 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
   return (
     <div className="mt-10">
       {shared && (
-        <div className="card mb-6 border-2 !border-ink p-6" data-testid="share-card">
-          <Eyebrow>{A.cardFrom}</Eyebrow>
+        <div className="mb-[var(--s-7)] border-t-2 border-b border-[var(--ink)] py-[var(--s-6)]" data-testid="share-card">
+          <p className="eyebrow">{A.cardFrom}</p>
           <div className="mt-3 flex flex-wrap items-center gap-6">
-            <p className="font-display text-6xl leading-none text-ink">{shared.s}<span className="text-lg text-muted">/100</span></p>
+            <p className="font-mono text-[length:var(--mn-40)] font-medium tabular-nums leading-none text-[color:var(--ink)]">{shared.s}<span className="text-[length:var(--ui-15)] text-[color:var(--ink-muted)]">/100</span></p>
             <div>
-              <Stamp>{A.grade[shared.g]}</Stamp>
+              <Seal>{A.grade[shared.g]}</Seal>
               {shared.f.length > 0 && <ul className="mt-2 text-sm text-ink-2">{shared.f.map((id) => <li key={id}>· {A.checks[id].t}</li>)}</ul>}
               {shared.k !== null && <p className="mt-1 text-xs text-muted">{A.keywords.title}: {shared.k}%</p>}
             </div>
           </div>
-          <p className="mt-4 text-sm font-medium text-oxblood">↓ {A.cardCta}</p>
+          <p className="mt-[var(--s-5)] font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]">{A.cardCta}</p>
         </div>
       )}
 
-      <div className="card p-6 sm:p-8" data-tour="ats-check">
-        <Eyebrow>{A.eyebrow}</Eyebrow>
-        <label htmlFor="ats-resume" className="mt-3 block text-sm font-medium text-ink-2">{A.resumeLabel}</label>
+      <div className="border border-[var(--rule)] p-[var(--s-6)] sm:p-[var(--s-8)]" data-tour="ats-check">
+        <p className="eyebrow">{A.eyebrow}</p>
+        <label htmlFor="ats-resume" className="mt-[var(--s-4)] block font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]">{A.resumeLabel}</label>
         <div className="mt-2"><ImportableTextarea id="ats-resume" value={resume} onChange={setResume} rows={12} placeholder={A.resumePh} testId="ats-resume" importTestId="import" tour="import" /></div>
-        <label htmlFor="ats-posting" className="mt-5 block text-sm font-medium text-ink-2">{A.postingLabel}</label>
-        <textarea id="ats-posting" className="field mt-2" rows={6} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={A.postingPh} data-testid="ats-posting" />
-        <div className="mt-5 flex flex-wrap items-center gap-4">
-          <button onClick={run} className="btn btn-primary" data-testid="ats-check">{A.check}</button>
-          <p className="text-xs text-muted">{A.privacy}</p>
+        <label htmlFor="ats-posting" className="mt-[var(--s-6)] block font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)]">{A.postingLabel}</label>
+        <Textarea id="ats-posting" className="mt-[var(--s-3)]" rows={6} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={A.postingPh} data-testid="ats-posting" />
+        <div className="mt-[var(--s-6)] flex flex-wrap items-center gap-[var(--s-5)]">
+          <Button size="lg" onClick={run} data-testid="ats-check">{A.check}</Button>
+          <p className="font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{A.privacy}</p>
         </div>
-        {error && <p className="mt-3 text-sm text-oxblood" role="alert" data-testid="ats-error">{error}</p>}
+        {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span data-testid="ats-error">{error}</span></Notice>}
       </div>
 
       {result && (
-        <div id="ats-result" className="card mt-6 scroll-mt-24 p-6 sm:p-8" data-testid="ats-result">
+        <div id="ats-result" className="mt-[var(--s-8)] scroll-mt-24 border-t-2 border-[var(--ink)] pt-[var(--s-7)]" data-testid="ats-result">
           <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-            <div className="text-center">
-              <p className="font-display text-8xl leading-none text-ink" data-testid="ats-score">{result.score}</p>
-              <p className="eyebrow mt-2">{A.scoreLabel} / 100</p>
+            <div>
+              <p className="font-mono text-[length:var(--mn-40)] font-medium tabular-nums leading-none text-[color:var(--ink)]"><span data-testid="ats-score">{result.score}</span><span className="text-[length:var(--ui-17)] text-[color:var(--ink-muted)]">/100</span></p>
+              <p className="eyebrow mt-[var(--s-3)]">{A.scoreLabel}</p>
             </div>
             <div>
-              <Stamp>{A.grade[result.grade]}</Stamp>
+              <Seal>{A.grade[result.grade]}</Seal>
               <p className="mt-3 text-ink-2" data-testid="ats-grade" data-grade={result.grade}>{A.gradeText[result.grade]}</p>
               <p className="mt-2 text-xs text-muted">
                 {result.stats.words} {A.stats.words} · {result.stats.bullets} {A.stats.bullets} · {result.stats.quantified} {A.stats.quantified} · {result.stats.dateMentions} {A.stats.dates}
@@ -167,15 +173,15 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
           {result.fixes.length === 0 ? <p className="mt-2 text-sm text-moss">{A.allGood}</p> : (
             <ol className="mt-3 space-y-3">
               {result.fixes.map((f, i) => (
-                <li key={f.id} className="rounded-xl border border-edge bg-paper p-4" data-testid="ats-fix" data-check={f.id}>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-display text-2xl leading-none text-oxblood">{i + 1}</span>
-                    <p className="font-semibold text-ink">{A.checks[f.id].t}</p>
-                    <span className={"rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide " + (f.severity === "high" ? "bg-oxblood/10 text-oxblood" : f.severity === "medium" ? "bg-gold-2 text-ink" : "bg-paper-2 text-muted")}>{A.severity[f.severity]}</span>
-                    <span className="ml-auto text-xs font-semibold text-moss">+{f.gain}</span>
+                <li key={f.id} className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]" data-testid="ats-fix" data-check={f.id}>
+                  <div className="flex flex-wrap items-baseline gap-x-[var(--s-4)] gap-y-[var(--s-2)]">
+                    <span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-40)]">{String(i + 1).padStart(2, "0")}</span>
+                    <p className="font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{A.checks[f.id].t}</p>
+                    <Badge tone={f.severity === "high" ? "mark" : f.severity === "medium" ? "query" : "neutral"}>{A.severity[f.severity]}</Badge>
+                    <span className="ml-auto font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--kept)]">+{f.gain}</span>
                   </div>
-                  <p className="mt-1.5 text-sm text-ink-2">{A.checks[f.id].fix}</p>
-                  {detail(f) && <p className="mt-1 text-xs text-muted">{detail(f)}</p>}
+                  <p className="mt-[var(--s-2)] max-w-[var(--measure)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{A.checks[f.id].fix}</p>
+                  {detail(f) && <p className="mt-[var(--s-2)] font-sans text-[length:var(--ui-12)] text-[color:var(--ink-muted)]">{detail(f)}</p>}
                 </li>
               ))}
             </ol>
@@ -185,8 +191,8 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
           {result.hasPosting ? (
             <div className="mt-2 space-y-3">
               <p className="text-sm text-ink-2">{A.keywords.coverage(result.keywords.coverage ?? 0)}</p>
-              {result.keywords.matched.length > 0 && <div className="flex flex-wrap gap-1.5" data-testid="kw-matched">{result.keywords.matched.map((k) => <span key={k} className="rounded-full bg-moss-2 px-2.5 py-1 text-xs font-medium text-moss ring-1 ring-moss/30">✓ {k}</span>)}</div>}
-              {result.keywords.missing.length > 0 && <div className="flex flex-wrap gap-1.5" data-testid="kw-missing">{result.keywords.missing.map((k) => <span key={k} className="rounded-full bg-paper px-2.5 py-1 text-xs font-medium text-oxblood ring-1 ring-oxblood/30">+ {k}</span>)}</div>}
+              {result.keywords.matched.length > 0 && <div className="flex flex-wrap gap-[var(--s-2)]" data-testid="kw-matched">{result.keywords.matched.map((k) => <Token key={k} state="kept">{k}</Token>)}</div>}
+              {result.keywords.missing.length > 0 && <div className="flex flex-wrap gap-[var(--s-2)]" data-testid="kw-missing">{result.keywords.missing.map((k) => <Token key={k} state="missing">{k}</Token>)}</div>}
               <p className="text-xs text-muted">{A.keywords.honest}</p>
             </div>
           ) : <p className="mt-2 text-sm text-muted">{A.keywords.none}</p>}
@@ -194,29 +200,29 @@ function Checker({ lang, forced }: { lang: Lang; forced: boolean }) {
           <details className="mt-8">
             <summary className="eyebrow cursor-pointer">{A.checksTitle} ({result.checks.filter((c) => c.ok).length}/{result.checks.length})</summary>
             <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
-              {result.checks.map((c) => <li key={c.id} className="flex items-center gap-2 text-sm" data-testid="ats-check-row" data-check={c.id} data-ok={c.ok ? "1" : "0"}><span className={c.ok ? "text-moss" : "text-oxblood"}>{c.ok ? "✓" : "✕"}</span><span className="text-ink-2">{A.checks[c.id].t}</span><span className="ml-auto text-xs text-muted">{c.earned}/{c.max}</span></li>)}
+              {result.checks.map((c) => <li key={c.id} className="flex items-center gap-2 text-sm" data-testid="ats-check-row" data-check={c.id} data-ok={c.ok ? "1" : "0"}><span style={{ color: c.ok ? "var(--kept)" : "var(--mark)" }}><Icon name={c.ok ? "check" : "close"} size={16} /></span><span className="text-ink-2">{A.checks[c.id].t}</span><span className="ml-auto text-xs text-muted">{c.earned}/{c.max}</span></li>)}
             </ul>
           </details>
 
-          <div className="mt-8 rounded-xl bg-gold-2 p-5" data-testid="ats-tips">
-            <p className="font-semibold text-ink">{tips.title}</p>
-            <ul className="mt-2 space-y-1.5">{tips.items.map((t) => <li key={t} className="flex gap-2 text-sm text-ink-2"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />{t}</li>)}</ul>
+          <div className="mt-[var(--s-9)] bg-[var(--sunken)] p-[var(--s-6)]" data-testid="ats-tips">
+            <p className="font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{tips.title}</p>
+            <ul className="mt-[var(--s-3)] flex flex-col">{tips.items.map((t) => <li key={t} className="flex items-start gap-[var(--s-4)] border-b border-[var(--rule-hairline)] py-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)] last:border-0"><span aria-hidden className="mt-[10px] h-px w-[10px] shrink-0 bg-[var(--rule-field)]" />{t}</li>)}</ul>
           </div>
 
           <div className="mt-8 border-t border-edge pt-6">
             <p className="eyebrow">{A.share.title}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <input readOnly className="field min-w-0 flex-1 !py-2 !text-xs" value={share} onFocus={(e) => e.currentTarget.select()} data-testid="share-url" aria-label={A.share.title} />
-              <button onClick={copy} className="btn btn-ghost !py-2 !text-sm" data-testid="share-copy">{copied ? A.share.copied : A.share.copy}</button>
-              <button onClick={nativeShare} className="btn btn-ink !py-2 !text-sm">{A.share.native}</button>
-              <button onClick={image} className="btn btn-ghost !py-2 !text-sm" data-testid="share-image">{A.share.image}</button>
+              <input readOnly className="field min-w-0 flex-1 font-mono text-[length:var(--mn-13)]" value={share} onFocus={(e) => e.currentTarget.select()} data-testid="share-url" aria-label={A.share.title} />
+              <Button variant="outline" size="sm" icon="copy" onClick={copy} data-testid="share-copy">{copied ? A.share.copied : A.share.copy}</Button>
+              <Button size="sm" onClick={nativeShare}>{A.share.native}</Button>
+              <Button variant="outline" size="sm" onClick={image} data-testid="share-image">{A.share.image}</Button>
             </div>
           </div>
 
-          <div className="mt-8 rounded-xl border border-dashed border-edge-2 bg-paper p-5" data-testid="ats-cta">
-            <p className="font-display text-2xl text-ink">{A.cta.title}</p>
-            <p className="mt-1 text-sm text-ink-2">{A.cta.body}</p>
-            <Link href="/start" className="btn btn-primary mt-4">{A.cta.button}</Link>
+          <div className="mt-[var(--s-9)] border-t border-[var(--rule)] pt-[var(--s-6)]" data-testid="ats-cta">
+            <p className="doc-26 text-[color:var(--ink)]">{A.cta.title}</p>
+            <p className="mt-[var(--s-3)] max-w-[var(--measure)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{A.cta.body}</p>
+            <Button href="/start" className="mt-[var(--s-5)]">{A.cta.button}</Button>
           </div>
         </div>
       )}

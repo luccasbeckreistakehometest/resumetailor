@@ -1,92 +1,87 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { useAuth } from "@/components/AuthProvider";
+import { Button, Icon } from "@/components/ui";
 
 /**
- * The support bubble: quick answers, the in-app contact form (always), and email / WhatsApp only
+ * Support (surface 17): quick answers, the in-app contact form (always), and email / WhatsApp only
  * when the server has them configured (SUPPORT_EMAIL / SUPPORT_WHATSAPP).
+ *
+ * It used to be a 56px oxblood circle with a speech bubble in it, floating over every page — the
+ * single most template-looking object in the product, and red, which this system reserves for a
+ * correction. The entry point is now a quiet ruled tab that says what it is in words. The panel
+ * keeps every channel it had.
  */
 export function SupportChat() {
   const { d, l } = useI18n();
   const { support } = useAuth();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  // A published résumé is someone's page, not ours: no support bubble on it (nor on the print view).
+  // A published résumé is someone's page, not ours: no support tab on it (nor on the print view).
   if (pathname.startsWith("/cv/") || pathname.startsWith("/print")) return null;
 
   return (
     <>
-      {/* Panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl sm:right-6">
-          <div className="flex items-center justify-between bg-oxblood px-4 py-3 text-white" role="heading" aria-level={2}>
-            <span className="font-semibold">{d.chat.title}</span>
-            <button onClick={() => setOpen(false)} aria-label={d.chat.close} className="text-white/80 hover:text-white" type="button">
-              ✕
+        <div
+          className="fixed bottom-[68px] right-[var(--s-5)] z-50 flex w-[calc(100vw-2rem)] max-w-[360px] flex-col overflow-hidden rounded-[var(--r-2)] border border-[var(--rule)] bg-[var(--raised)] sm:right-[var(--s-7)]"
+          style={{ boxShadow: "var(--shadow-pop)" }}
+        >
+          <div className="flex items-center justify-between gap-[var(--s-4)] border-b border-[var(--rule-hairline)] px-[var(--s-5)] py-[var(--s-4)]" role="heading" aria-level={2}>
+            <span className="font-sans text-[length:var(--ui-15)] font-semibold text-[color:var(--ink)]">{d.chat.title}</span>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label={d.chat.close}
+              type="button"
+              className="-mr-[var(--s-2)] grid h-8 w-8 place-items-center rounded-[var(--r-1)] text-[color:var(--ink-muted)] hover:bg-[var(--sunken)] hover:text-[color:var(--ink)]"
+            >
+              <Icon name="close" size={16} />
             </button>
           </div>
 
-          <div className="max-h-[60vh] overflow-y-auto p-4">
-            <p className="text-sm text-ink-2">{d.chat.greeting}</p>
+          <div className="max-h-[60vh] overflow-y-auto px-[var(--s-5)] py-[var(--s-5)]">
+            <p className="font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{d.chat.greeting}</p>
 
-            <h4 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">{d.chat.faqTitle}</h4>
-            <div className="mt-2 space-y-2">
+            <h4 className="eyebrow mt-[var(--s-6)]">{d.chat.faqTitle}</h4>
+            <div className="mt-[var(--s-3)] border-t border-[var(--rule-hairline)]">
               {d.chat.faqs.map((f) => (
-                <details key={f.q} className="rounded-lg border border-edge bg-paper p-3">
-                  <summary className="cursor-pointer list-none text-sm font-medium text-ink">{f.q}</summary>
-                  <p className="mt-2 text-sm text-ink-2">{f.a}</p>
+                <details key={f.q} className="group border-b border-[var(--rule-hairline)] py-[var(--s-3)]">
+                  <summary className="flex cursor-pointer list-none items-baseline justify-between gap-[var(--s-4)] font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink)]">
+                    {f.q}
+                    <span className="relative top-[2px] shrink-0 text-[color:var(--ink-muted)] group-open:hidden"><Icon name="plus" size={16} /></span>
+                    <span className="relative top-[2px] hidden shrink-0 text-[color:var(--ink-muted)] group-open:block"><Icon name="minus" size={16} /></span>
+                  </summary>
+                  <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">{f.a}</p>
                 </details>
               ))}
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-2">
-              <Link
-                href="/contact"
-                onClick={() => setOpen(false)}
-                className="rounded-lg bg-oxblood px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-oxblood-2"
-                data-testid="support-contact"
-              >
-                {l.contact.send}
-              </Link>
+            <div className="mt-[var(--s-6)] grid gap-[var(--s-3)]">
+              <Button href="/contact" size="sm" className="w-full" onClick={() => setOpen(false)} data-testid="support-contact">{l.contact.send}</Button>
               {support.email && (
-                <a href={`mailto:${support.email}`} className="rounded-lg border border-edge-2 px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-paper-2" data-testid="support-email">
-                  {d.chat.emailBtn}
-                </a>
+                <Button href={`mailto:${support.email}`} variant="outline" size="sm" className="w-full" data-testid="support-email">{d.chat.emailBtn}</Button>
               )}
               {support.whatsapp && (
-                <a
-                  href={`https://wa.me/${support.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg border border-moss px-4 py-2.5 text-center text-sm font-semibold text-moss hover:bg-moss-2"
-                >
-                  {d.chat.whatsappBtn}
-                </a>
+                <Button href={`https://wa.me/${support.whatsapp}`} variant="outline" size="sm" className="w-full">{d.chat.whatsappBtn}</Button>
               )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Floating button */}
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={d.chat.openAria}
         aria-expanded={open}
         data-testid="support-open"
-        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-oxblood text-white shadow-lg transition hover:bg-oxblood-2 sm:right-6"
+        type="button"
+        className="fixed bottom-[var(--s-5)] right-[var(--s-5)] z-50 inline-flex h-9 items-center gap-[var(--s-2)] rounded-[var(--r-2)] border border-[var(--rule-field)] bg-[var(--raised)] px-[var(--s-4)] font-sans text-[length:var(--ui-13)] font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[var(--sunken)] hover:text-[color:var(--ink)] sm:right-[var(--s-7)]"
       >
-        {open ? (
-          <span className="text-xl">✕</span>
-        ) : (
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
-        )}
+        {open && <Icon name="close" size={16} />}
+        {d.chat.title}
       </button>
     </>
   );

@@ -6,34 +6,26 @@ import { useAuth } from "./AuthProvider";
 import { useDialog } from "./useDialog";
 import { Portal } from "./Portal";
 import { useI18n } from "@/app/i18n/I18nProvider";
+import { Button, Checkbox, Field, Icon, Input, Notice } from "@/components/ui";
 
 export type AuthMode = "in" | "up";
 
 /**
- * The header's account control. "Sign in" opens the sign-in form; signup CTAs elsewhere open the
+ * The header's signed-out control. Signed in, the header shows the account menu instead, so this
+ * renders only for a visitor. "Sign in" opens the sign-in form; signup CTAs elsewhere open the
  * signup form: `window.dispatchEvent(new CustomEvent("rt:auth", { detail: "up" }))`.
  */
 export function AuthButton() {
-  const { user, signOut } = useAuth();
-  const { x, l } = useI18n();
+  const { x } = useI18n();
   const [open, setOpen] = useState<AuthMode | null>(null);
   useEffect(() => {
     const h = (e: Event) => setOpen((e as CustomEvent<AuthMode | undefined>).detail === "up" ? "up" : "in");
     window.addEventListener("rt:auth", h);
     return () => window.removeEventListener("rt:auth", h);
   }, []);
-  if (user) {
-    return (
-      <div className="hidden items-center gap-3 md:flex">
-        <Link href="/account" className="text-sm font-medium text-ink-2 hover:text-ink" data-testid="nav-account">{user.name || user.email.split("@")[0]}</Link>
-        <button onClick={signOut} className="text-sm font-medium text-muted hover:text-ink" data-testid="signout">{x.nav.signOut}</button>
-        <span className="sr-only">{l.menu.signedInAs} {user.email}</span>
-      </div>
-    );
-  }
   return (
     <>
-      <button onClick={() => setOpen("in")} className="text-sm font-medium text-ink-2 hover:text-ink" data-testid="open-auth">{x.nav.signIn}</button>
+      <Button variant="quiet" size="sm" onClick={() => setOpen("in")} data-testid="open-auth">{x.nav.signIn}</Button>
       {open && <AuthModal initialMode={open} onClose={() => setOpen(null)} />}
     </>
   );
@@ -43,6 +35,11 @@ export function AuthModal(props: { onClose: () => void; onDone?: () => void; ini
   return <Portal><AuthDialog {...props} /></Portal>;
 }
 
+/**
+ * The account dialog (surface 6). One column at the measure, the label above every field, the
+ * consent tick as a real control rather than a native box, and the error as a mark-toned notice —
+ * red here means "this needs your attention", which is exactly what the system reserves it for.
+ */
 function AuthDialog({ onClose, onDone, initialMode = "in" }: { onClose: () => void; onDone?: () => void; initialMode?: AuthMode }) {
   const { login, register } = useAuth();
   const { x, l, lang } = useI18n();
@@ -79,59 +76,118 @@ function AuthDialog({ onClose, onDone, initialMode = "in" }: { onClose: () => vo
   }
 
   const switchMode = () => { setMode(up ? "in" : "up"); setErr(""); setForgot(false); };
+  const inkLink = "font-medium text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]";
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-ink/60 p-4" onClick={onClose}>
-      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={`${id}-sub`} className="card relative my-auto w-full max-w-md p-7" onClick={(e) => e.stopPropagation()} data-testid="auth-modal" data-mode={mode}>
-        <button type="button" onClick={onClose} aria-label={l.auth.close} className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink" data-testid="auth-close">✕</button>
-        <form onSubmit={submit} noValidate={false}>
-          <p className="eyebrow">ResumeTailor</p>
-          <h2 id={`${id}-title`} className="font-display mt-1 pr-8 text-2xl text-ink">{up ? l.auth.signUpTitle : l.auth.signInTitle}</h2>
-          <p id={`${id}-sub`} className="mt-2 text-sm text-muted">{up ? l.auth.signUpSubtitle : l.auth.signInSubtitle}</p>
-          <div className="mt-5 space-y-3">
-            {up && (
-              <div>
-                <label htmlFor={`${id}-name`} className="mb-1 block text-sm font-medium text-ink-2">{x.auth.name}</label>
-                <input id={`${id}-name`} className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} />
-              </div>
-            )}
-            <div>
-              <label htmlFor={`${id}-email`} className="mb-1 block text-sm font-medium text-ink-2">{x.auth.email}</label>
-              <input id={`${id}-email`} className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" data-testid="auth-email" data-autofocus />
-            </div>
-            <div>
-              <label htmlFor={`${id}-password`} className="mb-1 block text-sm font-medium text-ink-2">{x.auth.password}</label>
-              <div className="relative">
-                <input id={`${id}-password`} className="field pr-20" type={show ? "text" : "password"} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={up ? "new-password" : "current-password"} data-testid="auth-password" />
-                <button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-muted hover:text-ink" aria-pressed={show}>
-                  {show ? l.auth.hidePassword : l.auth.showPassword}
-                </button>
-              </div>
-            </div>
-            {up && (
-              <label className="flex items-start gap-2.5 text-sm text-ink-2" data-testid="auth-consent">
-                <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-[var(--oxblood)]" checked={accept} onChange={(e) => setAccept(e.target.checked)} aria-required="true" data-testid="auth-accept" />
-                <span>
-                  {l.auth.consentBefore} <Link href="/legal/terms" target="_blank" className="font-medium text-oxblood underline underline-offset-2">{l.auth.consentTerms}</Link>{" "}
-                  {l.auth.consentAnd} <Link href="/legal/privacy" target="_blank" className="font-medium text-oxblood underline underline-offset-2">{l.auth.consentPrivacy}</Link>{l.auth.consentAfter}
-                </span>
-              </label>
-            )}
-            {err && <p className="text-sm text-oxblood" role="alert" data-testid="auth-error">{err}</p>}
-            {notice && <p className="rounded-lg bg-gold-2 px-3 py-2 text-sm text-ink" role="status" data-testid="auth-notice">{notice}</p>}
-            <button className="btn btn-primary w-full" disabled={busy || !!notice} data-testid="auth-submit">{busy ? x.auth.working : up ? x.auth.signUp : x.auth.signIn}</button>
+    <div className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[color-mix(in_srgb,var(--ink)_58%,transparent)] p-[var(--s-5)]" onClick={onClose}>
+      <div
+        ref={dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-sub`}
+        className="relative my-auto w-full max-w-[420px] rounded-[var(--r-3)] border border-[var(--rule)] bg-[var(--raised)]"
+        style={{ boxShadow: "var(--shadow-pop)" }}
+        onClick={(e) => e.stopPropagation()}
+        data-testid="auth-modal"
+        data-mode={mode}
+      >
+        <div className="flex items-start justify-between gap-[var(--s-5)] border-b border-[var(--rule-hairline)] px-[var(--s-7)] py-[var(--s-6)]">
+          <div className="min-w-0">
+            <p className="eyebrow">ResumeTailor</p>
+            <h2 id={`${id}-title`} className="doc-26 mt-[var(--s-2)] text-[color:var(--ink)]">{up ? l.auth.signUpTitle : l.auth.signInTitle}</h2>
+            <p id={`${id}-sub`} className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">
+              {up ? l.auth.signUpSubtitle : l.auth.signInSubtitle}
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={l.auth.close}
+            className="-mr-[var(--s-2)] -mt-[var(--s-2)] grid h-9 w-9 shrink-0 place-items-center rounded-[var(--r-1)] text-[color:var(--ink-muted)] hover:bg-[var(--sunken)] hover:text-[color:var(--ink)]"
+            data-testid="auth-close"
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="px-[var(--s-7)] py-[var(--s-6)]">
+          <div className="flex flex-col gap-[var(--s-5)]">
+            {up && (
+              <Field label={x.auth.name}>
+                {(p) => <Input {...p} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} />}
+              </Field>
+            )}
+            <Field label={x.auth.email}>
+              {(p) => <Input {...p} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" data-testid="auth-email" data-autofocus />}
+            </Field>
+            <Field label={x.auth.password}>
+              {(p) => (
+                <div className="relative">
+                  <Input
+                    {...p}
+                    className="pr-[84px]"
+                    type={show ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={up ? "new-password" : "current-password"}
+                    data-testid="auth-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShow(!show)}
+                    className="absolute right-[var(--s-2)] top-1/2 -translate-y-1/2 rounded-[var(--r-1)] px-[var(--s-3)] py-[var(--s-2)] font-sans text-[length:var(--ui-12)] font-medium text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+                    aria-pressed={show}
+                  >
+                    {show ? l.auth.hidePassword : l.auth.showPassword}
+                  </button>
+                </div>
+              )}
+            </Field>
+
+            {up && (
+              <div data-testid="auth-consent">
+                <Checkbox
+                  checked={accept}
+                  onChange={(e) => setAccept(e.target.checked)}
+                  aria-required="true"
+                  data-testid="auth-accept"
+                  className="text-[color:var(--ink-2)]"
+                  label={
+                    <>
+                      {l.auth.consentBefore} <Link href="/legal/terms" target="_blank" className={inkLink}>{l.auth.consentTerms}</Link>{" "}
+                      {l.auth.consentAnd} <Link href="/legal/privacy" target="_blank" className={inkLink}>{l.auth.consentPrivacy}</Link>{l.auth.consentAfter}
+                    </>
+                  }
+                />
+              </div>
+            )}
+
+            {err && <Notice tone="mark" icon="flag"><span data-testid="auth-error">{err}</span></Notice>}
+            {notice && <Notice tone="query"><span data-testid="auth-notice">{notice}</span></Notice>}
+
+            <Button type="submit" className="w-full" loading={busy} disabled={!!notice} data-testid="auth-submit">
+              {busy ? x.auth.working : up ? x.auth.signUp : x.auth.signIn}
+            </Button>
+          </div>
+
           {!up && (
-            <div className="mt-3 text-center">
-              <button type="button" onClick={() => setForgot(!forgot)} className="text-sm text-muted underline-offset-4 hover:text-ink hover:underline" aria-expanded={forgot} data-testid="auth-forgot">{l.auth.forgot}</button>
+            <div className="mt-[var(--s-5)] text-center">
+              <button type="button" onClick={() => setForgot(!forgot)} className="font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)] underline-offset-4 hover:text-[color:var(--ink)] hover:underline" aria-expanded={forgot} data-testid="auth-forgot">
+                {l.auth.forgot}
+              </button>
               {forgot && (
-                <p className="mt-2 rounded-lg bg-paper px-3 py-2 text-left text-sm text-ink-2">
-                  {l.auth.forgotHelp} <Link href="/contact?topic=password" className="font-medium text-oxblood underline underline-offset-2" onClick={onClose}>{l.footer.contact} →</Link>
+                <p className="mt-[var(--s-4)] rounded-[var(--r-1)] bg-[var(--sunken)] px-[var(--s-5)] py-[var(--s-4)] text-left font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-2)]">
+                  {l.auth.forgotHelp} <Link href="/contact?topic=password" className={inkLink} onClick={onClose}>{l.footer.contact} →</Link>
                 </p>
               )}
             </div>
           )}
-          <button type="button" onClick={switchMode} className="mt-4 w-full text-center text-sm text-ink-2 underline-offset-4 hover:underline" data-testid="auth-switch">
+
+          <hr className="my-[var(--s-5)] h-px border-0 bg-[var(--rule-hairline)]" />
+          <button type="button" onClick={switchMode} className="w-full text-center font-sans text-[length:var(--ui-13)] text-[color:var(--ink-2)] underline-offset-4 hover:underline" data-testid="auth-switch">
             {up ? x.auth.toSignIn : x.auth.toSignUp}
           </button>
         </form>

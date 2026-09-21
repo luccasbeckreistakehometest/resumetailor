@@ -23,10 +23,24 @@ export function LanguageSwitcher() {
     if (match && match.lang !== code && hasLang(match.key, code)) router.push(href(match.key, code) as never);
   };
   return (
-    <div className="flex items-center rounded-full border border-edge-2 bg-surface p-0.5" role="group" aria-label="Language">
+    <div
+      className="flex items-center rounded-[var(--r-pill)] border border-[var(--rule)] bg-[var(--sunken)] p-[2px]"
+      role="group"
+      aria-label="Language"
+    >
       {LANGS.map((l) => (
-        <button key={l.code} onClick={() => choose(l.code)} aria-pressed={lang === l.code} data-testid={`lang-${l.code}`}
-          className={"rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide transition " + (lang === l.code ? "bg-ink text-paper" : "text-muted hover:text-ink")}>
+        <button
+          key={l.code}
+          onClick={() => choose(l.code)}
+          aria-pressed={lang === l.code}
+          data-testid={`lang-${l.code}`}
+          className={
+            "rounded-[var(--r-pill)] px-[var(--s-3)] py-[3px] font-sans text-[length:var(--ui-11c)] font-bold uppercase tracking-[var(--ui-11c-ls)] transition-colors duration-[var(--dur-1)] " +
+            (lang === l.code
+              ? "bg-[var(--ink)] text-[color:var(--on-ink)]"
+              : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
+          }
+        >
           {l.short}
         </button>
       ))}

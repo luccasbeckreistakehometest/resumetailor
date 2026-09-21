@@ -53,13 +53,13 @@ export function FitChecker() {
   return (
     <div>
       <Stamp>{F.badge}</Stamp>
-      <h1 className="font-display mt-5 text-[2.6rem] leading-[1.02] tracking-[-0.02em] text-ink sm:text-6xl">{F.title}</h1>
-      <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-2">{F.intro}</p>
+      <h1 className="doc-45 mt-[var(--s-6)] text-[color:var(--ink)] lg:text-[length:var(--doc-64)] lg:leading-[var(--doc-64-lh)] lg:tracking-[var(--doc-64-ls)]">{F.title}</h1>
+      <p className="doc-18 mt-[var(--s-6)] max-w-[var(--measure)] text-[color:var(--ink-2)]">{F.intro}</p>
 
-      <div className="card mt-10 p-6 sm:p-8" data-tour="fit" data-testid="fit-form">
+      <div className="mt-[var(--s-10)] border border-[var(--rule)] p-[var(--s-6)] sm:p-[var(--s-8)]" data-tour="fit" data-testid="fit-form">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Eyebrow>{F.eyebrow}</Eyebrow>
-          {last && <button onClick={() => { setPosting(last.posting); setResume(last.resume); }} className="text-sm font-medium text-oxblood underline-offset-4 hover:underline" data-testid="fit-reuse">↺ {F.reuse}</button>}
+          {last && <button onClick={() => { setPosting(last.posting); setResume(last.resume); }} className="text-sm font-medium text-[color:var(--ink)] underline-offset-4 hover:underline" data-testid="fit-reuse">{F.reuse}</button>}
         </div>
         <label htmlFor="fit-posting" className="mt-3 block text-sm font-medium text-ink-2">{F.postingLabel}</label>
         <textarea id="fit-posting" className="field mt-2" rows={7} value={posting} onChange={(e) => setPosting(e.target.value)} placeholder={F.postingPh} data-testid="fit-posting" />
@@ -71,15 +71,15 @@ export function FitChecker() {
           <p className="text-xs text-muted">{F.privacy}</p>
         </div>
         {error && <p className="mt-3 text-sm text-oxblood" role="alert" data-testid="fit-error">{error}</p>}
-        {limit !== null && <p className="mt-3 rounded-xl bg-gold-2 px-4 py-3 text-sm text-ink" role="alert" data-testid="fit-limit">{F.limit}{limit ? ` ${F.limitUntil(when(limit))}` : ""}</p>}
+        {limit !== null && <p className="mt-[var(--s-4)] bg-[var(--query-wash)] px-[var(--s-5)] py-[var(--s-3)] font-sans text-[length:var(--ui-13)] text-[color:var(--ink)]" style={{ borderLeft: "2px solid var(--query)" }} role="alert" data-testid="fit-limit">{F.limit}{limit ? ` ${F.limitUntil(when(limit))}` : ""}</p>}
       </div>
 
       {result && (
-        <div id="fit-result" className="card mt-6 scroll-mt-24 p-6 sm:p-8" data-testid="fit-result" data-verdict={result.verdict}>
+        <div id="fit-result" className="mt-[var(--s-8)] scroll-mt-24 border-t-2 border-[var(--ink)] pt-[var(--s-7)]" data-testid="fit-result" data-verdict={result.verdict}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Eyebrow>{result.role || F.roleFallback}</Eyebrow>
             <div className="flex items-center gap-2 text-xs text-muted">
-              {result.cached && <span className="rounded-full bg-paper px-2.5 py-1 font-medium ring-1 ring-edge" data-testid="fit-cached">{F.cached}</span>}
+              {result.cached && <span className="rounded-[var(--r-1)] border border-[var(--rule)] px-[var(--s-2)] py-[1px] font-medium" data-testid="fit-cached">{F.cached}</span>}
               <span data-testid="fit-runs-left">{F.runsLeft(result.runsLeft)}</span>
             </div>
           </div>
@@ -96,9 +96,9 @@ export function FitChecker() {
           {result.gaps.length === 0 ? <p className="mt-2 text-sm text-moss" data-testid="fit-no-gaps">{F.noGaps}</p> : (
             <ol className="mt-3 space-y-3">
               {result.gaps.map((g, i) => (
-                <li key={g.requirement} className="rounded-xl border border-edge bg-paper p-4" data-testid="fit-gap">
+                <li key={g.requirement} className="border-b border-[var(--rule-hairline)] py-[var(--s-4)]" data-testid="fit-gap">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-display text-2xl leading-none text-oxblood">{i + 1}</span>
+                    <span className="font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-40)]">{String(i + 1).padStart(2, "0")}</span>
                     <p className="font-semibold text-ink">{g.requirement}</p>
                     <StatusChip item={g} labels={F.status} />
                     <span className="ml-auto text-[11px] uppercase tracking-wide text-muted">{F.weight[g.weight]}</span>
@@ -137,7 +137,7 @@ export function FitChecker() {
 }
 
 const StatusChip = ({ item, labels }: { item: FitItem; labels: Record<FitItem["status"], string> }) => {
-  const cls = item.status === "found" ? "bg-moss-2 text-moss ring-moss/30" : item.status === "partial" ? "bg-gold-2 text-ink ring-gold/40" : "bg-oxblood/10 text-oxblood ring-oxblood/30";
+  const cls = item.status === "found" ? "border-[var(--kept)] text-[color:var(--kept)]" : item.status === "partial" ? "border-[var(--query)] text-[color:var(--query)]" : "border-[var(--mark)] text-[color:var(--mark)]";
   const mark = item.status === "found" ? "✓" : item.status === "partial" ? "~" : "✕";
   return <span className={"rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 " + cls}>{mark} {labels[item.status]}</span>;
 };
@@ -145,11 +145,11 @@ const StatusChip = ({ item, labels }: { item: FitItem; labels: Record<FitItem["s
 /** A three-quarter arc, drawn inline: no chart library for one number. */
 function Gauge({ score, label }: { score: number; label: string }) {
   const r = 52, c = 2 * Math.PI * r, arc = c * 0.75, filled = arc * (Math.max(0, Math.min(100, score)) / 100);
-  const tone = score >= 80 ? "var(--moss)" : score >= 60 ? "var(--gold)" : score >= 40 ? "var(--gold)" : "var(--oxblood)";
+  const tone = score >= 80 ? "var(--kept)" : score >= 40 ? "var(--query)" : "var(--mark)";
   return (
     <div className="relative grid h-36 w-36 place-items-center" data-testid="fit-gauge">
       <svg viewBox="0 0 128 128" className="absolute inset-0 h-full w-full -rotate-[135deg]" aria-hidden>
-        <circle cx="64" cy="64" r={r} fill="none" stroke="var(--paper-2)" strokeWidth="10" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="var(--sunken)" strokeWidth="10" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
         <circle cx="64" cy="64" r={r} fill="none" stroke={tone} strokeWidth="10" strokeDasharray={`${filled} ${c}`} strokeLinecap="round" />
       </svg>
       <div className="text-center">

@@ -101,7 +101,7 @@ export function CompareView() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-5xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <Stamp>{C.eyebrow}</Stamp>
         <h1 className="font-display mt-4 text-4xl leading-tight text-ink sm:text-5xl">{C.h1}</h1>
         <p className="mt-3 max-w-3xl text-lg text-ink-2">{C.intro}</p>
@@ -130,7 +130,7 @@ export function CompareView() {
 
         <div className="card mt-6 p-4">
           <p className="font-semibold text-ink">{C.resume}</p>
-          {fromProfile && <p className="text-xs text-moss">📄 {C.useSaved}</p>}
+          {fromProfile && <p className="text-xs text-[color:var(--kept)]">{C.useSaved}</p>}
           <div className="mt-2"><ImportableTextarea id="compare-resume" label={C.resume} value={resume} onChange={setResume} rows={6} placeholder={C.resumePh} testId="compare-resume" importTestId="compare-resume-import" /></div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -159,13 +159,13 @@ export function CompareView() {
                     <div className="flex flex-col gap-2">
                       <button type="button" onClick={() => makeKit(res)} className="btn btn-primary !py-1.5 !text-sm" data-testid="compare-kit">{C.makeKit}</button>
                       <button type="button" onClick={() => void saveToTracker(res)} disabled={tracked[res.index]} className="btn btn-ghost !py-1.5 !text-sm" data-testid="compare-track">{tracked[res.index] ? `✓ ${C.tracked}` : C.track}</button>
-                      {p.link && /^https:\/\//.test(p.link) && <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-center text-xs text-oxblood">{C.open} ↗</a>}
+                      {p.link && /^https:\/\//.test(p.link) && <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-center text-xs text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]">{C.open} ↗</a>}
                     </div>
                   </li>
                 );
               })}
             </ol>
-            <p className="mt-3 text-sm"><Link href="/applications" className="text-oxblood underline-offset-4 hover:underline">{x.nav.applications} →</Link></p>
+            <p className="mt-3 text-sm"><Link href="/applications" className="text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-4 hover:underline">{x.nav.applications} →</Link></p>
           </section>
         )}
       </Container>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useI18n } from "@/app/i18n/I18nProvider";
 import { apiErrorText } from "@/app/i18n/launch";
 import type { GenerationView } from "@/lib/server/generations";
+import { Button, Icon, Notice } from "@/components/ui";
 
 type Version = { target: string; notes: string[]; missingNumbers: string[]; left: number };
 
@@ -16,7 +16,7 @@ export function IntlCard({ gen }: { gen: GenerationView }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [version, setVersion] = useState<Version | null>(null);
   const [error, setError] = useState("");
-  if (!gen.kit) return <p className="text-sm text-ink-2" data-testid="intl-locked">🌍 {I.locked}</p>;
+  if (!gen.kit) return <p className="font-sans text-[length:var(--ui-13)] text-[color:var(--ink-muted)]" data-testid="intl-locked">{I.locked}</p>;
 
   async function make(target: string) {
     setBusy(target); setError("");
@@ -28,26 +28,38 @@ export function IntlCard({ gen }: { gen: GenerationView }) {
   }
   const base = `/api/generations/${gen.id}/export?variant=intl:${version?.target}`;
   return (
-    <section className="rounded-2xl border border-edge bg-surface p-5" data-testid="intl">
-      <p className="font-display text-xl text-ink">🌍 {I.title}</p>
-      <p className="mt-1 text-sm text-ink-2">{I.intro}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {targets.map((t) => <button key={t} type="button" onClick={() => void make(t)} disabled={!!busy} className="btn btn-ghost !py-1.5 !text-sm" data-testid={`intl-${t}`}>{busy === t ? I.working : I.make(I.langs[t])}</button>)}
+    <section className="border-t border-[var(--rule)] pt-[var(--s-5)]" data-testid="intl">
+      <p className="eyebrow">{I.title}</p>
+      <p className="mt-[var(--s-3)] font-sans text-[length:var(--ui-13)] leading-[var(--ui-13-lh)] text-[color:var(--ink-muted)]">{I.intro}</p>
+      <div className="mt-[var(--s-4)] flex flex-wrap gap-[var(--s-3)]">
+        {targets.map((t) => (
+          <Button key={t} variant="outline" size="sm" onClick={() => void make(t)} loading={busy === t} disabled={!!busy} data-testid={`intl-${t}`}>{busy === t ? I.working : I.make(I.langs[t])}</Button>
+        ))}
       </div>
       {version && (
-        <div className="mt-4 rounded-xl bg-paper p-4 text-sm" data-testid="intl-result" data-target={version.target}>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 font-semibold">
-            <Link href={`/print?id=${gen.id}&variant=intl:${version.target}`} target="_blank" className="text-oxblood" data-testid="intl-print">{I.open}</Link>
-            <a href={`${base}&doc=resume&format=docx`} className="text-oxblood" data-testid="intl-docx">{I.word}</a>
-            <a href={`${base}&doc=resume&format=txt`} className="text-oxblood">{I.txt}</a>
+        <div className="mt-[var(--s-5)] bg-[var(--sunken)] p-[var(--s-5)] font-sans text-[length:var(--ui-13)]" data-testid="intl-result" data-target={version.target}>
+          <div className="flex flex-wrap gap-x-[var(--s-5)] gap-y-[var(--s-2)] font-medium">
+            {[
+              { href: `/print?id=${gen.id}&variant=intl:${version.target}`, label: I.open, test: "intl-print", external: true },
+              { href: `${base}&doc=resume&format=docx`, label: I.word, test: "intl-docx", external: false },
+              { href: `${base}&doc=resume&format=txt`, label: I.txt, test: "", external: false },
+            ].map((lnk) => (
+              <a key={lnk.label} href={lnk.href} target={lnk.external ? "_blank" : undefined} className="text-[color:var(--ink)] underline decoration-[var(--rule-field)] underline-offset-[3px] hover:decoration-[var(--ink)]" {...(lnk.test ? { "data-testid": lnk.test } : {})}>{lnk.label}</a>
+            ))}
           </div>
-          <p className="eyebrow mt-3">{I.notes}</p>
-          <ul className="mt-1 space-y-1">{version.notes.map((n) => <li key={n} className="flex gap-2"><span className="text-moss">✓</span>{n}</li>)}</ul>
-          <p className={"mt-2 " + (version.missingNumbers.length ? "text-oxblood" : "text-moss")} data-testid="intl-numbers">{version.missingNumbers.length ? I.missing(version.missingNumbers.join(", ")) : I.allNumbers}</p>
-          <p className="mt-1 text-xs text-muted">{I.left(version.left)}</p>
+          <p className="eyebrow mt-[var(--s-5)]">{I.notes}</p>
+          <ul className="mt-[var(--s-2)] flex flex-col gap-[var(--s-2)]">
+            {version.notes.map((n) => (
+              <li key={n} className="flex items-start gap-[var(--s-3)] text-[color:var(--ink-2)]">
+                <span className="relative top-[2px] shrink-0 text-[color:var(--kept)]"><Icon name="check" size={16} /></span>{n}
+              </li>
+            ))}
+          </ul>
+          <p className={"mt-[var(--s-4)] " + (version.missingNumbers.length ? "text-[color:var(--mark)]" : "text-[color:var(--kept)]")} data-testid="intl-numbers">{version.missingNumbers.length ? I.missing(version.missingNumbers.join(", ")) : I.allNumbers}</p>
+          <p className="mt-[var(--s-2)] font-mono text-[length:var(--mn-13)] tabular-nums text-[color:var(--ink-muted)]">{I.left(version.left)}</p>
         </div>
       )}
-      {error && <p className="mt-2 text-sm text-oxblood" role="alert">{error}</p>}
+      {error && <Notice tone="mark" icon="flag" className="mt-[var(--s-4)]"><span>{error}</span></Notice>}
     </section>
   );
 }

@@ -20,7 +20,7 @@ export default function CalculatorPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <Container className="max-w-5xl py-10">
+      <Container width="reading" className="py-[var(--s-10)]">
         <Stamp>{C.eyebrow}</Stamp>
         <h1 className="font-display mt-4 text-4xl leading-tight text-ink sm:text-5xl">{C.h1}</h1>
         <p className="mt-3 max-w-3xl text-lg text-ink-2">{C.intro}</p>
@@ -28,7 +28,7 @@ export default function CalculatorPage() {
           <Suspense fallback={<p className="text-sm text-muted">…</p>}><CltPjCalculator /></Suspense>
         </div>
         <p className="mt-6 rounded-xl bg-gold-2 px-4 py-3 text-sm text-ink" data-testid="calc-disclaimer">{C.disclaimer}</p>
-        <p className="mt-4 text-sm"><Link href="/applications" className="font-medium text-oxblood underline-offset-4 hover:underline">{C.trackerCta} →</Link></p>
+        <p className="mt-4 text-sm"><Link href="/applications" className="font-medium text-[color:var(--ink)] decoration-[var(--rule-field)] underline-offset-4 hover:underline">{C.trackerCta} →</Link></p>
 
         <section className="mt-12 max-w-3xl">
           <h2 className="font-display text-3xl text-ink">{C.faqTitle}</h2>
